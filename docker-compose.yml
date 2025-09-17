@@ -1,0 +1,49 @@
+services:
+  backend:
+    build: ./value-investing-backend/valueinvesting
+    container_name: backend
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - .env
+      - ./value-investing-backend/valueinvesting/.env
+    networks:
+      - value_investing_app_ntw
+
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    volumes:
+      - postgres_db:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+    networks:
+      - value_investing_app_ntw
+
+
+  frontend:
+    build: ./value-investing-frontend/value-investing
+    container_name: frontend
+    ports:
+      - 80:80    # serve static build files via nginx
+    networks:
+      - value_investing_app_ntw
+
+volumes:
+  postgres_db:
+
+networks:
+  value_investing_app_ntw:
+    driver: bridge

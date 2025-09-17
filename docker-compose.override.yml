@@ -1,0 +1,33 @@
+services:
+  backend:
+    volumes:
+      - ./value-investing-backend/valueinvesting:/app
+  
+  # pgadmin to be used in dev for easiert data visualization
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"  # access PgAdmin in browser
+    networks:
+      - value_investing_app_ntw
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./value-investing-frontend/value-investing
+      target: dev
+    ports:
+      - 3000:3000   # React dev server
+    networks:
+      - value_investing_app_ntw
+    env_file:
+      - .env
+    volumes:
+      - ./value-investing-frontend/value-investing:/app  # mount local code for hot reload
+      - /app/node_modules               # prevent overwriting container node_modules
+    command: ["npm", "run", "start"]           # run React dev server

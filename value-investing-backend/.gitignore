@@ -1,0 +1,41 @@
+# CSV files
+*.csv
+
+# Python caches
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
+
+# Experiment logs and temporary dirs
+EXPERIMENTS/
+migrations/quickfs_database/logs/
+migrations/quickfs_database/__pycache__/
+
+
+# Ignore all build/ dirs recursively
+**/build/**
+
+
+# But keep the shared object module
+!valueinvesting/screener/CppModules/EPV/build/
+!valueinvesting/screener/CppModules/EPV/build/epv.cpython-313-darwin.so
+
+# CMake/IDE build output
+EPVCPlusPlus/
+valueinvesting/screener/CppModules/**/build/
+valueinvesting/screener/CppModules/**/build_dev/
+valueinvesting/screener/CppModules/**/cmake-build-*/
+
+# Ignore all _deps subdirectories under build
+valueinvesting/screener/CppModules/**/build/_deps/
+
+# Don't ignore the libpqxx folder
+!valueinvesting/screener/CppModules/EPV/deps/libpqxx/
+
+# IDE configs
+.idea/
+
+valueinvesting/screener/CppModules/EPV/build/_deps/*-src/
+valueinvesting/screener/CppModules/EPV/build/_deps/
