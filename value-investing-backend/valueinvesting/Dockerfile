@@ -1,4 +1,7 @@
-FROM python:3.13.3-slim
+# ================================
+# Stage: Development
+# ================================
+FROM python:3.13.3-slim AS dev
 
 # avoid buffering standard output (logs will be shown immediately)
 ENV PYTHONUNBUFFERED=1
@@ -23,3 +26,28 @@ EXPOSE 8000
 #CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 ENTRYPOINT ["sh", "./entrypoint.sh"]
 
+
+# ================================
+# Stage: Production
+# ================================
+FROM python:3.13.3-slim AS prod
+
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install build dependencies just in case (optional if psycopg2-binary is used)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN chmod +x entrypoint.prd.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["sh", "./entrypoint.prd.sh"]

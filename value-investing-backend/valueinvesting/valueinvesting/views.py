@@ -35,6 +35,7 @@ class CustomGoogleOAuth2Client(OAuth2Client):
 
 
 class GoogleLogin(SocialLoginView): # if you want to use Authorization Code Grant, use this
+    print('google callback uri that we set in google login: ', os.environ["GOOGLE_CALLBACK_URI"])
     adapter_class = GoogleOAuth2Adapter
     callback_url = os.environ["GOOGLE_CALLBACK_URI"]
     client_class = CustomGoogleOAuth2Client
