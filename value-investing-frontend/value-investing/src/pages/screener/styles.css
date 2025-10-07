@@ -1,0 +1,223 @@
+.content-screener-outer-wrapper{
+    max-width: 1400px;
+    width: 80%;
+    margin: auto;
+    border-style: dashed;
+    margin-top: 32px;
+}
+
+.flexbox-title-reset-button{
+    display: flex;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.reset-stockscreener-filters{
+    height: 35px !important;
+    margin-left: 16px !important;
+}
+
+.filters-flexbox-wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.clear-button-icon-screener-select-field{
+    margin-left: -12px !important;
+    scale: 0.8 !important;
+}
+
+.table-container-filtered-stock-details{
+    /* max-width: 1400px !important; */
+    max-width: 1400px !important;
+    width: 80% !important;
+    overflow-x: auto !important;
+    /* position: relative;
+    left: 50%; */
+    /* transform: translate(-50%, 0%); */
+}
+
+.filter-modals-wrapper{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85vw;
+    box-shadow: 24;
+    padding: 16px 32px;
+    border-radius: 12px;
+    background-color: white;
+    max-height: 90vh;
+    overflow-y: auto;
+    /* display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
+}
+
+.custom-metric{
+    /* display: flex;
+    flex-direction: column; */
+}
+
+.grid-wrapper-filters-modal{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 150px is the minimum column size */
+    gap: 16px;
+    /* Optional: spacing between grid items */
+}
+
+.item {
+    background-color: lightblue;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+.filter-quantities-container{
+    margin-bottom: 64px;
+}
+
+.filter-quantities-formula-wrapper{
+    max-height: 85vh;
+    overflow-y: scroll;
+}
+
+.wrapper-activ-filters{
+    margin-top: 32px;
+}
+
+.group-header-autocomplete{
+    padding: 4px 10px;
+    top: -8px;
+    position: sticky;
+    background-color: rgba(40, 115, 255, 0.726);
+    color: white;
+}
+
+.activ-filter-flex-wrapper{
+    display: flex;
+    margin-bottom: 16px;
+    gap: 32px;
+    /* align-items: center; */
+}
+
+.flex-item-activ-filter{
+    flex: 1;
+}
+
+.delete-button{
+    flex: 0;
+    margin-top: 10px;
+}
+
+.buttons-flex-wrapper{
+    display: flex;
+    justify-content: space-between;
+}
+
+.custom-metric-title{
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 32px;
+}
+
+.metric-description-flex-wrapper{
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.custom-metric-description{
+    flex: 1;
+}
+
+
+.outlined-container {
+    position: relative;
+    display: inline-block;
+    padding: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.87);
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+    width: 100%;
+}
+
+.outlined-container:focus-within {
+    border-color: #3f51b5;
+    /* Material-UI primary color */
+}
+
+.outlined-label {
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    font-size: 12px;
+    background-color: white;
+    padding: 0 4px;
+    color: #757575;
+    /* Text color */
+    transition: color 0.3s ease;
+}
+
+.outlined-container:focus-within .outlined-label {
+    color: #3f51b5;
+    /* Material-UI primary color */
+}
+
+.custom-button{
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.label-custom-button{
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.MuiButtonBase-root.custom-fab-element{
+    scale: 0.6;
+    flex: 0 0 auto;
+}
+
+.formula-editor-div{
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+.formula-editor-wrapper{
+    /* flex: 1;
+    overflow-y: auto;
+    padding-top: 12px;
+    overflow-x: hidden; */
+}
+
+.flexbox-save-filter-button{
+    justify-content: flex-end;
+    display: flex;
+}
+
+.flex-wrapper-screener-title-section{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.MuiFormControl-root.form-control-saved-filter-views{
+    min-width: 180px;
+}
+
+.flex-item-saved-filters{
+    display: flex;
+    align-items: center;
+}
+
+.paper-save-filter-view{
+    min-width: 350px;
+    padding: 16px;
+}
+
+.accordian-summary-filters > .MuiAccordionSummary-content{
+justify-content: space-between;
+}

@@ -1,0 +1,249 @@
+/* define some global css variables */
+:root {
+  --input-fields-hover-color: #f6f6f6;
+  --drawer-width: 240px; /* this defines the width of the drawer if not collapsed */
+  --padding-right-left-main-content: 16px; /* this defines the padding of the main content */
+
+
+  --main-color: #004170;
+}
+
+/* html{
+  font-size: 62.5%;
+} */
+
+/* remove arrows from input field type number START */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/* remove arrows from input field type number END */
+
+.column-title{
+  font-weight: 600 !important;
+}
+
+
+/* outlinedinput dynamic cv START */
+.outlinedinput-customized>.MuiOutlinedInput-input {
+  padding: 0px 0px !important;
+  text-align: right !important;
+  font-size: 0.875rem !important;
+  line-height: 1.43 !important;
+}
+
+.balance-sheet-item-name.MuiInputBase-root{
+  height: 22px !important
+}
+
+.balance-sheet-item-name >.MuiOutlinedInput-input{
+  text-align: left !important;
+  min-width: 220px !important;
+  max-width: 300px !important;
+
+  /* width: 400px !important; */
+}
+
+
+
+.outlinedinput-customized>.MuiOutlinedInput-input:hover {
+  /* padding: 0px 2px !important */
+  border-radius: 4px !important;
+  background-color: var(--input-fields-hover-color);
+}
+
+.outlinedinput-customized>.MuiOutlinedInput-notchedOutline {
+  border-style: none !important;
+  
+}
+
+.outlinedinput-customized.Mui-focused>.MuiOutlinedInput-notchedOutline {
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: blue !important;
+}
+
+/* multiline styling starts here */
+.outlinedinput-customized.MuiInputBase-multiline {
+  padding: 0px 0px !important;
+  height: 100% !important;
+}
+
+.outlinedinput-customized.MuiInputBase-multiline.certificate {
+  padding: 0px 0px !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.icon-button-add-balance-sheet-item.MuiButtonBase-root{
+  color: blue !important;
+  padding: 8px 8px 8px 8px !important;
+  margin-right: -8px !important;
+}
+
+.icon-button-add-balance-sheet-item > .MuiSvgIcon-root{
+  font-size: 1.8rem;
+}
+
+/* outlinedinput dynamic cv START */
+.outlinedinput-dynamic-cv>.MuiOutlinedInput-input {
+  padding: 0px 0px !important
+}
+
+
+
+.outlinedinput-dynamic-cv>.MuiOutlinedInput-input:hover {
+  /* padding: 0px 2px !important */
+  border-radius: 4px !important;
+}
+
+.outlinedinput-dynamic-cv>.MuiOutlinedInput-notchedOutline {
+  border-style: none !important;
+}
+
+.outlinedinput-dynamic-cv.Mui-focused>.MuiOutlinedInput-notchedOutline {
+  border-style: solid !important;
+  border-width: 1px !important;
+}
+
+/* multiline styling starts here */
+.outlinedinput-dynamic-cv.MuiInputBase-multiline {
+  padding: 0px 0px !important;
+  height: 100% !important;
+}
+
+.outlinedinput-dynamic-cv.MuiInputBase-multiline.certificate {
+  padding: 0px 0px !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.MuiOutlinedInput-input:hover {
+  background-color: rgba(235, 234, 236, 0.42) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: var(--philico-blue) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused input {
+  background-color: rgba(235, 234, 236, 0.42) !important;
+}
+
+/* Customize MUIRichTextEditor START */
+#mui-rte-root:hover {
+  border-color: var(--philico-blue) !important;
+  background-color: rgba(235, 234, 236, 0.42) !important;
+  cursor: text !important
+}
+
+/* #mui-rte-container > .MUIRichTextEditor-editorContainer-5{
+  padding: 0 !important;
+} */
+
+#mui-rte-container>div[class*=MUIRichTextEditor-editorContainer] {
+  padding: 0 !important;
+  color: rgba(0, 0, 0, 0.4)
+}
+
+#mui-rte-container>div[tabindex='0'] {
+  padding: 0 !important;
+  color: rgba(0, 0, 0, 0.4)
+}
+
+#mui-rte-container>#mui-rte-editor {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#mui-rte-container>#mui-rte-editor>#mui-rte-editor-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#mui-rte-root {
+  border-color: white !important;
+}
+
+#mui-rte-toolbar {
+  /* display: none !important; */
+  visibility: hidden !important;
+}
+
+#mui-rte-root:hover #mui-rte-toolbar {
+  display: block !important;
+  visibility: visible !important;
+}
+
+#mui-rte-root:focus-within #mui-rte-toolbar {
+  display: block !important;
+  visibility: visible !important;
+}
+
+
+#mui-rte-root:focus-within {
+  border-color: var(--philico-blue) !important;
+  border-width: 1px !important;
+}
+
+/* Customize MUIRichTextEditor END */
+
+/* outlinedinput dynamic cv END */
+
+.header-wrapper{
+  display: flex;
+}
+
+.content-wrapper{
+  padding: 16px var(--padding-right-left-main-content);
+}
+
+/* if the screensize is smaller than 600px the wrapper div will be adjusted */
+/* min-width is for greater and equal screen size of 600px; so if the screensize is greater or equal to 600px following css rules apply */
+@media only screen and (min-width: 600px) {
+  .MuiPaper-root.app-bar-mui-component {
+    width: calc(100% - var(--drawer-width));
+    margin-left: var(--drawer-width);
+  }
+
+  .content-wrapper {
+    width: calc(100% - var(--drawer-width)- var(--padding-right-left-main-content));
+    margin-left: var(--drawer-width);
+  }
+
+  .nav-bar-logo{
+    min-height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* max-width is for less and equal screen size of 600px; so if the screensize is less or equal to 600px following css rules apply */
+@media only screen and (max-width: 600px) {
+  .wrapper-div-drawer {
+      width: var(--drawer-width);
+      flex-shrink: 0;
+    }
+
+  
+}
+
+/* set width of drawer */
+.MuiDrawer-root.navigation-drawer > .MuiPaper-root{
+  width: var(--drawer-width);
+}
+
+/* define class that can be used as a wrapper for the content */
+/* .content-wrapper{
+  width: calc(100% - var(--drawer-width));
+  margin-left: var(--drawer-width);
+} */
+

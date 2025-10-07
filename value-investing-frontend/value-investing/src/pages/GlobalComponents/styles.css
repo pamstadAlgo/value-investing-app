@@ -1,0 +1,19 @@
+.nav-bar-wrapper{
+    height: 90px;
+    background-color: blue;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.nav-bar-inner-flexbox-wrapper{
+    display: flex;
+    gap: 32px;
+    font-size: 1.2rem;
+    color: white;
+    margin-right: 32px;
+}
+
+.nav-bar-item{
+    cursor: pointer
+}

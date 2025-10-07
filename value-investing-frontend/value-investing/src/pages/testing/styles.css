@@ -1,0 +1,93 @@
+.editable-div {
+    padding: 16px 6px;
+  -webkit-appearance: textarea;
+  background-color: white;
+  border: 1px solid;
+  border-image: initial;
+  -webkit-rtl-ordering: logical;
+  -webkit-user-select: text;
+  -webkit-box-orient: vertical;
+  resize: auto;
+  cursor: auto;
+  /* padding: 2px; */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0em;
+  font: -webkit-small-control;
+  color: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: -webkit-auto;
+  min-width: 300px;
+  min-height: 150px;
+}
+
+
+.non-editable{
+    background-color: var(--main-color);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin-right: 2px;
+    margin-left: 2px;
+    /* pointer-events: none; */
+    cursor: not-allowed;
+    /* height: fit-content;
+    width: fit-content; */
+}
+
+
+
+
+.outlined-container {
+  position: relative;
+  display: inline-block;
+  padding: 16px 0px;
+  border: 1px solid rgba(0, 0, 0, 0.87);
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+
+.outlined-container:focus-within {
+  border-color: #3f51b5;
+  /* Material-UI primary color */
+}
+
+.outlined-label {
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  font-size: 12px;
+  background-color: white;
+  padding: 0 4px;
+  color: #757575;
+  /* Text color */
+  transition: color 0.3s ease;
+}
+
+.outlined-container:focus-within .outlined-label {
+  color: #3f51b5;
+  /* Material-UI primary color */
+}
+
+.outlined-content {
+  padding: 8px;
+  min-width: 200px;
+}
+
+     div[contenteditable="true"]:focus {
+       caret-color: red;
+       outline: none;
+       /* Change the color of the caret */
+     }
+  
+     /* div[contenteditable="true"] {
+       font-size: 18px;
+       padding: 10px;
+       border: 1px solid #ccc;
+     } */
