@@ -19,7 +19,7 @@ function ContentLoginPage() {
     }
   };
 
-  return <button onClick={googleLogin}>Google Login (new button text and again new with dockerignore)</button>;
+  return <button onClick={googleLogin}>Google Login (testing env variables)</button>;
 }
 
 export default ContentLoginPage;
