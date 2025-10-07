@@ -19,9 +19,9 @@ on:
       #   required: true
       #   type: string
 
-concurrency:
-  group: ecs-deploy
-  cancel-in-progress: false
+# concurrency:
+#   group: ecs-deploy
+#   cancel-in-progress: false
 
 env:
   AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
