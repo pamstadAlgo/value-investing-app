@@ -1,0 +1,68 @@
+name: Build Docker Image, push to ECR and deploy ECS Service
+
+on:
+  workflow_call:
+    inputs:
+      ecr_image:
+        required: true
+        type: string
+      ecs_service:
+        required: true
+        type: string
+      context_path:
+        required: true
+        type: string
+      # branch:
+      #   required: true
+      #   type: string
+      # paths:
+      #   required: true
+      #   type: string
+
+concurrency:
+  group: ecs-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push ARM64 image to ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context_path }}
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.ecr_image }}:latest
+
+      - name: Force new ECS deployment
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service ${{ inputs.ecs_service }} \
+            --force-new-deployment \
+            --region $AWS_DEFAULT_REGION

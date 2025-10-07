@@ -1,0 +1,16 @@
+name: Deploy Frontend
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "value-investing-frontend/value-investing/**"
+
+jobs:
+    backend-deploy:
+        uses: ./.github/workflows/deploy-ecs.yml
+        with:
+            ecr_image: ${{ vars.ECR_FRONTEND_IMAGE }}
+            ecs_service: ${{ vars.ECS_FRONTEND_SERVICE }}
+            context_path: ./value-investing-frontend/value-investing/

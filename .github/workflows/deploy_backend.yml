@@ -1,4 +1,5 @@
-name: Build and Deploy Backend to ECS
+name: Deploy Backend
+
 on:
   push:
     branches:
@@ -6,49 +7,10 @@ on:
     paths:
       - "value-investing-backend/valueinvesting/**"
 
-env:
-  AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }} 
-  ECR_BACKEND_IMAGE: ${{ vars.ECR_BACKEND_IMAGE }}
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-  ECS_BACKEND_SERVICE: ${{ vars.ECS_BACKEND_SERVICE }}
-
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-        # QEMU: Quick Emulator --> emulates mac m1 CPU architecture
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push ARM64 image to ECR
-        uses: docker/build-push-action@v6
-        with:
-          context: ./value-investing-backend/valueinvesting/
-          platforms: linux/arm64
-          push: true
-          tags: |
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_DEFAULT_REGION }}.amazonaws.com/${{ env.ECR_BACKEND_IMAGE }}:latest
-
-      - name: Force new ECS deployment
-        run: |
-          aws ecs update-service \
-            --cluster $ECS_CLUSTER \
-            --service $ECS_BACKEND_SERVICE \
-            --force-new-deployment \
-            --region $AWS_DEFAULT_REGION
+  backend-deploy:
+    uses: ./.github/workflows/deploy-ecs.yml
+    with:
+      ecr_image: ${{ vars.ECR_BACKEND_IMAGE }}
+      ecs_service: ${{ vars.ECS_BACKEND_SERVICE }}
+      context_path: ./value-investing-backend/valueinvesting/
