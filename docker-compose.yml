@@ -37,7 +37,7 @@ services:
       - value_investing_app_ntw
 
   redis:
-    image: redis:7
+    image: redis:8
     container_name: redis
     command: ["redis-server", "--appendonly", "yes"]  # enables AOF persistence
     volumes:

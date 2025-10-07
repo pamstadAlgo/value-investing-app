@@ -112,3 +112,5 @@ for country in countries:
     #delete any existing files and folder in destination folder
     clear_folder(destination_folder)
     download_and_extract_zip(download_url, destination_folder)
+
+print('finished download_quickfs_data')

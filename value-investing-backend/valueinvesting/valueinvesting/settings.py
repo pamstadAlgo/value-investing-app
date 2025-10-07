@@ -22,6 +22,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+print('WE HAVE DEPLOYED A NEW VERSION VIA GITHUB ACTIONS')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -188,8 +190,8 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        #"LOCATION": "redis://127.0.0.1:6379/1",
-        "LOCATION": "redis://redis:6379/1",
+        #"LOCATION": "redis://redis:6379/1",
+        "LOCATION": os.environ["REDIS_LOCATION"],
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

@@ -1170,6 +1170,7 @@ class ScreenerData(models.Model):
     exchange = models.CharField(max_length=30, verbose_name="Exchange", null=True, blank=True)
     name = models.CharField(max_length=500, verbose_name="Name", null=True, blank=True)
     industry = models.CharField(max_length=300, null=True, blank=True, verbose_name="Industry")
+    last_close_price = models.FloatField(verbose_name="Last close price", null=True, blank=True)
 
     # Valuation
     epv_business = models.FloatField(null=True, blank=True)
@@ -1507,6 +1508,7 @@ class ScreenerData(models.Model):
     'exchange' : 'Company Info',
     'name' : 'Company Info',
     'industry' : 'Company Info',
+    'last_close_price' : 'Company Info',
 
     #valuation fields
     'epv_business': 'valuation',

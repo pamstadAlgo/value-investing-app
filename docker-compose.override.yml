@@ -26,7 +26,7 @@ services:
     networks:
       - value_investing_app_ntw
     env_file:
-      - .env
+      - ./value-investing-frontend/value-investing/.env.dev
     volumes:
       - ./value-investing-frontend/value-investing:/app  # mount local code for hot reload
       - /app/node_modules               # prevent overwriting container node_modules

@@ -2,7 +2,8 @@
 import psycopg2, os
 from datetime import datetime, date
 from psycopg2.extras import execute_values
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def compute_epv(conn, qfs_symbol, nr_years_avg_rev=4, nr_years_avg_op_margin=4, wacc=0.1, tax_rate=0.3):
     """
@@ -372,7 +373,7 @@ def equity_val_penman_ttm(conn, qfs_symbol, nr_years_avg_rev=3, nr_years_avg_op_
         result = cur.fetchone()
         conn.commit()
 
-        print('')
+        #print('')
 
         # if equity val could not be computed we return dummy values
         if result is None:
@@ -419,9 +420,11 @@ valuation_data = []
 
 #print('qfs_symbols: ', qfs_symbols)
 
+print('START MIGRATE_VALUATION_DATA')
 
 # Loop over all stocks
 for qfs_symbol in qfs_symbols:
+    #print('qfs_symbol: ', qfs_symbol)
     epv_equity, epv_business = compute_epv(psy_connection, qfs_symbol)
     epv_equity_ttm, epv_business_ttm = compute_epv_ttm(psy_connection, qfs_symbol)
     equity_val_per_share, equity_val_total, implied_growth, rnoa = equity_val_penman(psy_connection, qfs_symbol)
@@ -464,6 +467,7 @@ insert_query = """
     )
     VALUES %s
 """
+print('start insert query: ')
 
 with psy_connection.cursor() as cur:
     execute_values(cur, insert_query, valuation_data)

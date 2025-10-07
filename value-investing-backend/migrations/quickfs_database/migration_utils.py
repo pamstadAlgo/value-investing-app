@@ -135,7 +135,7 @@ def migrate_financial_statements(sqlalchemy_engine, quickfs_df, psycopg2_connect
     #df_database = pd.DataFrame(cursor.fetchall(), columns=list(df_extracted.columns))
     df_database = pd.DataFrame(cursor.fetchall(), columns=duplicate_subset)
 
-       #transform period_end_date column extracted from database from datetime object to string (in order to detect duplicates)
+    #transform period_end_date column extracted from database from datetime object to string (in order to detect duplicates)
     df_database['period_end_date'] = df_database['period_end_date'].apply(transform_date_to_string)
 
     #concat file + database dataframes and remove duplicates based on subset columns (subset columns will be used to identify a duplicate)

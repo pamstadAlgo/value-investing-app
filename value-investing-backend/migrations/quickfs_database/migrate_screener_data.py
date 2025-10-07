@@ -3,7 +3,8 @@ from psycopg2.extras import execute_values, DictCursor
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 # -----------------------------
 # Configuration
 # -----------------------------
@@ -20,6 +21,7 @@ SCREENERDATA_MAPPING = {
         "exchange": "exchange",
         "name": "name",
         "industry": "industry",
+        "last_close_price" : "last_close_price"
         },
 
     # Valuation
@@ -463,8 +465,6 @@ def main():
     for comp in companies:
         qfs_symbol = comp['qfs_symbol']
 
-        print(f'current qfs_symbol: {qfs_symbol}')
-
         # Skip if quarterly key ratios are missing or too old. So if most recent filling is older than 8 months, we skip the company
         kr_q = key_ratios_quarter.get(qfs_symbol)
         if not kr_q or kr_q['period_end_date'] < CUTOFF_DATE:
@@ -477,6 +477,7 @@ def main():
             'exchange': comp.get('exchange'),
             'name': comp.get('name'),
             'industry': comp.get('industry'),
+            'last_close_price' : comp.get('last_close_price')
         }
 
         # Merge data from other tables if available
@@ -484,7 +485,6 @@ def main():
                        (balance_sheet_quarter, "BalanceQuarter"), (cash_flow_annual, "CashFlowAnnual"),
                        (key_ratios_quarter, "KeyRatiosQuarter"), (key_ratios_annual, "KeyRatiosAnnual")]:
             data = source[0].get(qfs_symbol)
-            print(f'data that we extract for {qfs_symbol}: ')
 
             """
             we need to adjust two thing: We already need to use correct column values here otherwise we will overwrite them: For example balance sheet quarter and annual both have the field cash_and_equiv
@@ -493,18 +493,9 @@ def main():
             #remove id and rn key
        
             if data:
-                print(f'table name: {source[1]}, data before mapping: ', data)
                 data = map_columns(data, table_name=source[1])
-                print('data after mapping: ', data)
-
                 row.update(data)
 
-        #print('row before mappend columns: ', row)
-
-        #here we need to map column names from models to model of screener_data. For example the revenue field is mapped to revenue_y, cogs to cogs_y etc.
-        #row = map_columns(row)
-
-        #print('row with mapped columns: ', row)
         screener_data_list.append(row)
 
     if not screener_data_list:
@@ -517,13 +508,8 @@ def main():
     #columns = list(screener_data_list[0].keys())
     columns = get_updatable_columns(cur=cur, table_name="quickfs_dj_screenerdata")
 
-    print('screener_data_list. ', screener_data_list)
-
-    #print('these are columns that we update: ', columns)
     #only keep values which are part of updatable columns
     values = [[row.get(col) for col in columns] for row in screener_data_list]
-
-    #print('values that we add: ', values)
 
     insert_sql = f"""
     INSERT INTO quickfs_dj_screenerdata ({', '.join(columns)})
@@ -531,8 +517,6 @@ def main():
     ON CONFLICT (qfs_symbol_id)
     DO UPDATE SET {', '.join(f"{col}=EXCLUDED.{col}" for col in columns)}
     """
-
-    print('this is insert sql query: ', insert_sql)
 
     execute_values(cur, insert_sql, values, page_size=BATCH_SIZE)
     conn.commit()
