@@ -12,16 +12,6 @@ on:
       context_path:
         required: true
         type: string
-      # branch:
-      #   required: true
-      #   type: string
-      # paths:
-      #   required: true
-      #   type: string
-
-# concurrency:
-#   group: ecs-deploy
-#   cancel-in-progress: false
 
 env:
   AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}

@@ -22,7 +22,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-print('WE HAVE DEPLOYED A NEW VERSION VIA GITHUB ACTIONS')
+print('WE HAVE DEPLOYED A NEW VERSION VIA GITHUB ACTIONS and new print')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
