@@ -9,7 +9,7 @@ on:
 
 jobs:
     frontend-deploy:
-        uses: ./.github/workflows/deploy-ecs.yml
+        uses: ./.github/workflows/deploy_ecs.yml
         with:
             ecr_image: ${{ vars.ECR_FRONTEND_IMAGE }}
             ecs_service: ${{ vars.ECS_FRONTEND_SERVICE }}

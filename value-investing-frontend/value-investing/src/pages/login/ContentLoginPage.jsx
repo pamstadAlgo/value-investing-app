@@ -19,7 +19,7 @@ function ContentLoginPage() {
     }
   };
 
-  return <button onClick={googleLogin}>Google Login</button>;
+  return <button onClick={googleLogin}>Google Login (new button text)</button>;
 }
 
 export default ContentLoginPage;
