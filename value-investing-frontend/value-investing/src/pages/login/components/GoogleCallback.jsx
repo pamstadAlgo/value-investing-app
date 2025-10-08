@@ -28,7 +28,7 @@ function GoogleCallback() {
           dispatch(resetActiveFilters());
           setCookie("access_token", response.data.access, {
             path: "/",
-            secure: true, //only send via HTTPS
+            // secure: true, //only send via HTTPS
             sameSite: "strict",
           });
           navigate("/screener");
