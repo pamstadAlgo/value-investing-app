@@ -19,7 +19,7 @@ function ContentLoginPage() {
     }
   };
 
-  return <button onClick={googleLogin}>Google Login (testing env variables)</button>;
+  return <button onClick={googleLogin}>Google Login</button>;
 }
 
 export default ContentLoginPage;

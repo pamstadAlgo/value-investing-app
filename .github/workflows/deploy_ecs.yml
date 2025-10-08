@@ -47,6 +47,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Cache Docker layers between builds
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ inputs.ecr_image }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ inputs.ecr_image }}-
+
       - name: Build and push ARM64 image to ECR
         uses: docker/build-push-action@v6
         with:
@@ -55,6 +64,14 @@ jobs:
           push: true
           tags: |
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_DEFAULT_REGION }}.amazonaws.com/${{ inputs.ecr_image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Move new cache into place for next run
+      - name: Move build cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Force new ECS deployment
         run: |
