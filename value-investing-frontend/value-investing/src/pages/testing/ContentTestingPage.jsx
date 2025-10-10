@@ -3,17 +3,19 @@ import "./styles.css";
 import EditableDiv from "./EditableDiv";
 import FiltersValidation from "./FiltersValidation";
 import DataView from "./DataView";
+import EditorTesting from "./EditorTesting";
 
 function ContentTestingPage() {
   return (
     <>
-      <EditableDiv />
+      <EditorTesting />
+      {/* <EditableDiv />
       <FiltersValidation />
       <DataView />
       <div class="outlined-container">
         <label class="outlined-label">Your Label</label>
         <div class="outlined-content">fasdf</div>
-      </div>
+      </div> */}
     </>
   );
 }

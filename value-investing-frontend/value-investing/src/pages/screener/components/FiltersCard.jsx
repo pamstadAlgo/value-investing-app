@@ -1,0 +1,409 @@
+import { Formik } from "formik";
+import React, { useState } from "react";
+import * as Yup from "yup";
+import Button from "@mui/material/Button";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import { useDispatch, useSelector } from "react-redux";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import FormHelperText from "@mui/material/FormHelperText";
+import { NumericFormat } from "react-number-format";
+import Checkbox from "@mui/material/Checkbox";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import { addSelectedFilter } from "../../../features/stockScreenerSlice";
+import SelectedFilterChip from "./SelectedFilterChip";
+import CustomMetrics from "./CustomMetrics";
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
+function FiltersCard() {
+  const screenerState = useSelector((state) => state.stockscrenner);
+  const [value, setValue] = useState(null);
+  const [fieldType, setFieldType] = useState("");
+  const dispatch = useDispatch();
+  const materialUITextFieldProps = {
+    id: "filled-multiline-flexible",
+    label: "Value",
+    maxRows: 4,
+    variant: "outlined",
+    // fullWidth: true,
+    size: "small",
+  };
+
+  var transformedQty = [];
+
+  //   if (fieldType === "CharField") {
+  //     //char fields must be transformed to conform with AutoComplete Component
+  //     if (filter.qty) {
+  //       var transformedQty = filter?.qty
+  //         .slice(1, -1) // Remove the outer parentheses
+  //         .split(", ") // Split by comma and space
+  //         .map((item) => item.slice(1, -1)); // Remove surrounding quotes
+  //     }
+  //   }
+  const [qty, setQty] = useState(transformedQty);
+
+  const validationSchema = Yup.object({
+    // filter: Yup.string().required("Filter is required"),
+    filter: Yup.object({
+      techName: Yup.string().required("Filter is required"),
+    }),
+    comparison: Yup.string().required("Comparison operator is required"),
+    qty: Yup.string().required("Value is required"),
+  });
+
+  const handleFilterChange = (e, newValue, formik) => {
+    console.log("newValue in handlefilterHCange: ", newValue);
+    setValue(newValue);
+    setFieldType(newValue.fieldType);
+    console.log("we set this formik filter value: ", newValue);
+    //   formik.setFieldValue("filter", newValue?.techName);
+    formik.setFieldValue("filter", newValue);
+  };
+
+  const handleComparisonChange = (e, formik) => {
+    console.log("comparison change, value: ", e.target.value);
+    formik.setFieldValue("comparison", e.target.value);
+  };
+
+  const handleValueChange = (e, newValue, formik) => {
+    let oldValue = qty;
+    setQty(newValue);
+
+    formik.setFieldValue(
+      "qty",
+      `(${newValue.map((item) => `'${item}'`).join(", ")})`
+    );
+
+    console.log("newValue handleValueChange: ", newValue);
+    console.log(
+      "newValue transformed: ",
+      `(${newValue.map((item) => `'${item}'`).join(", ")})`
+    );
+
+    // dispatch(
+    //   updateActiveFilter({
+    //     newValue: {
+    //       id: filter.id,
+    //       qty: `(${newValue.map((item) => `'${item}'`).join(", ")})`,
+    //     },
+    //     oldValue: {
+    //       id: filter.id,
+    //       qty: `(${oldValue.map((item) => `'${item}'`).join(", ")})`,
+    //     },
+    //   })
+    // );
+  };
+
+  const handleNumberChange = (values, formik) => {
+    const { formattedValue, value, floatValue } = values;
+    // setQty(floatValue);
+
+    //update activFilter state; note that filter is passed in order to find the correct filter in the array to update
+    //dispatch(updateQtyActiveFilter({ qty: floatValue, filter: filter }));
+    formik.setFieldValue("qty", floatValue);
+    // console.log("Formatted Value:", formattedValue); // E.g., 600'000'000
+    // console.log("Raw String Value:", value); // E.g., 600000000
+    // console.log("Float Value:", floatValue); // E.g., 600000000 as a n  };
+  };
+
+  return (
+    <div className="glass-card filters-criteria-grid-item">
+      {" "}
+      <div className="title-mid-size" style={{ marginBottom: "20px" }}>
+        Filter Criteria
+      </div>
+      <div>
+        {/* three fields: Filter autocomplete, comparison (select), value (depends on field type) */}
+        <Formik
+          initialValues={{
+            filter: "",
+            comparison: "",
+            qty: "",
+          }}
+          enableReinitialize={true}
+          validationSchema={validationSchema}
+          onSubmit={(values, { resetForm }) => {
+            console.log(
+              "we submit formik values filter criteria: We would add to active filters ",
+              values
+            );
+            //flatten the values object
+            var filter = {
+              ...values.filter,
+              comparison: values.comparison,
+              qty: values.qty,
+            };
+
+            dispatch(addSelectedFilter(filter));
+            resetForm();
+            setFieldType("");
+            setValue(null);
+            // here we need to more filter, qty, comparison and add to active filters
+
+            // //post filter quantities to endpoint
+            // axiosInstanceAuth
+            //   .post("/screener/filter-query/", screenerState.activFilters)
+            //   .then((response) => {
+            //     console.log("response of filter query: ", response.data);
+            //     dispatch(setQueryResult(response.data?.queryResult));
+            //   })
+            //   .catch((error) => {
+            //     console.error("ERROR: POST /screener/filter-query/: ", error);
+            //   });
+          }}>
+          {(formik) => (
+            <form onSubmit={formik.handleSubmit}>
+              <div className="flexbox-wrapper-filter-criteria-fields">
+                {/* add fields for validation */}
+                <div>
+                  <Autocomplete
+                    clearOnEscape
+                    value={value}
+                    onChange={(e, newValue) =>
+                      handleFilterChange(e, newValue, formik)
+                    }
+                    options={screenerState.autoCompleteFilters}
+                    groupBy={(option) => option.table}
+                    getOptionLabel={(option) => option.readableName}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        fullWidth
+                        size="small"
+                        label="Filter"
+                        // name={nameFilter}
+                        name="filter"
+                        helperText={
+                          formik?.errors.filter && formik?.touched.filter
+                            ? formik?.errors.filter
+                            : " "
+                        }
+                        error={
+                          formik?.errors.filter && formik?.touched.filter
+                            ? true
+                            : false
+                        }
+                      />
+                    )}
+                    renderGroup={(params) => {
+                      console.log("params: ", params);
+                      return (
+                        <li key={params.key}>
+                          <div className="group-header-autocomplete">
+                            {params.group}
+                          </div>
+                          <div>{params.children}</div>
+                        </li>
+                      );
+                    }}
+                  />
+                </div>
+                {/* comparison field */}
+                <div className="flex-item-filter-field">
+                  {fieldType !== "CharField" ? (
+                    <FormControl
+                      size="small"
+                      //   fullWidth
+                      error={
+                        formik?.errors.comparison && formik?.touched.comparison
+                          ? true
+                          : false
+                      }>
+                      <InputLabel id="demo-simple-select-label">
+                        Comparison
+                      </InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={
+                          formik?.values.comparison
+                            ? formik?.values.comparison
+                            : ""
+                        }
+                        name="comparison"
+                        label="Comparison"
+                        onChange={(e) => {
+                          console.log("we call function");
+                          handleComparisonChange(e, formik);
+                        }}>
+                        <MenuItem value="<=">
+                          {"<= (smaller equal than)"}
+                        </MenuItem>
+                        <MenuItem value=">=">
+                          {">= (greater equal than)"}
+                        </MenuItem>
+                        <MenuItem value="=">{"= (equal)"}</MenuItem>
+                        <MenuItem value="!=">{"!= (not equal)"}</MenuItem>
+                      </Select>
+                      <FormHelperText>
+                        {formik?.errors.comparison && formik?.touched.comparison
+                          ? formik?.errors.comparison
+                          : " "}
+                      </FormHelperText>
+                    </FormControl>
+                  ) : (
+                    <FormControl
+                      size="small"
+                      //   fullWidth
+                      error={
+                        formik?.errors.comparison && formik?.touched.comparison
+                          ? true
+                          : false
+                      }>
+                      <InputLabel id="demo-simple-select-label">
+                        Comparison
+                      </InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={
+                          formik?.values.comparison
+                            ? formik?.values.comparison
+                            : ""
+                        }
+                        name="comparison"
+                        label="Comparison"
+                        onChange={(e) => {
+                          console.log("we call function");
+                          handleComparisonChange(e, formik);
+                        }}>
+                        <MenuItem value="in">{"in"}</MenuItem>
+                        <MenuItem value="not in">{"not in"}</MenuItem>
+                      </Select>
+                      <FormHelperText>
+                        {formik?.errors.comparison && formik?.touched.comparison
+                          ? formik?.errors.comparison
+                          : " "}
+                      </FormHelperText>
+                    </FormControl>
+                  )}
+                  {/* value field */}
+                  {fieldType !== "CharField" ? (
+                    <NumericFormat
+                      value={formik?.values.qty}
+                      onValueChange={(values) =>
+                        handleNumberChange(values, formik)
+                      }
+                      thousandSeparator="'"
+                      customInput={TextField}
+                      {...{
+                        ...materialUITextFieldProps,
+                        name: "qty",
+                        helperText:
+                          formik?.errors.qty && formik?.touched.qty
+                            ? formik?.errors.qty
+                            : " ",
+                        error:
+                          formik?.errors.qty && formik?.touched.qty
+                            ? true
+                            : false,
+                      }}
+                    />
+                  ) : (
+                    <Autocomplete
+                      multiple
+                      id="checkboxes-tags-demo"
+                      options={
+                        screenerState.charFieldOptions?.field_options[
+                          value?.techName
+                        ]
+                      }
+                      disableCloseOnSelect
+                      value={qty}
+                      getOptionLabel={(option) => option}
+                      onChange={(e, newValue) =>
+                        handleValueChange(e, newValue, formik)
+                      }
+                      // onInputChange={(event, newInputValue) => {
+                      //   console.log("onInputChange: ", newInputValue);
+                      // }}
+                      renderOption={(props, option, { selected }) => {
+                        const { key, ...optionProps } = props;
+                        return (
+                          <li key={key} {...optionProps}>
+                            <Checkbox
+                              icon={icon}
+                              checkedIcon={checkedIcon}
+                              style={{ marginRight: 8 }}
+                              checked={selected}
+                            />
+                            {option}
+                          </li>
+                        );
+                      }}
+                      // style={{ width: 500 }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          name="qty"
+                          helperText={
+                            formik?.errors.qty && formik?.touched.qty
+                              ? formik?.errors.qty
+                              : " "
+                          }
+                          error={
+                            formik?.errors.qty && formik?.touched.qty
+                              ? true
+                              : false
+                          }
+                          label="Value"
+                          // placeholder="Favorites"
+                        />
+                      )}
+                    />
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  onClick={() => {
+                    console.log("this is formik.values: ", formik.values);
+                  }}
+                  variant="contained"
+                  // disabled={screenerState.activFilters?.length === 0}
+                  className="contained-custom-button"
+                  startIcon={<AddCircleOutlineOutlinedIcon />}
+                  //   onClick={handleClick}
+                >
+                  Add Filter
+                </Button>
+                {/* <Button
+                type="submit"
+                variant="contained"
+                // startIcon={<AddIconButton />}>
+              >
+                Add Filter
+              </Button> */}
+              </div>
+            </form>
+          )}
+        </Formik>
+      </div>
+      <CustomMetrics />
+      <div
+        className="title-mid-size"
+        style={{ marginBottom: "20px", marginTop: "45px" }}>
+        Applied Filters
+      </div>
+      <div className="applied-filters-flexbox-wrapper">
+        {screenerState.selectedFilters.length > 0 ? (
+          screenerState.selectedFilters.map((filter) => {
+            return <SelectedFilterChip filter={filter} key={filter.id} />;
+          })
+        ) : (
+          <div style={{ fontStyle: "italic" }} className="text-empty-filters">
+            No selected filters{" "}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default FiltersCard;

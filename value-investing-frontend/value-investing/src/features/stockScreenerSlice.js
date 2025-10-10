@@ -25,6 +25,7 @@ const initialState = {
   charFieldOptions: {},
   dataViewTickers: [],
   additionalColumns: [],
+  selectedFilters: [],
 };
 
 export const stockScreenerSlice = createSlice({
@@ -45,6 +46,27 @@ export const stockScreenerSlice = createSlice({
     },
     resetActiveFilters: (state, action) => {
       state.activFilters = [];
+    },
+    addSelectedFilter: (state, action) => {
+      const filter = { id: uuidv4(), ...action.payload };
+
+      state.selectedFilters.push(filter);
+    },
+    remvSelectedFilter: (state, action) => {
+      //an active filter is either removed with id or its techName; note that it is only removed via techName in the modal with checkbox; it the bin icon is clicked the id is used to delete it
+      var filteredArray;
+      //check if id property is present
+      if (action.payload.hasOwnProperty("id")) {
+        filteredArray = state.selectedFilters.filter(
+          (item) => item.id !== action.payload.id
+        );
+      } else {
+        filteredArray = state.selectedFilters.filter(
+          (item) => item.techName !== action.payload.techName
+        );
+      }
+
+      state.selectedFilters = filteredArray;
     },
     addActiveFilter: (state, action) => {
       //create a unique id to identify the activeFilter
@@ -186,6 +208,7 @@ export const stockScreenerSlice = createSlice({
 
 export const {
   initalizeFilters,
+  addSelectedFilter,
   initalizeAutocompleteFilters,
   editSetFilters,
   initalizeFilteredStocks,
@@ -215,6 +238,7 @@ export const {
   setDataViewTickers,
   AddAdditionalColumns,
   RemvAdditionalColumns,
+  remvSelectedFilter,
 } = stockScreenerSlice.actions;
 
 export default stockScreenerSlice.reducer;

@@ -30,7 +30,7 @@ import CompanyLogo from "./CompanyLogo";
 
 //const drawerWidth = 240;
 
-const pages = ["Products", "Pricing", "Blog"];
+const pages = ["Screener", "Valuation"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 function NavBar() {
@@ -184,21 +184,27 @@ function NavBar() {
             }}>
             LOGO
           </Typography> */}
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}> */}
+          <div className="nav-items-flexbox-wraper">
             {pages.map((page) => (
-              <Button
+              <a
                 key={page}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}>
                 {page}
-              </Button>
+              </a>
             ))}
-          </Box>
+          </div>
+          {/* </Box> */}
 
           <Box sx={{ flexGrow: 0 }}>
             {/* <Tooltip title="Open settings"> */}
             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+              <Avatar
+                className="custom-avatar"
+                alt="Remy Sharp"
+                src="/static/images/avatar/2.jpg"
+              />
             </IconButton>
             {/* </Tooltip> */}
             {/* Avatar Menu which we don't need for the moment */}

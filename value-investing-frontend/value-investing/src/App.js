@@ -9,6 +9,7 @@ import ContentTestingPage from "./pages/testing/ContentTestingPage";
 import ContentLoginPage from "./pages/login/ContentLoginPage";
 import GoogleCallback from "./pages/login/components/GoogleCallback";
 import ContentMCCPage from "./pages/microcapclub/ContentMCCPage";
+import ContentScreenerPageNew from "./pages/screener/ContentScreenerPageNew";
 
 function App() {
   // define a color theme. These colors will be used throughout the App
@@ -30,6 +31,9 @@ function App() {
 
           {/* <Route path="/" element={<ContentHomePage />}></Route> */}
           <Route path="/screener" element={<ContentScreenerPage />}></Route>
+          <Route
+            path="/screener-new"
+            element={<ContentScreenerPageNew />}></Route>
           <Route path="/valuation" element={<ContentValuationPage />}></Route>
           <Route path="/mcc" element={<ContentMCCPage />}></Route>
           <Route path="/testing" element={<ContentTestingPage />}></Route>

@@ -90,7 +90,9 @@
     padding: 4px 10px;
     top: -8px;
     position: sticky;
-    background-color: rgba(40, 115, 255, 0.726);
+    font-family: var(--font-family);
+    /* background-color: rgba(40, 115, 255, 0.726); */
+    background-color: var(--action-color);
     color: white;
 }
 

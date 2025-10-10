@@ -64,13 +64,16 @@ function SavedFilterViews() {
   };
 
   return (
-    <FormControl className="form-control-saved-filter-views">
-      <InputLabel id="demo-simple-select-label">Saved Filter Views</InputLabel>
+    <FormControl className="form-control-saved-filter-views" size="small">
+      <InputLabel id="demo-simple-select-label" className="custom-input-label">
+        Saved Screener Templates
+      </InputLabel>
       <Select
         labelId="demo-simple-select-label"
         id="demo-simple-select"
+        className="custom-select"
         value={screenerState.currentFilterView}
-        label="Saved Filter Views"
+        label="Saved Screener Templates"
         renderValue={(selected) => {
           console.log("selected: ", selected);
 
@@ -94,7 +97,7 @@ function SavedFilterViews() {
             <MenuItem key={item.id} value={item.id}>
               {/* <Checkbox checked={personName.includes(name)} /> */}
               <ListItemText primary={item.view_name} />
-              <Tooltip title="Delete Filter View" arrow>
+              <Tooltip title="Delete Template" arrow>
                 <IconButton
                   aria-label="delete"
                   onClick={(e) => handleDeleteFilterView(e, item.id)}>
