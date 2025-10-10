@@ -5,8 +5,41 @@
   --padding-right-left-main-content: 16px; /* this defines the padding of the main content */
 
 
+  /* defines the font used in the application */
+  --font-family: "Plus Jakarta Sans",
+    sans-serif;
+
   --main-color: #004170;
+
+  /* defines the grey scale text color */
+  --text-color-grey-scale: rgb(107 114 128);
+
+  /* defines the action color; this includes buttons and logo */
+  --action-color: rgb(79 70 229);
+
+  /* defines the black color, mainyl used for header */
+  --header-color: rgb(17 24 39);
 }
+
+
+body{
+  font-family: var(--font-family);
+}
+
+/* Override MUI Typography and other components globally */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiSelect-root,
+.MuiTextField-root {
+  font-family: var(--font-family) !important;
+}
+
+/* body {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+} */
+
 
 /* html{
   font-size: 62.5%;
@@ -24,6 +57,92 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+
+/* redesign START */
+.MuiPaper-root.nav-bar-custom{
+    /* background: rgba(255, 255, 255, 0.7); */
+}
+
+.company-logo-nav-bar{
+  height: 40px;
+  width: 40px;
+  color: var(--action-color)
+}
+
+.flex-box-wrapper-logo{
+  display: flex;
+  align-items: center;
+}
+
+.header-color-black-scale{
+  color: var(--header-color)
+}
+
+/* For screens smaller than 600px (phones) */
+@media (max-width: 599.95px) {
+.company-name-left-side {
+    display: none;
+  }
+
+  .company-name-middle{
+    display: flex;
+  }
+
+  .MuiToolbar-root.mui-toolbar-custom{
+    justify-content: space-between;
+  }
+
+ 
+
+}
+
+/* Small and up (>=600px) */
+@media (min-width: 600px) {
+  .company-name-left-side {
+    display: none;
+  }
+
+  .company-name-middle {
+    display: flex;
+  }
+
+  .MuiToolbar-root.mui-toolbar-custom {
+    justify-content: space-between;
+  }
+
+}
+
+/* Medium and up (>=900px) */
+@media (min-width: 900px) {
+  .company-name-left-side {
+      display: flex;
+    }
+
+    .company-name-middle {
+      display: none;
+    }
+
+    .wrapper-hamburger-menu {
+      display: none;
+    }
+
+
+}
+
+/* Large and up (>=1200px) */
+@media (min-width: 1200px) {
+  
+}
+
+/* Extra large and up (>=1536px) */
+@media (min-width: 1536px) {
+  
+}
+
+/* redesign END */
+
+
 /* remove arrows from input field type number END */
 
 .column-title{
