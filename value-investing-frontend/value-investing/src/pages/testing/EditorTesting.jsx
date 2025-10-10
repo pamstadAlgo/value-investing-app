@@ -47,6 +47,17 @@ function EditorTesting() {
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
 
+    monaco.editor.defineTheme("muiLight", {
+      base: "vs",
+      inherit: true,
+      rules: [],
+      colors: {
+        "editorSuggestWidget.background": "#fff",
+        "editorSuggestWidget.highlightForeground": "#1976d2", // <- highlight match color
+      },
+    });
+    monaco.editor.setTheme("muiLight");
+
     // editor.addCommand(monaco.KeyCode.Enter, () => {
     //   console.log("Enter key pressed but blocked via command!");
     // });
@@ -126,7 +137,7 @@ function EditorTesting() {
           }}
           options={{
             minimap: { enabled: false },
-            fontFamily: "Roboto",
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             lineNumbers: "off",
             glyphMargin: false,
             folding: false,

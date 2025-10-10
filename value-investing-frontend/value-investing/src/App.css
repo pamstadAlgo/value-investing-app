@@ -17,7 +17,8 @@
   /* defines the action color; this includes buttons and logo */
   --action-color: rgb(79 70 229);
   --action-color-transparent: rgba(79 ,70, 229,0.3);
---chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
+  --action-color-more-transparent: rgba(79, 70, 229, 0.15);
+  --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
 
   /* defines the black color, mainyl used for header */
   --header-color: rgb(17 24 39);
@@ -84,6 +85,57 @@ input[type=number] {
 
 .flex-wrapper-main-content{
   flex-grow: 1;
+}
+
+/* .view-lines.monaco-mouse-cursor-text{
+  font-family: var(--font-family) !important;
+} */
+
+/* Suggest dropdown background */
+.monaco-editor .suggest-widget {
+  border-radius: 8px !important;
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important; */
+  /* background: #fdfdfd !important; */
+  /* border: 1px solid #ccc !important; */
+}
+
+/* Each suggestion item */
+/* .monaco-editor .monaco-list-row {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  font-size: 13px !important;
+} */
+
+/* Highlighted suggestion */
+.monaco-editor .monaco-list-row.focused {
+  background: var(--action-color-more-transparent) !important;
+/* background: red;   */
+  color: var(--header-color) !important;
+}
+
+.monaco-editor .suggest-icon.codicon.codicon-symbol-variable::before {
+  content: "";
+  /* remove the codicon glyph */
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-image: url('https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/variable.svg');  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.monaco-highlighted-label > .highlight{
+  color: var(--action-color) !important;
+}
+
+/* .suggest-icon.codicon.codicon-symbol-variable{
+  display: none !important;
+} */
+
+.monaco-editor .suggest-widget .label .highlight {
+  color: red !important;
+  /* match highlight color */
+  font-weight: 600 !important;
+  /* bold highlight */
 }
 
 .MuiButtonBase-root.MuiChip-root{
