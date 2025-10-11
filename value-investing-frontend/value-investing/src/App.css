@@ -11,6 +11,27 @@
 
   --main-color: #004170;
 
+  /* background color and gradient */
+  --background-color: #f0f2f5;
+  --background-gradient: radial-gradient(at 0% 0%,
+      hsla(243, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 100% 0%,
+      hsla(289, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 0% 100%,
+      hsla(189, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 80% 90%,
+      hsla(330, 86%, 95%, 0.4) 0px,
+      transparent 50%);
+
+  /* styles glass card */
+  --background-glass-card: rgba(255, 255, 255, 0.6);
+  --backdrop-filter-glass-card: blur(12px);
+  --box-shadow-glass-card: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  --border-glass-card: 1px solid rgba(255, 255, 255, 0.18);
+
   /* defines the grey scale text color */
   --text-color-grey-scale: rgb(107 114 128);
 
@@ -22,6 +43,59 @@
 
   /* defines the black color, mainyl used for header */
   --header-color: rgb(17 24 39);
+
+  --background-color-nav-bar: rgba(255, 255, 255, 0.7);
+
+  /* material ui colors */
+  --label-color-input-fields: rgba(0, 0, 0, 0.6);
+  --label-color-input-fields-focused: ;
+  --inner-text-input-fields: #000000DE;
+  --border-input-fields: #000000DE;
+  --input-fields-icons-color: white;
+  --input-fields-hover-bg-color: rgba(235, 234, 236, 0.42);
+}
+
+.dark-theme {
+  /* Dark theme overrides */
+
+/* --background-color: rgb(16 25 34); */
+  --background-color: rgb(16 25 34);
+  --background-gradient: none;
+
+
+
+  --background-glass-card: rgb(31 41 55 / 0.5);
+  --backdrop-filter-glass-card: none;
+  --box-shadow-glass-card: none;
+  --border-glass-card: none;
+
+  --text-color-grey-scale: rgb(156 163 175);
+
+  --action-color: rgb(17 115 212);
+
+  --header-color: white;
+
+  --background-color-nav-bar: rgb(16 25 34);
+
+  --label-color-input-fields: rgb(156 163 175);
+  --inner-text-input-fields: white;
+  --input-fields-hover-bg-color: transparent;
+  --border-input-fields: white;
+  --input-fields-icons-color: white;
+  /* --background-glass-card: rgba(16, 25, 34, 0.5);
+  --border-glass-card: 1px solid rgba(255, 255, 255, 0.1);
+  --background-color: rgb(16 25 34);
+  --background-gradient: none;
+
+  --header-color: rgb(255 255 255);
+
+
+  --action-color: rgb(17 115 212);
+  --action-color-transparent: rgba(17, 115, 212, 0.3);
+  --action-color-more-transparent: rgba(17, 115, 212, 0.15);
+  --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
+  --text-color-grey-scale: rgb(255 255 255 / 0.6); */
+ 
 }
 
 
@@ -29,19 +103,8 @@ body, html{
   font-family: var(--font-family);
 
   /* sets the background color to light purple */
-  background-color: #f0f2f5;
-  background-image: radial-gradient(at 0% 0%,
-        hsla(243, 86%, 95%, 0.4) 0px,
-        transparent 50%),
-      radial-gradient(at 100% 0%,
-        hsla(289, 86%, 95%, 0.4) 0px,
-        transparent 50%),
-      radial-gradient(at 0% 100%,
-        hsla(189, 86%, 95%, 0.4) 0px,
-        transparent 50%),
-      radial-gradient(at 80% 90%,
-        hsla(330, 86%, 95%, 0.4) 0px,
-        transparent 50%);
+  background-color: var(--background-color);
+  background-image: var(--background-gradient);
 }
 
 /* Override MUI Typography and other components globally */
@@ -54,6 +117,34 @@ body, html{
 .MuiAutocomplete-option,
 .MuiMenuItem-root {
   font-family: var(--font-family) !important;
+}
+
+/* define colors of mui input elements */
+.MuiFormLabel-root.MuiInputLabel-root{
+  /* color: red !important; */
+  color: var(--label-color-input-fields) !important;
+}
+
+.MuiFormLabel-root.MuiInputLabel-root.Mui-focused {
+  /* color: red !important; */
+  color: var(--action-color) !important;
+}
+
+.MuiSelect-select.MuiSelect-outlined{
+  /* color: red; */
+  color: var(--inner-text-input-fields) !important;
+}
+
+.MuiInputBase-root.MuiOutlinedInput-root{
+  color: var(--border-input-fields) !important;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiSelect-icon{
+  color: var(--input-fields-icons-color) !important;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium{
+  color: var(--input-fields-icons-color) !important;
 }
 
 /* remove arrows from input field type number START */
@@ -199,7 +290,7 @@ input[type=number] {
 
 /* override color of nav bar */
 .MuiPaper-root.nav-bar-custom{
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--background-color-nav-bar);
   /* background: blue; */
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
@@ -306,14 +397,15 @@ input[type=number] {
   font-weight: 600;
   font-size: 18px;
   line-height: 1.75rem;
+  color: var(--header-color)
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--background-glass-card);
   -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  box-shadow: var(--box-shadow-glass-card);
   padding: 24px;
   border-radius: 20px;
 }
@@ -542,7 +634,7 @@ input[type=number] {
 }
 
 .MuiOutlinedInput-input:hover {
-  background-color: rgba(235, 234, 236, 0.42) !important;
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 .MuiOutlinedInput-notchedOutline {
@@ -550,7 +642,7 @@ input[type=number] {
 }
 
 .MuiOutlinedInput-root.Mui-focused input {
-  background-color: rgba(235, 234, 236, 0.42) !important;
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 /* Customize MUIRichTextEditor START */

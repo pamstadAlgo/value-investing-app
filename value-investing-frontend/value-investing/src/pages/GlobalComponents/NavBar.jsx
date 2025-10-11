@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -27,7 +27,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import CompanyLogo from "./CompanyLogo";
-
+import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
+import NightlightOutlinedIcon from "@mui/icons-material/NightlightOutlined";
 //const drawerWidth = 240;
 
 const pages = ["Screener", "Valuation"];
@@ -45,6 +46,11 @@ function NavBar() {
   const navBarIcons = [<QueryStatsIcon />, <PriceCheckIcon />, <GroupsIcon />];
   const navURLs = ["/screener", "/valuation", "/mcc"];
   const navItemNames = ["Screener", "Valuation", "MicroCap Club"];
+
+  const [theme, setTheme] = useState(() => {
+    // Load saved theme from localStorage, default to "light"
+    return localStorage.getItem("theme") || "light";
+  });
 
   const handleDrawerToggle = () => {
     if (!isClosing) {
@@ -74,6 +80,17 @@ function NavBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-theme", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const handleThemeToggle = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+
+    // document.body.classList.toggle("dark-theme", true);
   };
 
   // const drawer = (
@@ -199,6 +216,22 @@ function NavBar() {
 
           <Box sx={{ flexGrow: 0 }}>
             {/* <Tooltip title="Open settings"> */}
+            {theme === "light" ? (
+              <IconButton
+                aria-label="delete"
+                style={{ marginRight: "8px" }}
+                sx={{ color: "black" }}
+                onClick={handleThemeToggle}>
+                <NightlightOutlinedIcon sx={{ fill: "#6B7280" }} />
+              </IconButton>
+            ) : (
+              <IconButton
+                aria-label="delete"
+                style={{ marginRight: "8px" }}
+                onClick={handleThemeToggle}>
+                <WbSunnyOutlinedIcon sx={{ fill: "#9CA3AF" }} />
+              </IconButton>
+            )}
             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
               <Avatar
                 className="custom-avatar"
