@@ -116,8 +116,10 @@ function EditorTesting() {
           padding: 8,
           backgroundColor: "#fff",
           fontFamily: "monospace",
+          position: "relative",
           //   minHeight: 56,
         }}>
+        <label class="outlined-label monaco-editor-label">Metric Definition</label>
         <Editor
           //   height="40px"
           height="100px"
@@ -152,6 +154,12 @@ function EditorTesting() {
             padding: { top: 4, bottom: 4 },
           }}
         />
+        <div className="floating-hint">
+          <span>
+            <kbd>ctrl</kbd>+<kbd>i</kbd> (<kbd>⌘</kbd>+<kbd>i</kbd>) - Show
+            variables
+          </span>
+        </div>
       </div>
 
       {error ? (
