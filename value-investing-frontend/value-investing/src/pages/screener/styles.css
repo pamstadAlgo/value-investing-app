@@ -126,7 +126,6 @@
 .metric-description-flex-wrapper{
     display: flex;
     gap: 12px;
-    margin-bottom: 16px;
 }
 
 .custom-metric-description{
@@ -154,7 +153,7 @@
     top: -8px;
     left: 8px;
     font-size: 12px;
-    background-color: white;
+    /* background-color: white; */
     padding: 0 4px;
     color: #757575;
     /* Text color */

@@ -4,11 +4,16 @@ import EditableDiv from "./EditableDiv";
 import FiltersValidation from "./FiltersValidation";
 import DataView from "./DataView";
 import EditorTesting from "./EditorTesting";
+import EditorTestingFinal from "./EditorTestingFinal";
 
 function ContentTestingPage() {
   return (
     <>
-      <EditorTesting />
+      <EditorTestingFinal />
+      <fieldset class="custom-fieldset">
+        <legend>Label</legend>
+        <div>Content inside</div>
+      </fieldset>
       {/* <EditableDiv />
       <FiltersValidation />
       <DataView />

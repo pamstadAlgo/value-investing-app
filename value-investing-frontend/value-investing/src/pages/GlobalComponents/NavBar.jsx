@@ -154,7 +154,7 @@ function NavBar() {
               aria-haspopup="true"
               onClick={handleOpenNavMenu}
               color="inherit">
-              <MenuIcon />
+              <MenuIcon className="hamburger-icon-svg" />
             </IconButton>
             <Menu
               id="menu-appbar"

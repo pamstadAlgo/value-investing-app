@@ -26,8 +26,11 @@
       hsla(330, 86%, 95%, 0.4) 0px,
       transparent 50%);
 
+--error-red: red;
+
   /* styles glass card */
   --background-glass-card: rgba(255, 255, 255, 0.6);
+  --background-glass-card-less-transparent: rgba(255, 255, 255, 0.8);
   --backdrop-filter-glass-card: blur(12px);
   --box-shadow-glass-card: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
   --border-glass-card: 1px solid rgba(255, 255, 255, 0.18);
@@ -130,6 +133,73 @@ body, html{
   color: var(--action-color) !important;
 }
 
+.MuiDrawer-root.MuiDrawer-modal.custom-drawer > .MuiBackdrop-root.MuiModal-backdrop{
+background: var(--background-gradient);
+background-color: rgba(0, 0, 0, 0.4);
+}
+
+.custom-fieldset {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 12px;
+  position: relative;
+}
+
+.editor-error-state{
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  font-family: var(--font-family);
+  gap: 8px;
+}
+
+.MuiSvgIcon-root.success-icon{
+  fill: var(--action-color)
+}
+
+.MuiSvgIcon-root.fail-icon {
+  fill: var(--error-red)
+}
+
+.formula-editor-latex-repr{
+  margin-top: 16px;
+  padding: 8px;
+  /* background: var(--background-glass-card-less-transparent); */
+  border-radius: 8px;
+}
+
+.legend-formula-editor{
+  font-size: 13px;
+  color: var(--label-color-input-fields)
+}
+
+.custom-fieldset legend {
+  padding: 0 4px;
+  font-size: 0.9em;
+}
+
+.MuiDrawer-root.custom-drawer>.MuiPaper-root {
+  width: 90vw !important;
+  /* height: 80vh !important; */
+  overflow: visible !important;
+  justify-self: center !important;
+  /* background: white; */
+  background: var(--background-glass-card-less-transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  box-shadow: var(--box-shadow-glass-card);
+  padding: 24px;
+  border-radius: 0px 0px 20px 20px;
+  border: 1px var(--border-input-fields);
+}
+
+.wrapper-editor{
+  border: 1px solid var(--border-input-fields);
+  border-radius: 12px;
+  background: transparent
+}
+
 .MuiSelect-select.MuiSelect-outlined{
   /* color: red; */
   color: var(--inner-text-input-fields) !important;
@@ -182,6 +252,10 @@ input[type=number] {
   font-family: var(--font-family) !important;
 } */
 
+.monaco-editor{
+  background: transparent !important;
+}
+
 /* Suggest dropdown background */
 .monaco-editor .suggest-widget {
   border-radius: 8px !important;
@@ -190,21 +264,36 @@ input[type=number] {
   /* border: 1px solid #ccc !important; */
 }
 
+.monaco-editor,
+.monaco-editor .monaco-editor-background,
+.monaco-editor .inputarea.ime-input {
+  border: none !important;
+  outline: none !important;
+}
+
 .monaco-editor-label{
   color: var(--text-color-grey-scale);
+  font-family: var(--font-family);
+  background: var(--background-glass-card-less-transparent);
+  backdrop-filter: var(--backdrop-filter-glass-card);
 }
+
+
 
 .floating-hint {
   position: absolute;
   bottom: 4px;
   right: 8px;
   font-size: 0.75rem;
-  color: #aaa;
-  background: rgba(255, 255, 255, 0.8);
+  color: #838282;
+  /* background: rgba(255, 255, 255, 0.8); */
   border-radius: 6px;
   padding: 2px 6px;
   pointer-events: none;
-  backdrop-filter: blur(4px);
+  font-weight: 600;
+  /* backdrop-filter: blur(4px); */
+  font-family: var(--font-family);
+  z-index: 1000;
 }
 
 .floating-hint kbd {
@@ -420,7 +509,11 @@ input[type=number] {
  }
 
  .wrapper-hamburger-menu{
-  color: var(--header-color)
+  color: var(--action-color)
+ }
+
+ .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.hamburger-icon-svg{
+  fill: var(--action-color)
  }
 
  .MuiAvatar-root.custom-avatar{

@@ -57,24 +57,6 @@ function SaveView() {
           Save
         </Button>
       </Tooltip>
-      {/* <Tooltip
-        title={
-          screenerState.activFilters?.length === 0
-            ? "You need to add some filters before you can save the view"
-            : "Save Filter View"
-        }
-        arrow>
-        <span>
-          <IconButton
-            disabled={screenerState.activFilters?.length === 0}
-            aria-label="delete"
-            onClick={handleClick}
-            //   onClick={(e) => setIsFilterViewModalOpen(true)}
-          >
-            <SaveIcon />
-          </IconButton>
-        </span>
-      </Tooltip> */}
       <Popover
         open={open}
         anchorEl={anchorEl}
@@ -217,7 +199,7 @@ function SaveView() {
                   className="contained-custom-button"
                   type="submit"
                   variant="contained"
-                  startIcon={<SaveIcon />}>
+                  startIcon={<SaveOutlinedIcon />}>
                   Save Template
                 </Button>
               </div>
