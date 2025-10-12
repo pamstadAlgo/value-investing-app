@@ -148,9 +148,27 @@ background-color: rgba(0, 0, 0, 0.4);
 .editor-error-state{
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: 4px;
   font-family: var(--font-family);
   gap: 8px;
+  margin-top: 8px;
+  color: var(--error-red)
+}
+
+.success{
+  color: var(--action-color)
+}
+
+.mjx-chtml{
+  white-space: none;
+}
+
+.editor-state-and-icon{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: start;
 }
 
 .MuiSvgIcon-root.success-icon{
@@ -161,11 +179,22 @@ background-color: rgba(0, 0, 0, 0.4);
   fill: var(--error-red)
 }
 
+.warning-icon{
+  fill: var(--text-color-grey-scale)
+}
+
+.latex-formula{
+  align-self: center;
+}
+
 .formula-editor-latex-repr{
   margin-top: 16px;
   padding: 8px;
   /* background: var(--background-glass-card-less-transparent); */
   border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .legend-formula-editor{

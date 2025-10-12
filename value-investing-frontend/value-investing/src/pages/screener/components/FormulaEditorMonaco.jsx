@@ -5,11 +5,17 @@ import MathJax from "react-mathjax";
 import { useSelector } from "react-redux";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import Button from "@mui/material/Button";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 
 function FormulaEditorMonaco({ formik, error, setError }) {
   const screenerState = useSelector((state) => state.stockscrenner);
 
-  const [formula, setFormula] = useState("");
+  const [formula, setFormula] = useState(formik.values.formulaEditor);
+
+  console.log("formula value: ", formula);
+  console.log("formika formula value: ", formik.values.formulaEditor);
+
   //   const [error, setError] = useState(null);
   const [latex, setLatex] = useState("");
   const editorRef = useRef(null);
@@ -53,6 +59,18 @@ function FormulaEditorMonaco({ formik, error, setError }) {
       return { error: err.message, latex: "" };
     }
   }
+
+  useEffect(() => {
+    const { error, latex } = validateAndConvert(formik.values.formulaEditor);
+    console.log(
+      "inside useEffect, formik formulaeditor: ",
+      formik.values.formulaEditor
+    );
+
+    console.log("inside useEffect, error: ", error);
+    setError(error);
+    setLatex(latex);
+  }, [formik.values.formulaEditor]);
 
   useEffect(() => {
     console.log("formula from editor: ", formula);
@@ -128,10 +146,12 @@ function FormulaEditorMonaco({ formik, error, setError }) {
           height="100px"
           defaultLanguage="plaintext"
           theme="vs-light"
-          value={formula}
+          value={formik.values.formulaEditor}
+          //   onChange={formik.handleChange}
+          //   value={formula}
           onChange={(value) => {
             setFormula(value || "");
-            //set
+            formik.setFieldValue("formulaEditor", value || "");
           }}
           beforeMount={handleBeforeMount}
           onMount={handleEditorDidMount}
@@ -164,31 +184,50 @@ function FormulaEditorMonaco({ formik, error, setError }) {
       ) : (
         <p style={{ color: "green", marginTop: 8 }}>✅ Valid formula</p>
       )} */}
-      <div className="editor-error-state"></div>
+      {/* <div className="editor-error-state"></div> */}
 
-      {error ? (
-        <div className="editor-error-state">
-          <ErrorOutlineOutlinedIcon className="fail-icon" />
-          <div>{error}</div>
-        </div>
-      ) : (
-        /* </div>
-        <p style={{ color: "red", marginTop: 8 }}>
-          <ErrorOutlineOutlinedIcon /> {error}
-        </p> */
-        <div className="editor-error-state">
-          <CheckCircleOutlineOutlinedIcon className="success-icon" />
-          <div>Valid formula </div>
-        </div>
-      )}
+      <div className="editor-error-state">
+        {error ? (
+          <div className="editor-state-and-icon">
+            <ErrorOutlineOutlinedIcon className="fail-icon" />
+            <div>{error}</div>
+          </div>
+        ) : (
+          <div className="editor-state-and-icon success">
+            <CheckCircleOutlineOutlinedIcon className="success-icon" />
+            <div>Valid formula </div>
+          </div>
+        )}
+        <Button
+          className="contained-custom-button"
+          type="submit"
+          variant="contained"
+          startIcon={<SaveOutlinedIcon />}>
+          Save custom filter
+        </Button>
+      </div>
 
-      {!error && latex && (
+      <div className="formula-editor-latex-repr" style={{ minHeight: "80px" }}>
+        <MathJax.Provider>
+          {latex ? (
+            <MathJax.Node formula={latex} />
+          ) : (
+            // <span style={{ color: "#d32f2f" }}>⚠️ Invalid formula</span>
+            <div className="editor-state-and-icon latex-formula">
+              {/* <ErrorOutlineOutlinedIcon className="warning-icon" /> */}
+              <div style={{ fontStyle: "italic" }}>Invalid formula</div>
+            </div>
+          )}
+        </MathJax.Provider>
+      </div>
+
+      {/* {!error && latex && (
         <div className="formula-editor-latex-repr">
           <MathJax.Provider>
             <MathJax.Node formula={latex} />
           </MathJax.Provider>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

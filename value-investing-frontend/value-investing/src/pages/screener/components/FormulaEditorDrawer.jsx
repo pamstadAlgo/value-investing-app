@@ -10,8 +10,8 @@ import {
 } from "../../../features/stockScreenerSlice";
 import FormulaEditorMonaco from "./FormulaEditorMonaco";
 import Button from "@mui/material/Button";
-import SaveIcon from "@mui/icons-material/Save";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import { Persist } from "formik-persist";
 
 function FormulaEditorDrawer({ open, handleClose }) {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -24,6 +24,8 @@ function FormulaEditorDrawer({ open, handleClose }) {
     formulaEditor: Yup.string()
       .test("custom-validation", "Formula is invalid", (value) => {
         // Your custom validation logic for field3
+
+        console.log("inside formulaEditor custom validation: ", errorFormula);
         if (errorFormula) {
           return false;
         } else {
@@ -47,11 +49,11 @@ function FormulaEditorDrawer({ open, handleClose }) {
       .required("Formula is required"),
   });
 
-//   const initialValues = {
-//     metricName: screenerState.customMetricName,
-//     metricDescription: screenerState.customMetricDescription,
-//     formulaEditor: screenerState.formula,
-//   };
+  //   const initialValues = {
+  //     metricName: screenerState.customMetricName,
+  //     metricDescription: screenerState.customMetricDescription,
+  //     formulaEditor: screenerState.formula,
+  //   };
 
   const initialValues = {
     metricName: "",
@@ -155,20 +157,18 @@ function FormulaEditorDrawer({ open, handleClose }) {
               setError={setErrorFormula}
               formik={formik}
             />
-            <Button
-              //   onClick={(e) => {
-              //     console.log("button clicked");
-              //     e.stopPropagation();
-              //   }}
+            {/* <Button
+            
               className="contained-custom-button"
               type="submit"
               variant="contained"
               startIcon={<SaveOutlinedIcon />}>
               Save custom filter
-            </Button>
+            </Button> */}
             {/* <Button type="submit" variant="contained" startIcon={<SaveIcon />}>
               Save Custom Metric
             </Button> */}
+            <Persist name="custom-filter-form" />
           </form>
         )}
       </Formik>
