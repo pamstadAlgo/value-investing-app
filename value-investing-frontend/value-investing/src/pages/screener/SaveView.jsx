@@ -52,7 +52,7 @@ function SaveView() {
           variant="contained"
           disabled={screenerState.activFilters?.length === 0}
           className="contained-custom-button"
-          startIcon={<SaveOutlinedIcon />}
+          startIcon={<SaveOutlinedIcon className="button-icon" />}
           onClick={handleClick}>
           Save
         </Button>

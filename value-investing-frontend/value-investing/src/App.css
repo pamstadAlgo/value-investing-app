@@ -26,7 +26,9 @@
       hsla(330, 86%, 95%, 0.4) 0px,
       transparent 50%);
 
---error-red: red;
+  --error-red: red;
+
+  --background-color-mui-backdrop: rgba(0, 0, 0, 0.4);
 
   /* styles glass card */
   --background-glass-card: rgba(255, 255, 255, 0.6);
@@ -44,6 +46,8 @@
   --action-color-more-transparent: rgba(79, 70, 229, 0.15);
   --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
 
+  --color-floating-hint-editor: #838282;
+
   /* defines the black color, mainyl used for header */
   --header-color: rgb(17 24 39);
 
@@ -54,7 +58,8 @@
   --label-color-input-fields-focused: ;
   --inner-text-input-fields: #000000DE;
   --border-input-fields: #000000DE;
-  --input-fields-icons-color: white;
+  --input-fields-icons-color: #000000DE;
+  --input-fields-icons-color-bright: white;
   --input-fields-hover-bg-color: rgba(235, 234, 236, 0.42);
 }
 
@@ -66,12 +71,15 @@
   --background-gradient: none;
 
 
+  --color-floating-hint-editor: var(var(--border-input-fields));
+  --background-color-mui-backdrop: rgba(0, 0, 0, 0.8);
 
-  --background-glass-card: rgb(31 41 55 / 0.5);
+  --background-glass-card: rgba(55, 74, 102, 0.5);
   --backdrop-filter-glass-card: none;
   --box-shadow-glass-card: none;
   --border-glass-card: none;
-
+  /* --background-glass-card-less-transparent: rgba(55, 74, 102, 1);; */
+  --background-glass-card-less-transparent: rgba(55, 74, 102, 1);
   --text-color-grey-scale: rgb(156 163 175);
 
   --action-color: rgb(17 115 212);
@@ -135,14 +143,18 @@ body, html{
 
 .MuiDrawer-root.MuiDrawer-modal.custom-drawer > .MuiBackdrop-root.MuiModal-backdrop{
 background: var(--background-gradient);
-background-color: rgba(0, 0, 0, 0.4);
+background-color: var(--background-color-mui-backdrop);
 }
 
 .custom-fieldset {
-  border: 1px solid black;
+  border: 1px solid var(--border-input-fields);
   border-radius: 4px;
   padding: 12px;
   position: relative;
+}
+
+.mtk1{
+  color: var(--border-input-fields) !important;
 }
 
 .editor-error-state{
@@ -195,6 +207,7 @@ background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
+  color: var(--border-input-fields)
 }
 
 .legend-formula-editor{
@@ -246,6 +259,10 @@ background-color: rgba(0, 0, 0, 0.4);
   color: var(--input-fields-icons-color) !important;
 }
 
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.button-icon{
+  fill:var(--input-fields-icons-color-bright);
+}
+
 /* remove arrows from input field type number START */
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -275,6 +292,20 @@ input[type=number] {
 
 .flex-wrapper-main-content{
   flex-grow: 1;
+}
+
+.MuiTooltip-tooltip.MuiTooltip-tooltipArrow{
+  background: var(--action-color) !important;
+}
+
+.MuiTooltip-tooltip.MuiTooltip-tooltipArrow.MuiTooltip-tooltipPlacementRight {
+/* margin-top: -15px !important; */
+}
+
+
+
+.MuiTooltip-arrow{
+  color: var(--action-color) !important;
 }
 
 /* .view-lines.monaco-mouse-cursor-text{
@@ -314,7 +345,7 @@ input[type=number] {
   bottom: 4px;
   right: 8px;
   font-size: 0.75rem;
-  color: #838282;
+  color: var(--color-floating-hint-editor);
   /* background: rgba(255, 255, 255, 0.8); */
   border-radius: 6px;
   padding: 2px 6px;

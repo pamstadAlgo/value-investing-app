@@ -14,6 +14,7 @@ function SelectedFilterChip({ filter, key }) {
   };
 
   return (
+    // <div>testing div</div>
     <Chip
       key={key}
       className="custom-chip"

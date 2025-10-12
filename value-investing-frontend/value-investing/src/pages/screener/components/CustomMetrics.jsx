@@ -21,7 +21,7 @@ function CustomMetrics() {
       <Button
         variant="contained"
         className="contained-custom-button custom-metric"
-        startIcon={<AddchartOutlinedIcon />}
+        startIcon={<AddchartOutlinedIcon className="button-icon" />}
         // onClick={(e) => setIsCustomMetricsModalOpen(true)}>
         onClick={(e) => setOpen(true)}>
         {" "}

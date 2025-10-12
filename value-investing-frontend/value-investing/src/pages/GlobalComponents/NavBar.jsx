@@ -29,13 +29,42 @@ import Tooltip from "@mui/material/Tooltip";
 import CompanyLogo from "./CompanyLogo";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import NightlightOutlinedIcon from "@mui/icons-material/NightlightOutlined";
-//const drawerWidth = 240;
+import useScrollTrigger from "@mui/material/useScrollTrigger";
+import Slide from "@mui/material/Slide";
+import PropTypes from "prop-types";
+import CssBaseline from "@mui/material/CssBaseline";
 
 const pages = ["Screener", "Valuation"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
+function HideOnScroll(props) {
+  // console.log()
+  const { children, window } = props;
+  // Note that you normally won't need to set the window ref as useScrollTrigger
+  // will default to window.
+  // This is only being set here because the demo is in an iframe.
+  const trigger = useScrollTrigger({
+    target: window ? window() : undefined,
+  });
 
-function NavBar() {
+  return (
+    <Slide appear={false} direction="down" in={!trigger}>
+      {children ?? <div />}
+    </Slide>
+  );
+}
+
+HideOnScroll.propTypes = {
+  children: PropTypes.element,
+  /**
+   * Injected by the documentation to work in an iframe.
+   * You won't need it on your project.
+   */
+  window: PropTypes.func,
+};
+
+function NavBar(props) {
   const navigate = useNavigate();
+  // const { children, window } = props;
 
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
@@ -116,15 +145,16 @@ function NavBar() {
   // );
 
   return (
-    <AppBar position="static" className="nav-bar-custom">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters className="mui-toolbar-custom">
-          {/* <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} /> */}
-          <div className="company-name-left-side flex-box-wrapper-logo">
-            <CompanyLogo />
-            <h2 className="header-color-black-scale ">StockVal</h2>
-          </div>
-          {/* <Typography
+    <HideOnScroll {...props}>
+      <AppBar position="sticky" className="nav-bar-custom">
+        <Container maxWidth="xl">
+          <Toolbar disableGutters className="mui-toolbar-custom">
+            {/* <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} /> */}
+            <div className="company-name-left-side flex-box-wrapper-logo">
+              <CompanyLogo />
+              <h2 className="header-color-black-scale ">StockVal</h2>
+            </div>
+            {/* <Typography
             variant="h6"
             noWrap
             component="a"
@@ -144,46 +174,46 @@ function NavBar() {
             LOGO
           </Typography> */}
 
-          {/* hamburger menu that gets only display when screen size is xs */}
-          {/* <Box sx={{ display: { xs: "flex", md: "none" } }}> */}
-          <div className="wrapper-hamburger-menu">
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit">
-              <MenuIcon className="hamburger-icon-svg" />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: "block", md: "none" } }}>
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </div>
-          {/* </Box> */}
-          <div className="company-name-middle flex-box-wrapper-logo">
-            <CompanyLogo />
-            <h2 className="header-color-black-scale ">StockVal</h2>
-          </div>
-          {/* <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+            {/* hamburger menu that gets only display when screen size is xs */}
+            {/* <Box sx={{ display: { xs: "flex", md: "none" } }}> */}
+            <div className="wrapper-hamburger-menu">
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleOpenNavMenu}
+                color="inherit">
+                <MenuIcon className="hamburger-icon-svg" />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorElNav}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "left",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "left",
+                }}
+                open={Boolean(anchorElNav)}
+                onClose={handleCloseNavMenu}
+                sx={{ display: { xs: "block", md: "none" } }}>
+                {pages.map((page) => (
+                  <MenuItem key={page} onClick={handleCloseNavMenu}>
+                    <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </div>
+            {/* </Box> */}
+            <div className="company-name-middle flex-box-wrapper-logo">
+              <CompanyLogo />
+              <h2 className="header-color-black-scale ">StockVal</h2>
+            </div>
+            {/* <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -201,47 +231,47 @@ function NavBar() {
             }}>
             LOGO
           </Typography> */}
-          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}> */}
-          <div className="nav-items-flexbox-wraper">
-            {pages.map((page) => (
-              <a
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block" }}>
-                {page}
-              </a>
-            ))}
-          </div>
-          {/* </Box> */}
+            {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}> */}
+            <div className="nav-items-flexbox-wraper">
+              {pages.map((page) => (
+                <a
+                  key={page}
+                  onClick={handleCloseNavMenu}
+                  sx={{ my: 2, color: "white", display: "block" }}>
+                  {page}
+                </a>
+              ))}
+            </div>
+            {/* </Box> */}
 
-          <Box sx={{ flexGrow: 0 }}>
-            {/* <Tooltip title="Open settings"> */}
-            {theme === "light" ? (
-              <IconButton
-                aria-label="delete"
-                style={{ marginRight: "8px" }}
-                sx={{ color: "black" }}
-                onClick={handleThemeToggle}>
-                <NightlightOutlinedIcon sx={{ fill: "#6B7280" }} />
+            <Box sx={{ flexGrow: 0 }}>
+              {/* <Tooltip title="Open settings"> */}
+              {theme === "light" ? (
+                <IconButton
+                  aria-label="delete"
+                  style={{ marginRight: "8px" }}
+                  sx={{ color: "black" }}
+                  onClick={handleThemeToggle}>
+                  <NightlightOutlinedIcon sx={{ fill: "#6B7280" }} />
+                </IconButton>
+              ) : (
+                <IconButton
+                  aria-label="delete"
+                  style={{ marginRight: "8px" }}
+                  onClick={handleThemeToggle}>
+                  <WbSunnyOutlinedIcon sx={{ fill: "#9CA3AF" }} />
+                </IconButton>
+              )}
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar
+                  className="custom-avatar"
+                  alt="Remy Sharp"
+                  src="/static/images/avatar/2.jpg"
+                />
               </IconButton>
-            ) : (
-              <IconButton
-                aria-label="delete"
-                style={{ marginRight: "8px" }}
-                onClick={handleThemeToggle}>
-                <WbSunnyOutlinedIcon sx={{ fill: "#9CA3AF" }} />
-              </IconButton>
-            )}
-            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-              <Avatar
-                className="custom-avatar"
-                alt="Remy Sharp"
-                src="/static/images/avatar/2.jpg"
-              />
-            </IconButton>
-            {/* </Tooltip> */}
-            {/* Avatar Menu which we don't need for the moment */}
-            {/* <Menu
+              {/* </Tooltip> */}
+              {/* Avatar Menu which we don't need for the moment */}
+              {/* <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
               anchorEl={anchorElUser}
@@ -264,10 +294,11 @@ function NavBar() {
                 </MenuItem>
               ))}
             </Menu> */}
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+    </HideOnScroll>
     // <div className="header-wrapper">
     //   <AppBar position="sticky" className="app-bar-mui-component">
     //     <Toolbar>

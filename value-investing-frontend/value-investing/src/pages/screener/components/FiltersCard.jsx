@@ -18,6 +18,7 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import { addSelectedFilter } from "../../../features/stockScreenerSlice";
 import SelectedFilterChip from "./SelectedFilterChip";
 import CustomMetrics from "./CustomMetrics";
+import Tooltip from "@mui/material/Tooltip";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -51,9 +52,11 @@ function FiltersCard() {
 
   const validationSchema = Yup.object({
     // filter: Yup.string().required("Filter is required"),
-    filter: Yup.object({
-      techName: Yup.string().required("Filter is required"),
-    }),
+    // filter: Yup.object({
+    //   techName: Yup.string().required("Filter is required"),
+    // }),
+    filter: Yup.object().nullable().required("Filter is required"),
+    // filter: Yup.string().required("Comparison operator is required"),
     comparison: Yup.string().required("Comparison operator is required"),
     qty: Yup.string().required("Value is required"),
   });
@@ -61,7 +64,7 @@ function FiltersCard() {
   const handleFilterChange = (e, newValue, formik) => {
     console.log("newValue in handlefilterHCange: ", newValue);
     setValue(newValue);
-    setFieldType(newValue.fieldType);
+    setFieldType(newValue?.fieldType);
     console.log("we set this formik filter value: ", newValue);
     //   formik.setFieldValue("filter", newValue?.techName);
     formik.setFieldValue("filter", newValue);
@@ -285,90 +288,109 @@ function FiltersCard() {
                     </FormControl>
                   )}
                   {/* value field */}
-                  {fieldType !== "CharField" ? (
-                    <NumericFormat
-                      value={formik?.values.qty}
-                      onValueChange={(values) =>
-                        handleNumberChange(values, formik)
-                      }
-                      thousandSeparator="'"
-                      customInput={TextField}
-                      {...{
-                        ...materialUITextFieldProps,
-                        name: "qty",
-                        helperText:
-                          formik?.errors.qty && formik?.touched.qty
-                            ? formik?.errors.qty
-                            : " ",
-                        error:
-                          formik?.errors.qty && formik?.touched.qty
-                            ? true
-                            : false,
-                      }}
-                    />
-                  ) : (
-                    <Autocomplete
-                      multiple
-                      id="checkboxes-tags-demo"
-                      options={
-                        screenerState.charFieldOptions?.field_options[
-                          value?.techName
-                        ]
-                      }
-                      disableCloseOnSelect
-                      value={qty}
-                      getOptionLabel={(option) => option}
-                      onChange={(e, newValue) =>
-                        handleValueChange(e, newValue, formik)
-                      }
-                      // onInputChange={(event, newInputValue) => {
-                      //   console.log("onInputChange: ", newInputValue);
-                      // }}
-                      renderOption={(props, option, { selected }) => {
-                        const { key, ...optionProps } = props;
-                        return (
-                          <li key={key} {...optionProps}>
-                            <Checkbox
-                              icon={icon}
-                              checkedIcon={checkedIcon}
-                              style={{ marginRight: 8 }}
-                              checked={selected}
-                            />
-                            {option}
-                          </li>
-                        );
-                      }}
-                      // style={{ width: 500 }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          name="qty"
-                          helperText={
-                            formik?.errors.qty && formik?.touched.qty
-                              ? formik?.errors.qty
-                              : " "
+                  <Tooltip
+                    placement="right-start"
+                    className="tooltip-value-field"
+                    // style={{ marginTop: "-10px" }}
+                    // sx={{ marginTop: "-10px" }}
+                    title="Please select a filter first"
+                    arrow
+                    disableHoverListener={formik?.values.filter ? true : false}
+                    disableFocusListener={formik?.values.filter ? true : false}
+                    disableTouchListener={formik?.values.filter ? true : false}>
+                    {fieldType !== "CharField" ? (
+                      <div
+                        // style={{ width: "100%" }}
+                        className="flex-item-filter-field">
+                        <NumericFormat
+                          value={formik?.values.qty}
+                          disabled={formik?.values.filter ? false : true}
+                          onValueChange={(values) =>
+                            handleNumberChange(values, formik)
                           }
-                          error={
-                            formik?.errors.qty && formik?.touched.qty
-                              ? true
-                              : false
-                          }
-                          label="Value"
-                          // placeholder="Favorites"
+                          thousandSeparator="'"
+                          customInput={TextField}
+                          {...{
+                            ...materialUITextFieldProps,
+                            name: "qty",
+                            helperText:
+                              formik?.errors.qty && formik?.touched.qty
+                                ? formik?.errors.qty
+                                : " ",
+                            error:
+                              formik?.errors.qty && formik?.touched.qty
+                                ? true
+                                : false,
+                          }}
                         />
-                      )}
-                    />
-                  )}
+                      </div>
+                    ) : (
+                      <Autocomplete
+                        multiple
+                        id="checkboxes-tags-demo"
+                        options={
+                          screenerState.charFieldOptions?.field_options[
+                            value?.techName
+                          ]
+                        }
+                        disabled={formik?.values.filter ? false : true}
+                        disableCloseOnSelect
+                        value={qty}
+                        getOptionLabel={(option) => option}
+                        onChange={(e, newValue) =>
+                          handleValueChange(e, newValue, formik)
+                        }
+                        // onInputChange={(event, newInputValue) => {
+                        //   console.log("onInputChange: ", newInputValue);
+                        // }}
+                        renderOption={(props, option, { selected }) => {
+                          const { key, ...optionProps } = props;
+                          return (
+                            <li key={key} {...optionProps}>
+                              <Checkbox
+                                icon={icon}
+                                checkedIcon={checkedIcon}
+                                style={{ marginRight: 8 }}
+                                checked={selected}
+                              />
+                              {option}
+                            </li>
+                          );
+                        }}
+                        // style={{ width: 500 }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="qty"
+                            helperText={
+                              formik?.errors.qty && formik?.touched.qty
+                                ? formik?.errors.qty
+                                : " "
+                            }
+                            error={
+                              formik?.errors.qty && formik?.touched.qty
+                                ? true
+                                : false
+                            }
+                            label="Value"
+                            // placeholder="Favorites"
+                          />
+                        )}
+                      />
+                    )}
+                  </Tooltip>
                 </div>
                 <Button
                   type="submit"
-                  onClick={() => {
-                    console.log("this is formik.values: ", formik.values);
-                  }}
+                  //   onClick={() => {
+                  //     console.log("this is formik.values: ", formik.values);
+                  //   }}
                   variant="contained"
                   // disabled={screenerState.activFilters?.length === 0}
                   className="contained-custom-button"
-                  startIcon={<AddCircleOutlineOutlinedIcon />}
+                  startIcon={
+                    <AddCircleOutlineOutlinedIcon className="button-icon" />
+                  }
                   //   onClick={handleClick}
                 >
                   Add Filter
