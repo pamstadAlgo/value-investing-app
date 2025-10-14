@@ -361,6 +361,7 @@ function FiltersCard() {
                         renderInput={(params) => (
                           <TextField
                             {...params}
+                            size="small"
                             name="qty"
                             helperText={
                               formik?.errors.qty && formik?.touched.qty

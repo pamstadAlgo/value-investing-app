@@ -202,7 +202,7 @@ function FormulaEditorMonaco({ formik, error, setError }) {
           className="contained-custom-button"
           type="submit"
           variant="contained"
-          startIcon={<SaveOutlinedIcon />}>
+          startIcon={<SaveOutlinedIcon className="button-icon" />}>
           Save custom filter
         </Button>
       </div>
