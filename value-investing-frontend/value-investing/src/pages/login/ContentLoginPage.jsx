@@ -40,7 +40,7 @@ function ContentLoginPage() {
           <div className="wrapper-google-button">
             <button onClick={googleLogin} className="google-button-login">
               <GoogleIcon />
-              <div>Google Login (first cache run) </div>
+              <div>Google Login</div>
             </button>
           </div>
         </div>
