@@ -39,8 +39,8 @@ function ContentLoginPage() {
           </div>
           <div className="wrapper-google-button">
             <button onClick={googleLogin} className="google-button-login">
-              <GoogleIcon />
-              <div>Google Login</div>
+              <GoogleIcon className="google-icon-login-button" />
+              <div className="login-button-text">Google Login</div>
             </button>
           </div>
         </div>

@@ -5,6 +5,9 @@ import FiltersValidation from "./FiltersValidation";
 import DataView from "./DataView";
 import EditorTesting from "./EditorTesting";
 import EditorTestingFinal from "./EditorTestingFinal";
+import ExampleTable from "./ExampleTable";
+import PlainTable from "./PlainTable";
+import ExampleTableSecond from "./ExampleTableSecond";
 
 function ContentTestingPage() {
   return (
@@ -14,6 +17,10 @@ function ContentTestingPage() {
         <legend>Label</legend>
         <div>Content inside</div>
       </fieldset>
+
+      <ExampleTable />
+      <PlainTable />
+      <ExampleTableSecond />
       {/* <EditableDiv />
       <FiltersValidation />
       <DataView />

@@ -1608,9 +1608,6 @@ def get_model_fields(model, filter_value, fields_to_exclude=[], is_custom_metric
     - Income Statement (Y)
     - valuation
     """
-
-    print('model.column_metadata: ', model.column_metadata)
-
     return [{'techName' : field.name, 'readableName' : field.verbose_name if field.verbose_name != field.name else "", "fieldType": field.get_internal_type(), 'isCustomMetric' : is_custom_metric, 'table' : model.column_metadata[field.name] if field.name in model.column_metadata else ""} for field in model._meta.get_fields() if field.name not in fields_to_exclude and field.is_relation is False and model.column_metadata[field.name] == filter_value]
 
 def get_custom_metrics(model):

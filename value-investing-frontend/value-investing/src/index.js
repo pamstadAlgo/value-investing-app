@@ -8,6 +8,7 @@ import { store, persistor } from "./app/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import { CookiesProvider } from "react-cookie";
+import SnackbarProvider from "./pages/GlobalComponents/SnackbarProvider";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -16,7 +17,9 @@ root.render(
     <Provider store={store}>
       <PersistGate persistor={persistor}>
         <CookiesProvider>
-          <App />
+          <SnackbarProvider>
+            <App />
+          </SnackbarProvider>
         </CookiesProvider>
       </PersistGate>
     </Provider>

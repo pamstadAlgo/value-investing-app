@@ -187,15 +187,19 @@ function FormulaEditorMonaco({ formik, error, setError }) {
       {/* <div className="editor-error-state"></div> */}
 
       <div className="editor-error-state">
-        {error ? (
+        {error || !formik.values.formulaEditor ? (
           <div className="editor-state-and-icon">
             <ErrorOutlineOutlinedIcon className="fail-icon" />
-            <div>{error}</div>
+            <div>{error ? error : "Formula cannot be empty"}</div>
           </div>
         ) : (
           <div className="editor-state-and-icon success">
-            <CheckCircleOutlineOutlinedIcon className="success-icon" />
-            <div>Valid formula </div>
+            {formik.values.formulaEditor && (
+              <>
+                <CheckCircleOutlineOutlinedIcon className="success-icon" />
+                <div>Valid formula </div>
+              </>
+            )}
           </div>
         )}
         <Button

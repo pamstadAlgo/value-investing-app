@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -7,16 +7,21 @@ import TextField from "@mui/material/TextField";
 import {
   setCustomMetricDescription,
   setCustomMetricName,
+  setRefetchFilterQuantities,
 } from "../../../features/stockScreenerSlice";
 import FormulaEditorMonaco from "./FormulaEditorMonaco";
 import Button from "@mui/material/Button";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { Persist } from "formik-persist";
+import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
+import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
 function FormulaEditorDrawer({ open, handleClose }) {
   const screenerState = useSelector((state) => state.stockscrenner);
   const dispatch = useDispatch();
   const [errorFormula, setErrorFormula] = useState(false);
+  const axiosInstanceAuth = useAxiosWithAuth();
+  const { showMessage } = useSnackbar();
 
   const validationSchema = Yup.object({
     metricName: Yup.string().required("Metric Name is required"),
@@ -74,15 +79,34 @@ function FormulaEditorDrawer({ open, handleClose }) {
         initialValues={initialValues}
         enableReinitialize={true}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
+        onSubmit={(values, { resetForm }) => {
           console.log("we submit these values: ", values);
 
           const payload = {
-            tech_name: screenerState.formula,
-            readable_name: screenerState.customMetricName,
-            description: screenerState.customMetricDescription,
-            html_formula: screenerState.formulaInnerHtml,
+            tech_name: values.formulaEditor,
+            readable_name: values.metricName,
+            description: values.metricDescription,
+            // html_formula: screenerState.formulaInnerHtml,
           };
+
+          axiosInstanceAuth
+            .post("/screener/custom-metrics/", payload)
+            .then((response) => {
+              console.log("response.data from custom metrics: ", response.data);
+              //fetch again all metrics
+              dispatch(
+                setRefetchFilterQuantities(
+                  !screenerState.refetchFilterQuantities
+                )
+              );
+              showMessage("Custom metric was successfully created", "success");
+
+              resetForm();
+            })
+            .catch((error) => {
+              showMessage(`Error creating custom metric: ${error}`, "error");
+              console.error("ERROR: POST /screener/custom-metrics/: ", error);
+            });
 
           //   axiosInstanceAuth
           //     .post("/screener/custom-metrics/", payload)

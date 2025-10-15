@@ -1,11 +1,42 @@
-import React from "react";
+import React, { useEffect } from "react";
 import NavBar from "../GlobalComponents/NavBar";
 import ScreenerTemplates from "./components/ScreenerTemplates";
 import Screener from "./components/Screener";
 import Fab from "@mui/material/Fab";
 import FilterFloatingButton from "./components/FilterFloatingButton";
+import useAxiosWithAuth from "../../axios/useAxiosWithAuth";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  initalizeAutocompleteFilters,
+  initalizeFilters,
+} from "../../features/stockScreenerSlice";
 
 function ContentScreenerPageNew() {
+  const screenerState = useSelector((state) => state.stockscrenner);
+
+  const axiosInstanceAuth = useAxiosWithAuth();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    axiosInstanceAuth
+      .get("/screener/filter-quantities/")
+      .then((response) => {
+        dispatch(initalizeFilters(response.data));
+
+        //create filter quantities for autocomplete field
+        let autoCompleteFilters = [];
+
+        for (var i = 0; i < response.data?.length; i++) {
+          autoCompleteFilters.push(...response.data[i].tableColumns);
+        }
+
+        dispatch(initalizeAutocompleteFilters(autoCompleteFilters));
+      })
+      .catch((error) => {
+        console.error("ERROR: GET /screener/filter-quantities/ ");
+      });
+  }, [screenerState.refetchFilterQuantities]);
+
   return (
     <>
       <NavBar />
