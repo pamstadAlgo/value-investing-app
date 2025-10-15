@@ -5,7 +5,7 @@ import ScreenerResults from "./ScreenerResults";
 function Screener() {
   return (
     <div className="grid-wrapper-screener">
-      <FiltersCard />
+      {/* <FiltersCard /> */}
       <ScreenerResults />
     </div>
   );

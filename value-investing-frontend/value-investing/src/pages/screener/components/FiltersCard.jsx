@@ -165,7 +165,7 @@ function FiltersCard() {
             <form onSubmit={formik.handleSubmit}>
               <div className="flexbox-wrapper-filter-criteria-fields">
                 {/* add fields for validation */}
-                <div>
+                <div className="flex-item-filter-field">
                   <Autocomplete
                     clearOnEscape
                     value={value}
@@ -178,7 +178,7 @@ function FiltersCard() {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        fullWidth
+                        // fullWidth
                         size="small"
                         label="Filter"
                         // name={nameFilter}
@@ -209,11 +209,11 @@ function FiltersCard() {
                   />
                 </div>
                 {/* comparison field */}
-                <div className="flex-item-filter-field">
+                <div className="flex-item-filter-field smaller-flex-item-select">
                   {fieldType !== "CharField" ? (
                     <FormControl
                       size="small"
-                      //   fullWidth
+                      fullWidth
                       error={
                         formik?.errors.comparison && formik?.touched.comparison
                           ? true
@@ -254,7 +254,7 @@ function FiltersCard() {
                   ) : (
                     <FormControl
                       size="small"
-                      //   fullWidth
+                      fullWidth
                       error={
                         formik?.errors.comparison && formik?.touched.comparison
                           ? true
@@ -287,6 +287,8 @@ function FiltersCard() {
                       </FormHelperText>
                     </FormControl>
                   )}
+                </div>
+                <div className="flex-item-filter-field">
                   {/* value field */}
                   <Tooltip
                     placement="right-start"
@@ -381,17 +383,11 @@ function FiltersCard() {
                 </div>
                 <Button
                   type="submit"
-                  //   onClick={() => {
-                  //     console.log("this is formik.values: ", formik.values);
-                  //   }}
                   variant="contained"
-                  // disabled={screenerState.activFilters?.length === 0}
-                  className="contained-custom-button"
+                  className="contained-custom-button fit-content-button"
                   startIcon={
                     <AddCircleOutlineOutlinedIcon className="button-icon" />
-                  }
-                  //   onClick={handleClick}
-                >
+                  }>
                   Add Filter
                 </Button>
                 {/* <Button
@@ -406,10 +402,10 @@ function FiltersCard() {
           )}
         </Formik>
       </div>
-      <CustomMetrics />
+      {/* <CustomMetrics /> */}
       <div
         className="title-mid-size"
-        style={{ marginBottom: "20px", marginTop: "45px" }}>
+        style={{ marginBottom: "20px", marginTop: "20px" }}>
         Applied Filters
       </div>
       <div className="applied-filters-flexbox-wrapper">

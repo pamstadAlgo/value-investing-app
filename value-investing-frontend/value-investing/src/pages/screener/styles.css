@@ -222,3 +222,34 @@
 .accordian-summary-filters > .MuiAccordionSummary-content{
 justify-content: space-between;
 }
+
+.MuiButtonBase-root.MuiIconButton-root.custom-iconbutton-list{
+    display: none;
+}
+
+.MuiListItem-root.MuiListItem-dense:hover .MuiButtonBase-root.MuiIconButton-root.custom-iconbutton-list {
+    display: block;
+}
+
+.MuiListItemIcon-root.custom-list-icon{
+    min-width: 20px;
+}
+
+.MuiSvgIcon-root.icon-custom-metrics-list{
+    width: 20px;
+    height: 20px;
+    fill: var(--text-color-grey-scale);
+}
+
+.MuiButtonBase-root.MuiIconButton-root.custom-iconbutton-list:hover .MuiSvgIcon-root.icon-custom-metrics-list {
+    fill: var(--action-color);
+}
+
+/* .MuiSvgIcon-root.icon-custom-metrics-list:hover {
+    fill: var(--action-color);
+} */
+
+.checkbox-wrapper-div {
+    display: flex;
+    /* gap: 4px; */
+}

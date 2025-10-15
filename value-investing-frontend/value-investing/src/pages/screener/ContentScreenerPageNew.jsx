@@ -12,6 +12,8 @@ import {
   setCharFieldOptions,
   setSavedFilterViews,
 } from "../../features/stockScreenerSlice";
+import FiltersCard from "./components/FiltersCard";
+import CustomMetricsCard from "./components/CustomMetricsCard";
 
 function ContentScreenerPageNew() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -72,7 +74,13 @@ function ContentScreenerPageNew() {
               Filter stocks to find your next winning investment.
             </div>
           </div>
-          <ScreenerTemplates />
+          <div className="grid-wrapper-template-filter-custom">
+            <FiltersCard />
+            <div className="screener-templates-grid-item">
+              <ScreenerTemplates />
+              <CustomMetricsCard />
+            </div>
+          </div>
           <Screener />
         </div>
         <FilterFloatingButton />

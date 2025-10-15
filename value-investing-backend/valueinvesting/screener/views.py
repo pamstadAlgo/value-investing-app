@@ -1684,11 +1684,9 @@ class CustomMetricsAPIView(APIView):
         endpoint that returns all available fields that can be used as a filter for the stock screener
         {incomeStatement: ["field1", "field2", "field3", "field4", "field5", etc.], balanceSheet: ["fieldb1", "fieldb2", etc.], ...}
         """
-
-        # CustomMetrics
-
-       
-        return Response("ok")
+        metrics = CustomMetrics.objects.filter(user=request.user)
+        serializer = CustomMetricsSerializer(metrics, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
         serializer = CustomMetricsSerializer(data=request.data)
