@@ -44,6 +44,9 @@ export const stockScreenerSlice = createSlice({
     initializeActivFilters: (state, action) => {
       state.activFilters = action.payload;
     },
+    initializeSelectedFilters: (state, action) => {
+      state.selectedFilters = action.payload;
+    },
     resetActiveFilters: (state, action) => {
       state.activFilters = [];
     },
@@ -229,6 +232,7 @@ export const {
   setCurrentFilterView,
   setSavedFilterViews,
   setViewName,
+  initializeSelectedFilters,
   setViewDescription,
   initializeActivFilters,
   addSaveFilterView,

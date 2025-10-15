@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -6,6 +6,7 @@ import Select from "@mui/material/Select";
 import { useDispatch, useSelector } from "react-redux";
 import {
   initializeActivFilters,
+  initializeSelectedFilters,
   setCurrentFilterView,
   setSavedFilterViews,
   setViewDescription,
@@ -16,7 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Tooltip from "@mui/material/Tooltip";
 import { ListItemText } from "@mui/material";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
-
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 function SavedFilterViews() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const dispatch = useDispatch();
@@ -24,12 +25,15 @@ function SavedFilterViews() {
 
   const handleChange = (e) => {
     dispatch(setCurrentFilterView(e.target.value));
-
+    console.log("filter view we set: ", e.target.value);
     if (
-      typeof e.target.value === "string" ||
-      e.target.value instanceof String
+      // typeof e.target.value === "string" ||
+      // e.target.value instanceof String ||
+      e.target.value === "newView"
     ) {
-      dispatch(initializeActivFilters([]));
+      console.log("we reinitialize selected filters");
+      // dispatch(initializeActivFilters([]));
+      dispatch(initializeSelectedFilters([]));
       dispatch(setViewName(""));
       dispatch(setViewDescription(""));
     } else {
@@ -41,7 +45,7 @@ function SavedFilterViews() {
       //convert active filters to json
       let activFilters = JSON.parse(filterView.view_filters);
 
-      dispatch(initializeActivFilters(activFilters));
+      dispatch(initializeSelectedFilters(activFilters));
       dispatch(setViewName(filterView.view_name));
       dispatch(setViewDescription(filterView.view_description));
     }
@@ -63,6 +67,25 @@ function SavedFilterViews() {
       });
   };
 
+  //fetch selected filters associated with selected templates
+  useEffect(() => {
+    var currentFilterview = screenerState.currentFilterView;
+
+    if (currentFilterview) {
+      var filterView = screenerState.savedFilterViews.find(
+        (item) => item.id === currentFilterview
+      );
+
+      //convert active filters to json
+      if (filterView) {
+        let activFilters = JSON.parse(filterView?.view_filters);
+
+        dispatch(initializeSelectedFilters(activFilters));
+        dispatch(setViewName(filterView.view_name));
+        dispatch(setViewDescription(filterView.view_description));
+      }
+    }
+  }, []);
   return (
     <FormControl className="form-control-saved-filter-views" size="small">
       <InputLabel id="demo-simple-select-label" className="custom-input-label">
@@ -101,7 +124,7 @@ function SavedFilterViews() {
                 <IconButton
                   aria-label="delete"
                   onClick={(e) => handleDeleteFilterView(e, item.id)}>
-                  <DeleteIcon />
+                  <DeleteIcon className="button-icon-action" />
                 </IconButton>
               </Tooltip>
             </MenuItem>

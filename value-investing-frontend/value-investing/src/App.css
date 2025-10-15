@@ -326,6 +326,10 @@ background-color: var(--background-color-mui-backdrop);
   fill:var(--input-fields-icons-color-bright);
 }
 
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.button-icon-action {
+  fill: var(--action-color);
+}
+
 /* remove arrows from input field type number START */
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -379,6 +383,8 @@ input[type=number] {
 
 .MuiTooltip-tooltip.MuiTooltip-tooltipArrow.MuiTooltip-tooltipPlacementRight {
 /* margin-top: -15px !important; */
+font-family: var(--font-family);
+font-size: 13px;
 }
 
 .flex-wrapper-login-card{

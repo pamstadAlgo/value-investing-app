@@ -291,8 +291,6 @@ function FiltersCard() {
                   <Tooltip
                     placement="right-start"
                     className="tooltip-value-field"
-                    // style={{ marginTop: "-10px" }}
-                    // sx={{ marginTop: "-10px" }}
                     title="Please select a filter first"
                     arrow
                     disableHoverListener={formik?.values.filter ? true : false}

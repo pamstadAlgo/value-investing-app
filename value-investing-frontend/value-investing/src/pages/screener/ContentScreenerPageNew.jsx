@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   initalizeAutocompleteFilters,
   initalizeFilters,
+  setCharFieldOptions,
+  setSavedFilterViews,
 } from "../../features/stockScreenerSlice";
 
 function ContentScreenerPageNew() {
@@ -36,6 +38,28 @@ function ContentScreenerPageNew() {
         console.error("ERROR: GET /screener/filter-quantities/ ");
       });
   }, [screenerState.refetchFilterQuantities]);
+
+  useEffect(() => {
+    //get saved filter views
+    axiosInstanceAuth
+      .get("screener/filter-view/")
+      .then((response) => {
+        dispatch(setSavedFilterViews(response.data));
+      })
+      .catch((error) => {
+        console.error("ERROR: GET screener/filter-view/");
+      });
+
+    //get select options for char fields
+    axiosInstanceAuth
+      .get("screener/charfield-filter-options/")
+      .then((response) => {
+        dispatch(setCharFieldOptions(response.data));
+      })
+      .catch((error) => {
+        console.error("ERROR: GET screener/charfield-filter-options/: ", error);
+      });
+  }, []);
 
   return (
     <>
