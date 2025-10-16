@@ -17,7 +17,7 @@ function CustomMetrics() {
   };
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <Button
         variant="contained"
         className="contained-custom-button custom-metric"

@@ -9,10 +9,10 @@ function ExampleTable() {
   const SmallDragIcon = (props) => (
     <PanToolOutlinedIcon
       {...props}
-          style={{
-              fontSize: 18,  marginRight: "4px"
-        
-       }} // adjust size and color here
+      style={{
+        fontSize: 18,
+        marginRight: "4px",
+      }}
     />
   );
   const data = useMemo(
@@ -129,23 +129,11 @@ function ExampleTable() {
         icons={{
           // ✅ This replaces the default drag handle icon:
           DragHandleIcon: SmallDragIcon,
-        //   Men: SmallDragIcon,
+          //   Men: SmallDragIcon,
         }}
         renderColumnActionsMenuIcon={() => (
           <MenuOpenIcon sx={{ color: "#4f46e5", fontSize: 20 }} />
         )}
-        // muiTableHeadCellDragHandleProps={{
-        //   sx: {
-        //     cursor: "grab",
-        //     display: "flex",
-        //     alignItems: "center",
-        //     justifyContent: "center",
-        //     padding: "0 4px",
-        //   },
-        //   children: (
-        //     <DragIndicatorIcon fontSize="small" sx={{ color: "#4f46e5" }} />
-        //   ),
-        // }}
         muiTableHeadRowProps={{
           className: "table-header-row",
         }}

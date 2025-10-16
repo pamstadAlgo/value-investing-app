@@ -26,6 +26,7 @@ const initialState = {
   dataViewTickers: [],
   additionalColumns: [],
   selectedFilters: [],
+  customMetrics: [],
 };
 
 export const stockScreenerSlice = createSlice({
@@ -199,6 +200,12 @@ export const stockScreenerSlice = createSlice({
     AddAdditionalColumns: (state, action) => {
       state.additionalColumns.push(action.payload);
     },
+    initializeCustomMetrics: (state, action) => {
+      state.customMetrics = action.payload;
+    },
+    addCustomMetric: (state, action) => {
+      state.customMetrics.push(action.payload);
+    },
     RemvAdditionalColumns: (state, action) => {
       const newArray = state.additionalColumns.filter(
         (item) => item !== action.payload
@@ -210,6 +217,8 @@ export const stockScreenerSlice = createSlice({
 });
 
 export const {
+  initializeCustomMetrics,
+  addCustomMetric,
   initalizeFilters,
   addSelectedFilter,
   initalizeAutocompleteFilters,

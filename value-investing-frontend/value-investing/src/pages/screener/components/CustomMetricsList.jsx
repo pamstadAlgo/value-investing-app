@@ -14,7 +14,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 
-function CustomMetricsList() {
+function CustomMetricsList({ customMetrics, handleMetricDelete }) {
   return (
     <List
       dense
@@ -24,12 +24,14 @@ function CustomMetricsList() {
         maxHeight: "170px",
         overflow: "scroll",
         bgcolor: "transparent",
+        overflowX: "hidden",
+        overflowY: "auto",
       }}>
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => {
-        const labelId = `checkbox-list-secondary-label-${value}`;
+      {customMetrics.map((metric) => {
+        const labelId = `checkbox-list-secondary-label-${metric.id}`;
         return (
           <ListItem
-            key={value}
+            key={metric.id}
             secondaryAction={
               <div className="checkbox-wrapper-div">
                 <IconButton
@@ -39,26 +41,12 @@ function CustomMetricsList() {
                   <EditIcon className="icon-custom-metrics-list" />
                 </IconButton>
                 <IconButton
+                  onClick={(e) => handleMetricDelete(e, metric.id)}
                   style={{ padding: "4px" }}
                   aria-label="delete"
                   className="custom-iconbutton-list">
                   <DeleteIcon className="icon-custom-metrics-list" />
                 </IconButton>
-
-                {/* <Checkbox
-                  className="custom-checkbox"
-                  edge="end"
-                  //   onChange={handleToggle(value)}
-                  //   checked={checked.includes(value)}
-                  inputProps={{ "aria-labelledby": labelId }}
-                /> */}
-                {/* <Checkbox
-                  className="custom-checkbox"
-                  edge="end"
-                  //   onChange={handleToggle(value)}
-                  //   checked={checked.includes(value)}
-                  inputProps={{ "aria-labelledby": labelId }}
-                /> */}
               </div>
             }
             disablePadding>
@@ -72,7 +60,7 @@ function CustomMetricsList() {
                   src={`/static/images/avatar/${value + 1}.jpg`}
                 />
               </ListItemAvatar> */}
-              <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
+              <ListItemText id={metric.id} primary={metric.readable_name} />
             </ListItemButton>
           </ListItem>
         );

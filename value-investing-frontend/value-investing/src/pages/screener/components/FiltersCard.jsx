@@ -15,16 +15,22 @@ import { NumericFormat } from "react-number-format";
 import Checkbox from "@mui/material/Checkbox";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import { addSelectedFilter } from "../../../features/stockScreenerSlice";
+import {
+  addSelectedFilter,
+  setQueryResult,
+} from "../../../features/stockScreenerSlice";
 import SelectedFilterChip from "./SelectedFilterChip";
-import CustomMetrics from "./CustomMetrics";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import Tooltip from "@mui/material/Tooltip";
+import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 function FiltersCard() {
   const screenerState = useSelector((state) => state.stockscrenner);
+  const axiosInstanceAuth = useAxiosWithAuth();
+
   const [value, setValue] = useState(null);
   const [fieldType, setFieldType] = useState("");
   const dispatch = useDispatch();
@@ -39,22 +45,21 @@ function FiltersCard() {
 
   var transformedQty = [];
 
-  //   if (fieldType === "CharField") {
-  //     //char fields must be transformed to conform with AutoComplete Component
-  //     if (filter.qty) {
-  //       var transformedQty = filter?.qty
-  //         .slice(1, -1) // Remove the outer parentheses
-  //         .split(", ") // Split by comma and space
-  //         .map((item) => item.slice(1, -1)); // Remove surrounding quotes
-  //     }
-  //   }
+  const handleFilterStocks = () => {
+    axiosInstanceAuth
+      .post("/screener/filter-query/", screenerState.selectedFilters)
+      .then((response) => {
+        console.log("response of filter query: ", response.data);
+        dispatch(setQueryResult(response.data?.queryResult));
+      })
+      .catch((error) => {
+        console.error("ERROR: POST /screener/filter-query/: ", error);
+      });
+  };
+
   const [qty, setQty] = useState(transformedQty);
 
   const validationSchema = Yup.object({
-    // filter: Yup.string().required("Filter is required"),
-    // filter: Yup.object({
-    //   techName: Yup.string().required("Filter is required"),
-    // }),
     filter: Yup.object().nullable().required("Filter is required"),
     // filter: Yup.string().required("Comparison operator is required"),
     comparison: Yup.string().required("Comparison operator is required"),
@@ -418,6 +423,15 @@ function FiltersCard() {
             No selected filters{" "}
           </div>
         )}
+
+        <Button
+          style={{ marginLeft: "auto" }}
+          onClick={handleFilterStocks}
+          variant="contained"
+          className="contained-custom-button fit-content-button"
+          startIcon={<FilterAltOutlinedIcon className="button-icon" />}>
+          Filter
+        </Button>
       </div>
     </div>
   );

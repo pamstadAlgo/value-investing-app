@@ -30,10 +30,10 @@ function App() {
             element={<GoogleCallback />}></Route>
 
           {/* <Route path="/" element={<ContentHomePage />}></Route> */}
-          <Route path="/screener" element={<ContentScreenerPage />}></Route>
-          <Route
+          <Route path="/screener" element={<ContentScreenerPageNew />}></Route>
+          {/* <Route
             path="/screener-new"
-            element={<ContentScreenerPageNew />}></Route>
+            element={<ContentScreenerPageNew />}></Route> */}
           <Route path="/valuation" element={<ContentValuationPage />}></Route>
           <Route path="/mcc" element={<ContentMCCPage />}></Route>
           <Route path="/testing" element={<ContentTestingPage />}></Route>

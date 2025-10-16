@@ -94,12 +94,12 @@
 
 
 .table-container {
-  padding: 24px;
+  /* padding: 24px; */
   background: linear-gradient(to bottom right, #eef2ff, #ffffff, #f3f4f6);
-  min-height: 100vh;
+  /* min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: flex-start; */
 }
 
 .table-container .MuiPaper-root {

@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import NavBar from "../GlobalComponents/NavBar";
 import ScreenerTemplates from "./components/ScreenerTemplates";
 import Screener from "./components/Screener";
-import Fab from "@mui/material/Fab";
-import FilterFloatingButton from "./components/FilterFloatingButton";
 import useAxiosWithAuth from "../../axios/useAxiosWithAuth";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +12,7 @@ import {
 } from "../../features/stockScreenerSlice";
 import FiltersCard from "./components/FiltersCard";
 import CustomMetricsCard from "./components/CustomMetricsCard";
+import ScreenerResults from "./components/ScreenerResults";
 
 function ContentScreenerPageNew() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -81,9 +80,8 @@ function ContentScreenerPageNew() {
               <CustomMetricsCard />
             </div>
           </div>
-          <Screener />
+          <ScreenerResults />
         </div>
-        <FilterFloatingButton />
       </main>
     </>
   );

@@ -9,11 +9,24 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import ColumnAddModal from "./ColumnAddModal";
 import { setDataViewTickers } from "../../../features/stockScreenerSlice";
+import "./screenerTableStyles.css";
+import PanToolOutlinedIcon from "@mui/icons-material/PanToolOutlined";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen"; // <-- your custom icon
 
 function DataView() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
+
+  const SmallDragIcon = (props) => (
+    <PanToolOutlinedIcon
+      {...props}
+      style={{
+        fontSize: 18,
+        marginRight: "4px",
+      }}
+    />
+  );
   //define columns
   const columns = useMemo(() => {
     //get the first element of the data to extract column identifiers + accessorKey
@@ -48,9 +61,7 @@ function DataView() {
   const extractDataViewTickers = useMemo(() => {
     dispatch(
       setDataViewTickers(
-        screenerState.queryResult.map((item) =>
-          item.qfs_symbol_id 
-        )
+        screenerState.queryResult.map((item) => item.qfs_symbol_id)
       )
     );
   }, [screenerState.queryResult]);
@@ -97,12 +108,61 @@ function DataView() {
     },
   });
 
+  console.log("columns we pass: ", columns);
+
   return (
-    <>
-      {" "}
-      <MaterialReactTable table={table} />{" "}
+    <div className="table-container">
+      {/* <MaterialReactTable table={table} /> */}
+      <MaterialReactTable
+        columns={columns}
+        data={screenerState.queryResult}
+        enableColumnOrdering
+        enableColumnResizing
+        enableSorting
+        enablePagination
+        enableStickyHeader
+        initialState={{
+          density: "compact",
+          columnVisibility: { id: false },
+          pagination: {
+            pageIndex: 0,
+            pageSize: 35,
+          },
+        }}
+        muiTableProps={{
+          sx: {
+            borderRadius: "12px",
+            backgroundColor: "transparent",
+          },
+        }}
+        icons={{
+          // ✅ This replaces the default drag handle icon:
+          DragHandleIcon: SmallDragIcon,
+          //   Men: SmallDragIcon,
+        }}
+        renderColumnActionsMenuIcon={() => (
+          <MenuOpenIcon sx={{ color: "#4f46e5", fontSize: 20 }} />
+        )}
+        muiTableHeadRowProps={{
+          className: "table-header-row",
+        }}
+        muiTableBodyRowProps={({ row }) => ({
+          className: row.index % 2 === 0 ? "table-row even" : "table-row odd",
+        })}
+        muiTableHeadCellProps={{
+          className: "table-header-cell",
+        }}
+        muiTableBodyCellProps={{
+          className: "table-body-cell",
+        }}
+        muiPaginationProps={{
+          shape: "rounded",
+          variant: "outlined",
+          color: "primary",
+        }}
+      />
       <ColumnAddModal isOpen={isModalOpen} handleClose={handleClose} />
-    </>
+    </div>
   );
 }
 

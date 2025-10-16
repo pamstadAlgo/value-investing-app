@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import MailIcon from "@mui/icons-material/Mail";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import Toolbar from "@mui/material/Toolbar";
-import Divider from "@mui/material/Divider";
-import Drawer from "@mui/material/Drawer";
 import "./styles.css";
 import AppBar from "@mui/material/AppBar";
 import Typography from "@mui/material/Typography";
@@ -33,8 +24,16 @@ import useScrollTrigger from "@mui/material/useScrollTrigger";
 import Slide from "@mui/material/Slide";
 import PropTypes from "prop-types";
 import CssBaseline from "@mui/material/CssBaseline";
+import { NavLink } from "react-router-dom";
 
-const pages = ["Screener", "Valuation"];
+// const pages = ["Screener", "Valuation"];
+
+const pages = [
+  { name: "Screener", path: "/screener" },
+  { name: "Valuation", path: "/valuation" },
+  // { name: "Contact", path: "/contact" },
+];
+
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 function HideOnScroll(props) {
   // console.log()
@@ -122,28 +121,6 @@ function NavBar(props) {
     // document.body.classList.toggle("dark-theme", true);
   };
 
-  // const drawer = (
-  //   <div>
-  //     {/* <Toolbar /> */}
-  //     <div className="nav-bar-logo">COMPANY LOGO</div>
-  //     <Divider />
-  //     <List>
-  //       {navItemNames.map((text, index) => (
-  //         <ListItem key={text} disablePadding>
-  //           <ListItemButton onClick={() => navigate(navURLs[index])}>
-  //             <ListItemIcon>
-  //               {navBarIcons[index]}
-  //               {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
-  //             </ListItemIcon>
-  //             <ListItemText primary={text} />
-  //           </ListItemButton>
-  //         </ListItem>
-  //       ))}
-  //     </List>
-  //     <Divider />
-  //   </div>
-  // );
-
   return (
     <HideOnScroll {...props}>
       <AppBar position="sticky" className="nav-bar-custom">
@@ -154,28 +131,6 @@ function NavBar(props) {
               <CompanyLogo />
               <h2 className="header-color-black-scale ">StockVal</h2>
             </div>
-            {/* <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            classes="text-color-grey-scale"
-            // className="text-color-grey-scale"
-            // href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: "none", md: "flex" },
-              // fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "red",
-              // color: "inherit",
-              textDecoration: "none",
-            }}>
-            LOGO
-          </Typography> */}
-
-            {/* hamburger menu that gets only display when screen size is xs */}
-            {/* <Box sx={{ display: { xs: "flex", md: "none" } }}> */}
             <div className="wrapper-hamburger-menu">
               <IconButton
                 size="large"
@@ -202,8 +157,10 @@ function NavBar(props) {
                 onClose={handleCloseNavMenu}
                 sx={{ display: { xs: "block", md: "none" } }}>
                 {pages.map((page) => (
-                  <MenuItem key={page} onClick={handleCloseNavMenu}>
-                    <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  <MenuItem key={page.path} onClick={handleCloseNavMenu}>
+                    <Typography sx={{ textAlign: "center" }}>
+                      {page.name}
+                    </Typography>
                   </MenuItem>
                 ))}
               </Menu>
@@ -213,34 +170,25 @@ function NavBar(props) {
               <CompanyLogo />
               <h2 className="header-color-black-scale ">StockVal</h2>
             </div>
-            {/* <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
-              color: "inherit",
-              textDecoration: "none",
-            }}>
-            LOGO
-          </Typography> */}
-            {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}> */}
             <div className="nav-items-flexbox-wraper">
               {pages.map((page) => (
+                <NavLink
+                  key={page.name}
+                  to={page.path}
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }>
+                  {page.name}
+                </NavLink>
+              ))}
+              {/* {pages.map((page) => (
                 <a
                   key={page}
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: "white", display: "block" }}>
                   {page}
                 </a>
-              ))}
+              ))} */}
             </div>
             {/* </Box> */}
 
@@ -269,82 +217,11 @@ function NavBar(props) {
                   src="/static/images/avatar/2.jpg"
                 />
               </IconButton>
-              {/* </Tooltip> */}
-              {/* Avatar Menu which we don't need for the moment */}
-              {/* <Menu
-              sx={{ mt: "45px" }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}>
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: "center" }}>
-                    {setting}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Menu> */}
             </Box>
           </Toolbar>
         </Container>
       </AppBar>
     </HideOnScroll>
-    // <div className="header-wrapper">
-    //   <AppBar position="sticky" className="app-bar-mui-component">
-    //     <Toolbar>
-    //       <IconButton
-    //         color="inherit"
-    //         aria-label="open drawer"
-    //         edge="start"
-    //         onClick={handleDrawerToggle}
-    //         sx={{ mr: 2, display: { sm: "none" } }}>
-    //         <MenuIcon />
-    //       </IconButton>
-    //       <Typography variant="h6" noWrap component="div">
-    //         Responsive drawer
-    //       </Typography>
-    //     </Toolbar>
-    //   </AppBar>
-    //   <div className="wrapper-div-drawer">
-    //     <Drawer
-    //       // container={container}
-    //       variant="temporary"
-    //       open={mobileOpen}
-    //       onTransitionEnd={handleDrawerTransitionEnd}
-    //       onClose={handleDrawerClose}
-    //       ModalProps={{
-    //         keepMounted: true, // Better open performance on mobile.
-    //       }}
-    //       sx={{
-    //         display: { xs: "block", sm: "none" },
-    //         "& .MuiDrawer-paper": {
-    //           boxSizing: "border-box",
-    //           width: drawerWidth,
-    //         },
-    //       }}>
-    //       {drawer}
-    //     </Drawer>
-    //     <Drawer
-    //       variant="permanent"
-    //       className="navigation-drawer"
-    //       sx={{
-    //         display: { xs: "none", sm: "block" },
-    //       }}
-    //       open>
-    //       {drawer}
-    //     </Drawer>
-    //   </div>
-    // </div>
   );
 }
 

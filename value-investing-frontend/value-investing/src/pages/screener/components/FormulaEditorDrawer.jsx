@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import TextField from "@mui/material/TextField";
 import {
+  addCustomMetric,
   setCustomMetricDescription,
   setCustomMetricName,
   setRefetchFilterQuantities,
@@ -99,6 +100,11 @@ function FormulaEditorDrawer({ open, handleClose }) {
                   !screenerState.refetchFilterQuantities
                 )
               );
+
+              //add to custom metrics array
+              dispatch(addCustomMetric(response.data));
+
+              //add to custom metrics
               showMessage("Custom metric was successfully created", "success");
 
               resetForm();
@@ -181,17 +187,7 @@ function FormulaEditorDrawer({ open, handleClose }) {
               setError={setErrorFormula}
               formik={formik}
             />
-            {/* <Button
-            
-              className="contained-custom-button"
-              type="submit"
-              variant="contained"
-              startIcon={<SaveOutlinedIcon />}>
-              Save custom filter
-            </Button> */}
-            {/* <Button type="submit" variant="contained" startIcon={<SaveIcon />}>
-              Save Custom Metric
-            </Button> */}
+
             <Persist name="custom-filter-form" />
           </form>
         )}

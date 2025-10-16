@@ -691,6 +691,10 @@ font-size: 15px;
   /* explicit safeguard */
 }
 
+.filters-criteria-grid-item{
+  height: fit-content;
+}
+
 .applied-filters-flexbox-wrapper{
   display: flex;
   gap: 6px;

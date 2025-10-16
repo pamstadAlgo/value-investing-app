@@ -1699,6 +1699,26 @@ class CustomMetricsAPIView(APIView):
 
         #send the newly created db entry as a response along with the message
         return Response(serializer.data)
+
+    def delete(self, request):
+        """
+        Deletes a saved view filter
+        """
+        try:
+            # Step 1: Get the object by its primary key
+            obj = CustomMetrics.objects.get(pk=request.data.get("id"))
+            
+            # Step 2: Delete the object
+            obj.delete()
+
+            #get all remaining objects and return
+            custom_metrics = CustomMetrics.objects.filter(user=request.user)
+            # Serialize the queryset
+            serializer = CustomMetricsSerializer(custom_metrics, many=True)
+            # Return the serialized data
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"An error occurred: {e}")
     
     def put(self, request):
         (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)
