@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 
-FROM python:3.13.3-slim AS prd
+FROM --platform=linux/amd64 python:3.13.3-slim AS prd
 
 # avoid buffering standard output (logs will be shown immediately)
 ENV PYTHONUNBUFFERED=1
