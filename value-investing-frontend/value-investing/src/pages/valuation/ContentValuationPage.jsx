@@ -6,6 +6,8 @@ import ValuationForm from "./components/ValuationForm";
 import ValuationCard from "./components/ValuationCard";
 import { useSelector } from "react-redux";
 import LineGraph from "./components/LineGraph";
+import CompanySearchField from "./components/CompanySearchField";
+import CompanyValuation from "./components/CompanyValuation";
 
 function ContentValuationPage() {
   const valuationState = useSelector((state) => state.valuation);
@@ -21,7 +23,10 @@ function ContentValuationPage() {
               Value stocks to find your next winning investment.
             </div>
           </div>
-          <ValuationForm />
+          <CompanySearchField />
+          <CompanyValuation />
+
+          {/* <ValuationForm />
           <div style={{ marginTop: "32px" }}>
             {valuationState.epvData.map((valuationItem) => {
               //find the penmanEquityValue Object
@@ -36,7 +41,7 @@ function ContentValuationPage() {
                 />
               );
             })}
-          </div>
+          </div> */}
         </div>
       </main>
       {/* <div className="content-wrapper">

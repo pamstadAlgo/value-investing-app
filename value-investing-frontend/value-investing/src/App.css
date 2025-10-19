@@ -41,6 +41,10 @@
       transparent 50%); */
 
   --error-red: red;
+  --bg-color-error: rgba(255, 0, 0, 0.1);
+    --bg-color-neutral: rgba(107, 114, 128, 0.1);
+  --success-color: rgb(22 163 74);
+--bg-color-success: rgb(34 197 94 / 0.1);
   --bg-color-google-login-button: white;
 
   --background-color-mui-backdrop: rgba(0, 0, 0, 0.4);
@@ -66,6 +70,8 @@
   /* defines the black color, mainyl used for header */
   --header-color: rgb(17 24 39);
 
+  --table-border: 1px solid rgba(107, 114, 128, 0.2);
+
   --background-color-nav-bar: rgba(255, 255, 255, 0.7);
 
   /* material ui colors */
@@ -76,6 +82,16 @@
   --input-fields-icons-color: #000000DE;
   --input-fields-icons-color-bright: white;
   --input-fields-hover-bg-color: rgba(235, 234, 236, 0.42);
+
+
+  /* button group */
+  --background-color-button-group-active: rgba(255, 255, 255, 0.4);
+
+  /* title mid size */
+  --font-size-title-mid-size: 18px;
+  --font-weight-title-mid-size: 600;
+  --line-height-title-mid-size: 1.75rem;
+
 }
 
 .dark-theme {
@@ -141,7 +157,8 @@ body, html{
 .MuiSelect-root,
 .MuiTextField-root,
 .MuiAutocomplete-option,
-.MuiMenuItem-root {
+.MuiMenuItem-root,
+.MuiToggleButtonGroup-root {
   font-family: var(--font-family) !important;
 }
 
@@ -377,6 +394,10 @@ input[type=number] {
   font-family: var(--font-family);
 }
 
+.MuiTableContainer-root.custom-mui-table{
+  border: var(--table-border);
+}
+
 .MuiTooltip-tooltip.MuiTooltip-tooltipArrow{
   background: var(--action-color) !important;
 }
@@ -416,6 +437,15 @@ font-size: 13px;
   width: 100%;
   border-radius: 8px;
   font-family: var(--font-family);
+}
+
+.price-tag-wrapper{
+  display: flex;
+  gap: 52px;
+}
+
+.price-tag-wrapper:last-child {
+  margin-right: 12px;
 }
 
 .login-button-text{
@@ -541,6 +571,25 @@ font-size: 15px;
   background-position: center;
 }
 
+.accordion-title-flexbox-wrapper{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+}
+
+.accordion-ticker-title{
+  font-size: var(--font-size-title-mid-size);
+  font-weight: var(--font-weight-title-mid-size);
+  line-height: var(--line-height-title-mid-size);
+  color: var(--header-color)
+}
+
+.MuiAccordion-root.MuiAccordion-rounded.custom-accordion::before{
+  height: 0;
+}
+
 .monaco-highlighted-label > .highlight{
   color: var(--action-color) !important;
 }
@@ -562,6 +611,71 @@ font-size: 15px;
   font-family: var(--font-family);
   border-color: var(--action-color);
   font-weight: 600;
+  border: 1px solid var(--action-color);
+}
+
+.MuiButtonBase-root.MuiToggleButtonGroup-grouped.Mui-selected{
+/* background-color: var(--background-color-button-group-active);
+backdrop-filter: blur(5px);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+background: var(--background-glass-card);
+box-shadow: var(--box-shadow-glass-card);
+backdrop-filter: var(--backdrop-filter-glass-card);
+font-weight: 700;
+}
+
+.MuiToggleButtonGroup-root.custom-toggle-button-group > :first-child {
+  border-radius: 20px 0px 0px 20px;
+}
+
+.MuiToggleButtonGroup-root.custom-toggle-button-group> :last-child {
+  border-radius: 0px 20px 20px 0px;
+}
+
+.MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion{
+  box-shadow: var(--box-shadow-glass-card);
+  background: var(--background-glass-card);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  border-radius: 20px 20px 20px 20px;
+  padding: 20px;
+  margin-top: 0px;
+}
+
+.flexbox-wrapper-price-tag{
+  display: flex;
+  flex-direction: column;
+}
+
+.undervalued{
+  color: var(--success-color);
+  background-color: var(--bg-color-success);
+}
+
+.neutral{
+    background-color: var(--bg-color-neutral);
+}
+
+.overvalued {
+  color: var(--error-red);
+  background-color: var(--bg-color-error);
+}
+
+.title-price-tag{
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-color-grey-scale)
+}
+
+.price-price-tag{
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+.MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion:befre {
+height: 0;
 }
 
 .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiChip-deleteIcon{
@@ -732,9 +846,9 @@ font-size: 15px;
 }
 
 .title-mid-size{
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 1.75rem;
+  font-weight: var(--font-weight-title-mid-size);
+  font-size: var(--font-size-title-mid-size);
+  line-height: var(--line-height-title-mid-size);
   color: var(--header-color)
 }
 
