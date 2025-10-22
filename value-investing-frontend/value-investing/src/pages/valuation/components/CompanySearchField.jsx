@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import TickerAutoComplete from "./TickerAutoComplete";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -8,20 +8,23 @@ import { Button } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
+import { initializeEPVValuations } from "../../../features/valuationSlice";
+import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
+
 function CompanySearchField() {
   const valuationState = useSelector((state) => state.valuation);
-  const [openBackdrop, setBackdropOpen] = React.useState(false);
+  // const [openBackdrop, setBackdropOpen] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const { showMessage } = useSnackbar();
 
   //   const handleSubmit = () => {};
   const axiosInstanceAuth = useAxiosWithAuth();
   const dispatch = useDispatch();
 
+
   const initialValues = {
     tickers:
       valuationState.selectedTickerSymbols?.length > 0 ? "non-empty" : "",
-    // operatingMarginYears: 5,
-    // revenueMarginYears: 5,
-    // epsAvgYears: 3,
   };
 
   const validationSchema = Yup.object({
@@ -39,7 +42,7 @@ function CompanySearchField() {
         enableReinitialize={true}
         validationSchema={validationSchema}
         onSubmit={(values) => {
-          setBackdropOpen(true);
+          setLoading(true);
           // extract tickers
           const qfs_symbols = valuationState.selectedTickerSymbols.map(
             (tickerObject) => tickerObject.qfs_symbol
@@ -48,8 +51,8 @@ function CompanySearchField() {
           // prepare request body for EPV calculation
           const requestBody = {
             qfs_symbols: qfs_symbols,
-            years_op_margin: values.operatingMarginYears,
-            years_avg_revenue: values.revenueMarginYears,
+            // years_op_margin: values.operatingMarginYears,
+            // years_avg_revenue: values.revenueMarginYears,
           };
 
           //prepare request body for equity value calculation
@@ -59,29 +62,37 @@ function CompanySearchField() {
           };
 
           axiosInstanceAuth
-            .post("/screener/compute-epv/", requestBody)
+            .post("/screener/epv-fundamentals/", requestBody)
             .then((response) => {
-              console.log("response.data epv: ", response.data);
+              console.log("response.data epv fundamentals: ", response.data);
               //   dispatch(setEpvData(response.data));
-            })
-            .catch((error) =>
-              console.error("ERROR: POST /screener/compute-epv/: ", error)
-            );
+              dispatch(initializeEPVValuations(response.data));
+              showMessage("Computed EPV successfully", "success");
 
-          axiosInstanceAuth
-            .post("/screener/equity-value-penman/", requestBodyPenman)
-            .then((response) => {
-              console.log("response.data equity penman: ", response.data);
-              //   dispatch(setPenmanEquityValue(response.data));
-              setBackdropOpen(false);
+              // setBackdropOpen(false);
             })
             .catch((error) => {
-              console.error(
-                "ERROR: POST /screener/equity-value-penman/: ",
-                error
-              );
-              setBackdropOpen(false);
+              showMessage(`Error computing EPV ${error}`, "error");
+              // setBackdropOpen(false);
+              console.error("ERROR: POST /screener/compute-epv/: ", error);
             });
+
+          setLoading(false);
+
+          // axiosInstanceAuth
+          //   .post("/screener/equity-value-penman/", requestBodyPenman)
+          //   .then((response) => {
+          //     console.log("response.data equity penman: ", response.data);
+          //     //   dispatch(setPenmanEquityValue(response.data));
+          //     setBackdropOpen(false);
+          //   })
+          //   .catch((error) => {
+          //     console.error(
+          //       "ERROR: POST /screener/equity-value-penman/: ",
+          //       error
+          //     );
+          //     setBackdropOpen(false);
+          //   });
         }}>
         {(formik) => (
           <form onSubmit={formik.handleSubmit}>
@@ -188,7 +199,13 @@ function CompanySearchField() {
                 type="submit"
                 variant="contained"
                 className="contained-custom-button fit-content-button"
-                startIcon={<AttachMoneyOutlinedIcon className="button-icon" />}>
+                startIcon={
+                  loading ? (
+                    <CircularProgress className="custom-circular-progress" />
+                  ) : (
+                    <AttachMoneyOutlinedIcon className="button-icon" />
+                  )
+                }>
                 Value companies
               </Button>
               {/* <Button
@@ -202,13 +219,13 @@ function CompanySearchField() {
           </form>
         )}
       </Formik>
-      <Backdrop
+      {/* <Backdrop
         sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={openBackdrop}
         // onClick={handleClose}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop> */}
     </div>
   );
 }

@@ -624,6 +624,15 @@ backdrop-filter: var(--backdrop-filter-glass-card);
 font-weight: 700;
 }
 
+.MuiButtonBase-root.MuiToggleButtonGroup-grouped.Mui-selected:hover {
+  background: var(--background-glass-card)
+}
+
+.MuiCircularProgress-root.custom-circular-progress{
+  color: white;
+  scale: 0.7;
+}
+
 .MuiToggleButtonGroup-root.custom-toggle-button-group > :first-child {
   border-radius: 20px 0px 0px 20px;
 }
@@ -668,11 +677,26 @@ font-weight: 700;
 }
 
 .price-price-tag{
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 16px;
 }
+
+.MuiOutlinedInput-root.custom-input-valuation-table > fieldset {
+  border: none;
+}
+
+.MuiOutlinedInput-root.custom-input-valuation-table>input {
+  text-align: right;
+  padding-right: 2px;
+}
+
+.MuiTableRow-root.custom-table-row-valuation:hover{
+  background-color: rgba(178, 178, 178, 0.3);
+}
+
+
 
 .MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion:befre {
 height: 0;

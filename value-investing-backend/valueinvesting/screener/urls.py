@@ -9,6 +9,7 @@ urlpatterns = [
     path("nr-of-filtered-stocks/", views.StocksFilterNumberOfStocksAPIView.as_view()),
     path("filter-quantities/", views.StockFilterAvailableQuantitiesAPIView.as_view()),
     path("compute-epv/", views.ComputeEPVAPIView.as_view()),
+    path("epv-fundamentals/", views.EPVFundamentalsAPIView.as_view()),
     path("equity-value-penman/", views.ComputeEquityValuePenmanAPIView.as_view()),
     path("custom-metrics/", views.CustomMetricsAPIView.as_view()),
     path("filter-view/", views.FilterViewsAPIView.as_view()),

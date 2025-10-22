@@ -24,7 +24,13 @@ function ContentValuationPage() {
             </div>
           </div>
           <CompanySearchField />
-          <CompanyValuation />
+
+          {/* loop through valuation data */}
+          {valuationState.epvValuations.map((valuationObj) => {
+            var qfsSymbol = Object.keys(valuationObj)[0];
+            var epvData = valuationObj[qfsSymbol];
+            return <CompanyValuation epvData={epvData} qfsSymbol={qfsSymbol} />;
+          })}
 
           {/* <ValuationForm />
           <div style={{ marginTop: "32px" }}>

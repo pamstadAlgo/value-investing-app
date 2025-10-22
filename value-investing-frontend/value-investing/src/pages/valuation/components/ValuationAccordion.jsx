@@ -7,11 +7,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Button from "@mui/material/Button";
 import AccordionTitle from "./AccordionTitle";
 import AccordionBodyEpv from "./AccordionBodyEpv";
-function ValuationAccordion() {
+function ValuationAccordion({ epvData, qfsSymbol }) {
   return (
     <Accordion className="custom-accordion">
-      <AccordionTitle />
-      <AccordionBodyEpv />
+      <AccordionTitle qfsSymbol={qfsSymbol} />
+      <AccordionBodyEpv data={epvData} qfsSymbol={qfsSymbol} />
     </Accordion>
   );
 }

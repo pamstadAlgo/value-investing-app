@@ -26,6 +26,7 @@ from rest_framework import status
 #from .epv import compute_epv_cpp
 # from .helpers import add
 from django.db.models import Q
+from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg
 
 
 
@@ -1167,6 +1168,229 @@ class ComputeEPVAPIView(APIView):
 
         return Response(response)
 
+
+def get_revenue(qfs_symbol):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    last_5_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')
+        .values('revenue')[:5]  # only retrieve revenue field
+    )
+
+    # Aggregate min, avg, max revenue on those 5 records
+    revenue_stats = last_5_records.aggregate(
+        min_revenue=Min('revenue'),
+        avg_revenue=Avg('revenue'),
+        max_revenue=Max('revenue')
+    )
+
+    return [
+        revenue_stats['min_revenue'],
+        revenue_stats['avg_revenue'],
+        revenue_stats['max_revenue']
+    ]
+
+def get_op_margin(qfs_symbol):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_5_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')
+        .values('operating_income', 'revenue')[:5]
+    )
+
+    # Compute the operating margins (safely handle division by zero)
+    margins = [
+        record['operating_income'] / record['revenue']
+        for record in last_5_records
+        if record['revenue'] not in (None, 0)
+    ]
+
+    if not margins:  # No valid margins (e.g., missing or zero revenues)
+        return [None, None, None]
+
+    # Compute min, average, max manually in Python
+    min_margin = min(margins)
+    avg_margin = sum(margins) / len(margins)
+    max_margin = max(margins)
+
+    return [round(min_margin,2), round(avg_margin,2), round(max_margin,2)]
+
+def get_cash(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = BalanceSheetQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+    if latest_record:
+        total_cash = latest_record.cash_and_equiv + latest_record.st_investments
+    else:
+        total_cash = None
+
+    return total_cash
+
+def get_debt(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = BalanceSheetQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+    if latest_record:
+        total_debt = latest_record.st_debt + latest_record.lt_debt
+    else:
+        total_debt = None
+
+    return total_debt
+
+def get_nr_diluted_shares(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = IncomeStatementQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+
+    if latest_record:
+        nr_shares_dil = latest_record.shares_diluted
+    else:
+        nr_shares_dil = None
+
+    return nr_shares_dil
+
+class EPVFundamentalsAPIView(APIView):
+    def post(self, request):
+        """
+        This endpoint returns the fundamentals needed for valuing a company based on Earnings Power Value.
+        The return structure will be:
+
+        const exampleData = [
+            { Revenue: [159, 237, 262] }, // bear, base, bull
+            { "Operating Margin": [6.0, 9.0, 24] },
+            { EBIT: [262, 16.0, 24] },
+            { "D&A": [305, 3.7, 67] },
+            { "Maintenance Capex": [356, 16.0, 49] },
+            { "Adjusted Income": [356, 16.0, 49] },
+            { "Tax Rate": [356, 16.0, 49] },
+            { "Sustainable NOPAT": [356, 16.0, 49] },
+            { WACC: [356, 16.0, 49] },
+            { "EPV operating business": [356, 16.0, 49] },
+            { Cash: [356, 16.0, 49] },
+            { Debt: [356, 16.0, 49] },
+            { "Nr. shares": [356, 16.0, 49] },
+            { "EPV per share": [356, 16.0, 49] },
+            ];
+
+        Each value in a metric array corresponds to bear, base, bull case
+        """
+        #tickers is of type list
+        qfs_symbols = request.data['qfs_symbols']
+        today = datetime.today()
+
+        # Format as dd-mm-yyyy
+        formatted_date = today.strftime("%d-%m-%Y")
+
+
+        #response list
+        response = []
+
+        for qfs_symbol in qfs_symbols:
+            val_data = []
+            # valuation = cache.get(f'{qfs_symbol}_EPV_{formatted_date}')
+            valuation = None
+            # valuation = None
+            if valuation is None:
+                #compute revenue: bear case = min(past 5 years), base case = avg(past 5 years), bull case = max(past 5 years)
+                revenue_vals = get_revenue(qfs_symbol=qfs_symbol)
+                op_margins = get_op_margin(qfs_symbol=qfs_symbol)
+
+                #compute ebit
+                ebit = [rev*op_margin if (rev is not None and op_margin is not None) else None
+                         for rev, op_margin in zip(revenue_vals, op_margins)]
+
+                #get cash (includes cash_and_equiv + st investments)
+                cash = get_cash(qfs_symbol=qfs_symbol)
+                cash = [cash]*3
+
+                #get total debt
+                debt = get_debt(qfs_symbol=qfs_symbol)
+                debt = [debt]*3
+
+                #get number of shares
+                nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
+                nr_shares = [nr_shares]*3
+
+                #define constant values like d&a, maintenance capex, tax rate, wacc
+                d_a = [0]*3
+                main_capex = [0]*3
+                tax_rate = [0.3]*3
+                wacc = [0.11, 0.1, 0.09]
+
+                #compute adjusted income
+                adj_income = [ebit+d_a+main_capex if (ebit is not None and d_a is not None and main_capex is not None) else None
+                              for ebit, d_a, main_capex in zip(ebit, d_a, main_capex)] 
+
+                #compute sustainable nopat
+                sus_nopat = [adj_inc *(1-tr) if (adj_inc is not None and tr is not None) else None
+                             for adj_inc, tr in zip(adj_income, tax_rate)]
+
+                #compute EPV operating business
+                epv_op_business = [sus_nopat/wacc if (sus_nopat is not None and wacc is not None and wacc != 0) else None
+                                   for sus_nopat, wacc in zip(sus_nopat, wacc)]
+
+                #compute epv per share
+                epv_per_share = [round((epv_bus + cash - debt)/nr_shares,1) if (epv_bus is not None and cash is not None and debt is not None and nr_shares is not None and nr_shares != 0) else None
+                                 for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
+
+                #create valuation dictionary
+                val_data.append({'Revenue' : revenue_vals})
+                val_data.append({'Operating Margin' : op_margins})
+                val_data.append({'EBIT' : ebit})
+                val_data.append({'D&A' : d_a })
+                val_data.append({'Maintenance Capex' : main_capex})
+                val_data.append({'Adjusted Income' : adj_income})
+                val_data.append({'Tax Rate' : tax_rate})
+                val_data.append({'Sustainable NOPAT' : sus_nopat})
+                val_data.append({'WACC' : wacc})
+                val_data.append({'EPV operating business' : epv_op_business})
+                val_data.append({'Cash' : cash})
+                val_data.append({'Debt' : debt})
+                val_data.append({'Nr. Shares' : nr_shares})
+                val_data.append({'EPV per share': epv_per_share})
+
+                # valuation = {'Revenue' : revenue_vals
+                #             ,'Operating Margin' : op_margins 
+                #             ,'EBIT' : ebit 
+                #             ,'D&A' : d_a 
+                #             ,'Maintenance Capex' : main_capex
+                #             ,'Adjusted Income' : adj_income
+                #             ,'Tax Rate' : tax_rate 
+                #             ,'Sustainable NOPAT' : sus_nopat
+                #             ,'WACC' : wacc
+                #             ,'EPV operating business' : epv_op_business
+                #             ,'Cash' : cash
+                #             ,'Debt' : debt
+                #             ,'Nr. Shares' : nr_shares
+                #             ,'EPV per share': epv_per_share
+                #             }
+
+
+                #compute epv for ticker
+                #valuation = compute_epv(qfs_symbol, op_margin_nr_years=years_op_margin,  avg_revenue_nr_years = avg_revenue_nr_years)
+
+                #store valuation in cache
+                # cache.set(f'{qfs_symbol}_EPV_{formatted_date}', valuation, timeout=CACHE_TTL)
+            
+            
+            response.append({qfs_symbol: val_data})
+
+        return Response(response)
 
 def get_eps_forecasts(ticker):
     """gets eps forecasts from yahoo finance (if available for given company)"""

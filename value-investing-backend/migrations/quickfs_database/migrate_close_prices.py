@@ -35,7 +35,7 @@ def migrate_close_prices(
     
     for item in market_data:
         qfs_symbol_v2 = item["qfs_symbol_v2"]
-        print(f"qfs symbol: {qfs_symbol_v2}")
+        # print(f"qfs symbol: {qfs_symbol_v2}")
         qfs_symbols.append(qfs_symbol_v2)
         prices.append(item["price"])
     
@@ -81,7 +81,12 @@ def migrate_close_prices(
 for country in countries:
     url = f"https://public-api.quickfs.net/v1/market-data/last-close/{country}?api_key={os.environ['QUICKFS_API_KEY']}"
 
-    print('url we pass: ', url)
-
     #arguments are url, dbname, user, password, host, port
+    print("#######################################")
+    print("Start migrating close prices")
+    print("#######################################\n\n\n")
+
     migrate_close_prices(url,os.environ['POSTGRES_DB'],os.environ['POSTGRES_USER'],os.environ['POSTGRES_PASSWORD'],os.environ['DB_HOST'],int(os.environ['DB_PORT']))
+    print("#######################################")
+    print("End migrating close prices")
+    print("#######################################\n\n\n")

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -6,22 +6,119 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Tooltip from "@mui/material/Tooltip";
+import { useDispatch } from "react-redux";
+import { updateEPVValuationData } from "../../../features/valuationSlice";
+import EPVBodyTableRow from "./EPVBodyTableRow";
 
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
 }
 
+const exampleData = [
+  { Revenue: [159, 237, 262] }, // bear, base, bull
+  { "Operating Margin": [6.0, 9.0, 24] },
+  { EBIT: [262, 16.0, 24] },
+  { "D&A": [305, 3.7, 67] },
+  { "Maintenance Capex": [356, 16.0, 49] },
+  { "Adjusted Income": [356, 16.0, 49] },
+  { "Tax Rate": [356, 16.0, 49] },
+  { "Sustainable NOPAT": [356, 16.0, 49] },
+  { WACC: [356, 16.0, 49] },
+  { "EPV operating business": [356, 16.0, 49] },
+  { Cash: [356, 16.0, 49] },
+  { Debt: [356, 16.0, 49] },
+  { "Nr. shares": [356, 16.0, 49] },
+  { "EPV per share": [356, 16.0, 49] },
+];
+
 const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
+  createData("Revenue", 159, 6.0, 24),
+  createData("Operating Margin", 237, 9.0, 37),
+  createData("EBIT", 262, 16.0, 24),
+  createData("D&A", 305, 3.7, 67),
+  createData("Maintenance Capex", 356, 16.0, 49),
+  createData("Adjusted Income", 356, 16.0, 49),
+  createData("Tax Rate", 356, 16.0, 49),
+  createData("Sustainable NOPAT", 356, 16.0, 49),
+  createData("WACC", 356, 16.0, 49),
+  createData("EPV operating business", 356, 16.0, 49),
+  createData("Cash", 356, 16.0, 49),
+  createData("Debt", 356, 16.0, 49),
+  createData("Nr. shares", 356, 16.0, 49),
+  createData("EPV per share", 356, 16.0, 49),
 ];
 
 const columns = ["Bear Case", "Base Case", "Bull Case"];
 
-function AccordionBodyEpv() {
+function AccordionBodyEpv({ data, qfsSymbol }) {
+  const [value, setValue] = useState("");
+  // const [data, setData] = useState(exampleData);
+  const [focusedValue, setFocusedValue] = useState("");
+  const [error, setError] = useState(false);
+  const dispatch = useDispatch();
+
+  const handleChange = (e, metricName, caseIndex) => {
+    const val = e.target.value;
+    // const val = e.target.valueAsNumber;
+
+    console.log("e.target.value: ", e.target.value);
+    console.log("e.target.valueAsNumber: ", e.target.valueAsNumber);
+
+    console.log("metricName: ", metricName);
+    console.log("caseIndex: ", caseIndex);
+
+    // Allow empty input or valid decimal numbers
+    // if (
+    //   val === "" ||
+    //   /^-?$/.test(val) || // just "-" is fine
+    //   /^-?\d+\.?\d*$/.test(val) || // digits, optional dot, then more digits
+    //   /^-?\d*\.$/.test(val) // "1." or "-1." (user might still type decimals)
+    // ) {
+    // setValue(val);
+    // if (!isNaN(Number(e.target.valueAsNumber))) {
+    dispatch(
+      updateEPVValuationData({
+        newValue: val,
+        qfsSymbol: qfsSymbol,
+        metricName: metricName,
+        caseIndex: caseIndex,
+      })
+    );
+    // } else {
+
+    if (isNaN(Number(e.target.valueAsNumber))) {
+      console.log(
+        "error with e.target.valueAsNumber: ",
+        e.target.valueAsNumber
+      );
+    }
+    // }
+    setError(false);
+    // } else {
+    //   // Invalid input: show error
+    //   setError(true);
+    // }
+  };
+
+  const handleBlur = (e, metricName, caseIndex) => {
+    // const val = e.target.value;
+    // const val = e.target.valueAsNumber;
+
+    console.log("e.target.value blur: ", e.target.value);
+    console.log("e.target.valueAsNumber blur: ", e.target.valueAsNumber);
+    console.log("transformed number: ", Number(e.target.value));
+  };
+
+  const handleFocus = (e, metricName, caseIndex) => {
+    // const val = e.target.value;
+    // const val = e.target.valueAsNumber;
+
+    console.log("focused value we set: ", e.target.value);
+    setFocusedValue(e.target.value);
+  };
+
   return (
     <TableContainer
       component={Paper}
@@ -29,6 +126,7 @@ function AccordionBodyEpv() {
         backgroundColor: "transparent",
         boxShadow: "none",
         borderRadius: "16px",
+        marginTop: "12px",
       }}
       className="custom-mui-table"
       //   sx={{
@@ -38,7 +136,7 @@ function AccordionBodyEpv() {
       //     backdropFilter: "blur(12px)",
       //       }}
     >
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
@@ -56,19 +154,87 @@ function AccordionBodyEpv() {
         //     backgroundColor: "rgba(255, 255, 255, 0.6)", // translucent white
         //           }}
         >
-          {rows.map((row) => (
-            <TableRow
-              key={row.name}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-              <TableCell component="th" scope="row">
-                {row.name}
-              </TableCell>
-              <TableCell align="right">{row.calories}</TableCell>
-              <TableCell align="right">{row.fat}</TableCell>
-              <TableCell align="right">{row.carbs}</TableCell>
-              <TableCell align="right">{row.protein}</TableCell>
-            </TableRow>
-          ))}
+          {data?.map((row) => {
+            const metricName = Object.keys(row)[0];
+            const [bear, base, bull] = row[metricName];
+            return (
+              <EPVBodyTableRow
+                metricName={metricName}
+                bear={bear}
+                bull={bull}
+                base={base}
+                qfsSymbol={qfsSymbol}
+              />
+            );
+            //   return (
+            //     <TableRow
+            //       className="custom-table-row-valuation"
+            //       sx={{
+            //         "&:last-child td, &:last-child th": { border: 0 },
+            //       }}>
+            //       <TableCell component="th" scope="row">
+            //         {metricName}
+            //       </TableCell>
+            //       <TableCell align="right">
+            //         {/* <Tooltip
+            //           placement="right-start"
+            //           arrow
+            //           open={isNaN(Number(bear)) ? true : true}
+            //           title="Invalid number"> */}
+            //         <div>
+            //           <OutlinedInput
+            //             type="number"
+            //             value={bear}
+            //             onFocus={(e) => handleFocus(e, metricName, 0)}
+            //             onBlur={(e) => handleBlur(e, metricName, 0)}
+            //             // onBlur={(e) => handleChange(e, metricName, 0)}
+            //             // onBlur={setError(false)}
+            //             size="small"
+            //             className="custom-input-valuation-table"
+            //             onChange={(e) => {
+            //               console.log("this is number(bear): ", Number(bear));
+            //               handleChange(e, metricName, 0);
+            //             }}
+            //           />
+            //         </div>
+            //         {/* </Tooltip> */}
+            //       </TableCell>
+            //       <TableCell align="right">
+            //         {/* <Tooltip
+            //           placement="right-start"
+            //           arrow
+
+            //           title="Only numeric values are allowed"> */}
+            //         <OutlinedInput
+            //           type="number"
+            //           value={base}
+            //           size="small"
+            //           onBlur={(e) => handleBlur(e, metricName, 1)}
+            //           // onBlur={(e) => handleChange(e, metricName, 1)}
+            //           className="custom-input-valuation-table"
+            //           onChange={(e) => handleChange(e, metricName, 1)}
+            //         />
+            //         {/* </Tooltip> */}
+            //       </TableCell>
+            //       <TableCell align="right">
+            //         {/* <Tooltip
+            //           placement="right-start"
+            //           arrow
+
+            //           title="Only numeric values are allowed"> */}
+            //         <OutlinedInput
+            //           type="number"
+            //           value={bull}
+            //           size="small"
+            //           className="custom-input-valuation-table"
+            //           // onBlur={(e) => handleChange(e, metricName, 1)}
+            //           onChange={(e) => handleChange(e, metricName, 2)}
+            //         />
+            //         {/* </Tooltip> */}
+            //       </TableCell>
+            //     </TableRow>
+            //   );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
