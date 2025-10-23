@@ -13,6 +13,10 @@ load_dotenv()
 CUTOFF_DATE = date.today() - relativedelta(months=8)
 BATCH_SIZE = 200
 
+
+
+#keys of the screener mapping corresponds to fields in the different tables (BalanceSheet, IncomeStatement), values correspond to columns in the ScreenerData table
+#this mapping is needed because for example the BalanceSheetAnnual and BalanceSheetQuarterly have same columns (cash_and_equiv, st_investments, etc.) --> we need different names for these in the screener data table
 SCREENERDATA_MAPPING = {
     # TradedCompany
     "TradedCompanies" : 
@@ -71,7 +75,10 @@ SCREENERDATA_MAPPING = {
         "eps_diluted": "eps_diluted_y",
         "shares_basic": "shares_basic_y",
         "shares_diluted": "shares_diluted_y",
-        "qfs_symbol_id" : "qfs_symbol_id",
+        "shares_eop": "shares_eop_y",
+        "shares_eop_change": "shares_eop_change_y",
+
+        # "qfs_symbol_id" : "qfs_symbol_id",
         },
 
     # BalanceSheetAnnual
@@ -420,8 +427,8 @@ def map_columns(row, table_name):
     for col, value in row.items():
         if col in mapping:
             mapped_row.update({mapping[col] : value})
-        else:
-            print(f"Warning: No mapping for column '{col}', table: {table_name}")
+        # else:
+        #     print(f"Warning: No mapping for column '{col}', table: {table_name}")
     return mapped_row
 
 # -----------------------------

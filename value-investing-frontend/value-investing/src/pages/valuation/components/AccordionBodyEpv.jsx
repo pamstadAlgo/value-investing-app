@@ -8,9 +8,10 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Tooltip from "@mui/material/Tooltip";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { updateEPVValuationData } from "../../../features/valuationSlice";
 import EPVBodyTableRow from "./EPVBodyTableRow";
+import { computeEBIT } from "./selectorFunctions";
 
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
@@ -119,6 +120,60 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
     setFocusedValue(e.target.value);
   };
 
+  // const computeEBIT = (epvObj, qfsSymbol, caseIndex) => {
+  //   console.log("epvObj that we get: ", epvObj);
+
+  //   if (epvObj) {
+  //     //get revenue and op margin values
+  //     var revenues = epvObj[qfsSymbol].find((obj) =>
+  //       obj.hasOwnProperty("Revenue")
+  //     );
+
+  //     revenues = revenues ? revenues["Revenue"] : 0;
+
+  //     var opMargins = epvObj[qfsSymbol].find((obj) =>
+  //       obj.hasOwnProperty("Operating Margin")
+  //     );
+
+  //     opMargins = opMargins ? opMargins["Operating Margin"] : 0;
+
+  //     console.log("revenues: ", revenues);
+  //     console.log("opMargins: ", opMargins);
+
+  //     return revenues[caseIndex] * opMargins[caseIndex];
+  //   }
+
+  // };
+
+  const ebitBear = useSelector((state) =>
+    computeEBIT(
+      //extract only state for qfs symbol of interest
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      0
+    )
+  );
+  const ebitBase = useSelector((state) =>
+    computeEBIT(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      1
+    )
+  );
+  const ebitBull = useSelector((state) =>
+    computeEBIT(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      2
+    )
+  );
+
   return (
     <TableContainer
       component={Paper}
@@ -137,7 +192,7 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
       //       }}
     >
       <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
-        <TableHead>
+        <TableHead className="custom-table-head">
           <TableRow>
             <TableCell></TableCell>
             {columns.map((column) => {
@@ -156,7 +211,16 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
         >
           {data?.map((row) => {
             const metricName = Object.keys(row)[0];
-            const [bear, base, bull] = row[metricName];
+            var [bear, base, bull] = row[metricName];
+
+            //check for derived quantities
+            switch (metricName) {
+              case "EBIT":
+                bear = ebitBear;
+                base = ebitBase;
+                bull = ebitBull;
+            }
+
             return (
               <EPVBodyTableRow
                 metricName={metricName}
@@ -164,6 +228,8 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
                 bull={bull}
                 base={base}
                 qfsSymbol={qfsSymbol}
+                isDerived={row.isDerived}
+                description={row.description}
               />
             );
             //   return (

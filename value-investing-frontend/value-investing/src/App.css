@@ -654,6 +654,7 @@ font-weight: 700;
 .flexbox-wrapper-price-tag{
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 
 .undervalued{
@@ -681,6 +682,13 @@ font-weight: 700;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 16px;
+  text-align: center;
+}
+
+.accordion-title-qfs-symbol{
+  color: var(--text-color-grey-scale);
+  margin-left: 10px;
+  font-size: 14px;
 }
 
 .MuiOutlinedInput-root.custom-input-valuation-table > fieldset {
@@ -696,6 +704,20 @@ font-weight: 700;
   background-color: rgba(178, 178, 178, 0.3);
 }
 
+.MuiTableHead-root.custom-table-head{
+  background-color: var(--action-color);
+}
+
+.MuiTableHead-root.custom-table-head > tr > th {
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.MuiSvgIcon-root.custom-icon-table{
+  vertical-align: bottom;
+  fill: var(--text-color-grey-scale)
+}
 
 
 .MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion:befre {

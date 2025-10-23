@@ -16,6 +16,7 @@ urlpatterns = [
     path("charfield-filter-options/", views.CharFieldFilterOptionsAPIView.as_view()),
     path("add-column/", views.AddColumn.as_view()),
     path("get-ticker-symbols/", views.TickerSymbols.as_view()),
+    path("last-close-price/<str:qfs_symbol>/", views.LastClosePriceAPIView.as_view()),
     path("micropcapclub-profiles/", views.MicroCapClubProfiles.as_view()),
     path("pybind-example/", views.PyBindExample.as_view())   
 ]

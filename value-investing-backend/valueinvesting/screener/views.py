@@ -1349,20 +1349,20 @@ class EPVFundamentalsAPIView(APIView):
                                  for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
 
                 #create valuation dictionary
-                val_data.append({'Revenue' : revenue_vals})
-                val_data.append({'Operating Margin' : op_margins})
-                val_data.append({'EBIT' : ebit})
-                val_data.append({'D&A' : d_a })
-                val_data.append({'Maintenance Capex' : main_capex})
-                val_data.append({'Adjusted Income' : adj_income})
-                val_data.append({'Tax Rate' : tax_rate})
-                val_data.append({'Sustainable NOPAT' : sus_nopat})
-                val_data.append({'WACC' : wacc})
-                val_data.append({'EPV operating business' : epv_op_business})
-                val_data.append({'Cash' : cash})
-                val_data.append({'Debt' : debt})
-                val_data.append({'Nr. Shares' : nr_shares})
-                val_data.append({'EPV per share': epv_per_share})
+                val_data.append({'Revenue' : revenue_vals, 'isDerived': False})
+                val_data.append({'Operating Margin' : op_margins, 'isDerived': False})
+                val_data.append({'EBIT' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
+                val_data.append({'D&A' : d_a, 'isDerived': False })
+                val_data.append({'Maintenance Capex' : main_capex, 'isDerived': False})
+                val_data.append({'Adjusted Income' : adj_income, 'isDerived': True, 'description': "Adjusted Income is a derived quantity. Adjusted Income = EBIT + D&A - Maintenance Capex"})
+                val_data.append({'Tax Rate' : tax_rate, 'isDerived': False})
+                val_data.append({'Sustainable NOPAT' : sus_nopat, 'isDerived': True, 'description': "Sustainable NOPAT is a derived quantity. NOPAT = Adjusted Income*(1 - Tax Rate)"})
+                val_data.append({'WACC' : wacc, 'isDerived': False})
+                val_data.append({'EPV operating business' : epv_op_business, 'isDerived': True, 'description': "EPV operating business is a derived quantity. EPV operating business = Adjusted Income/Wacc"})
+                val_data.append({'Cash' : cash, 'isDerived': False})
+                val_data.append({'Debt' : debt, 'isDerived': False})
+                val_data.append({'Nr. Shares' : nr_shares, 'isDerived': False})
+                val_data.append({'EPV per share': epv_per_share, 'isDerived': True, 'description': "EPV per share is a derived quantity. EPV per share = (EPV operating business + Cash - Debt)/Nr. Shares"})
 
                 # valuation = {'Revenue' : revenue_vals
                 #             ,'Operating Margin' : op_margins 
@@ -1868,14 +1868,6 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         customFields = get_custom_metrics(CustomMetrics)
         
         
-        #print('these are valuation fields: ', screener_filter_fields)
-        # balanceSheetFields = get_model_fields(BalanceSheetAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # incomeStatementFields = get_model_fields(IncomeStatementAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # cashFlowStatementFields = get_model_fields(CashFlowStatementAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # keyRatioFields = get_model_fields(KeyRatiosAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # companyFields = get_model_fields(TradedCompanies, fields_to_exclude=["id", "ticker", "qfs_symbol", "company_type", "name"])
-        # customFields = get_custom_metrics(CustomMetrics)
-
         responseList = []
 
         responseBalanceSheet = {"tableName" : "Balance Sheet (Y)", "tableColumns" : balance_y_fields}
@@ -1888,19 +1880,31 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         responseValuation = {"tableName" : "Valuation", "tableColumns" : valuation_fields}
         responseCustomMetrics = {"tableName": "CustomMetrics", "tableColumns" : customFields}
         
-        # responseIncomeStatement = {"tableName" : "IncomeStatement", "tableColumns" : incomeStatementFields}
-        # responseCashFlowStatement = {"tableName" : "CashFlowStatement", "tableColumns" : cashFlowStatementFields}
-        # responseKeyRatios = {"tableName" : "KeyRatios", "tableColumns" : keyRatioFields}
-        # responseCompanyFields = {"tableName" : "CompanyInfo", "tableColumns": companyFields}
-        # responseCustomMetrics = {"tableName": "CustomMetrics", "tableColumns" : customFields}
-       
         responseList.extend([responseIncomeY, responseCompanyFields, responseBalanceSheet, responseBalanceSheetQ, responseValuation, responseKrY, responseKrQ,responseCfY,responseCustomMetrics])
 
         responseSerialized = StockScreenerFiltersSerializer(responseList, many=True).data
 
-        # return Response({'test' : 10})
         return Response(responseSerialized)
-    
+
+class LastClosePriceAPIView(APIView):
+    def get(self, request, qfs_symbol):
+        """
+        endpoint that returns all available fields that can be used as a filter for the stock screener
+        {incomeStatement: ["field1", "field2", "field3", "field4", "field5", etc.], balanceSheet: ["fieldb1", "fieldb2", etc.], ...}
+        """
+        result = (
+            TradedCompanies.objects
+            .filter(qfs_symbol=qfs_symbol)
+            .values('name', 'last_close_price').first()
+        )
+
+        # name, last_close_price = result
+
+        return Response({'qfsSymbol': qfs_symbol, 'lastClosePrice': result['last_close_price'], 'name' : result['name']})
+
+        # metrics = CustomMetrics.objects.filter(user=request.user)
+        # serializer = CustomMetricsSerializer(metrics, many=True)
+        # return Response(serializer.data)
 
 class CustomMetricsAPIView(APIView):
     def get(self, request):

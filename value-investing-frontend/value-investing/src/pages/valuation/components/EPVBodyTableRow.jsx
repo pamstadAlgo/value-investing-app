@@ -5,8 +5,17 @@ import TableCell from "@mui/material/TableCell";
 import { useDispatch } from "react-redux";
 import { updateEPVValuationData } from "../../../features/valuationSlice";
 import Tooltip from "@mui/material/Tooltip";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 
-function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
+function EPVBodyTableRow({
+  metricName,
+  bear,
+  base,
+  bull,
+  qfsSymbol,
+  isDerived,
+  description,
+}) {
   const [errrorBearCase, setErrorBearCase] = useState(false);
   const [errrorBaseCase, setErrorBaseCase] = useState(false);
   const [errrorBullCase, setErrorBullCase] = useState(false);
@@ -19,6 +28,7 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
   2. we set an error if in the handle change the e.target.valueAsNumber is nan
   3. We open the tooltip in case the error is true
   */
+
 
   const handleChange = (e, metricName, caseIndex) => {
     const val = e.target.value;
@@ -101,6 +111,18 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
     console.log("e.target.value blur: ", e.target.value);
     console.log("e.target.valueAsNumber blur: ", e.target.valueAsNumber);
     console.log("transformed number: ", Number(e.target.value));
+
+    //convert input to number in case it is valid
+    if (!isNaN(Number(e.target.valueAsNumber))) {
+      dispatch(
+        updateEPVValuationData({
+          newValue: e.target.valueAsNumber,
+          qfsSymbol: qfsSymbol,
+          metricName: metricName,
+          caseIndex: caseIndex,
+        })
+      );
+    }
   };
 
   const handleFocus = (e, metricName, caseIndex) => {
@@ -119,7 +141,21 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
         "&:last-child td, &:last-child th": { border: 0 },
       }}>
       <TableCell component="th" scope="row">
-        {metricName}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div>{metricName} </div>
+          {isDerived && (
+            <Tooltip
+              placement="right-start"
+              arrow
+              //   open={errrorBearCase}
+              title={description}>
+              <div>
+                {" "}
+                <HelpOutlineOutlinedIcon className="custom-icon-table" />{" "}
+              </div>
+            </Tooltip>
+          )}
+        </div>
       </TableCell>
       <TableCell align="right">
         <Tooltip
@@ -129,6 +165,7 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
           title="Invalid number">
           <div>
             <OutlinedInput
+              disabled={isDerived}
               type="number"
               value={bear}
               onFocus={(e) => handleFocus(e, metricName, 0)}
@@ -152,6 +189,7 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
           open={errrorBaseCase}
           title="Invalid number">
           <OutlinedInput
+            disabled={isDerived}
             type="number"
             value={base}
             size="small"
@@ -169,6 +207,7 @@ function EPVBodyTableRow({ metricName, bear, base, bull, qfsSymbol }) {
           open={errrorBullCase}
           title="Invalid number">
           <OutlinedInput
+            disabled={isDerived}
             type="number"
             value={bull}
             size="small"
