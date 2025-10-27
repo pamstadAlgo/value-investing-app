@@ -22,6 +22,27 @@ export const computeEBIT = (epvObj, qfsSymbol, caseIndex) => {
   }
 };
 
+export function getCurrencySymbol(code) {
+  const symbols = {
+    HKD: "HK$",
+    CNY: "¥",
+    SEK: "kr",
+    JPY: "¥",
+    NOK: "kr",
+    AUD: "A$",
+    GBP: "£",
+    ARS: "$",
+    CHF: "CHF",
+    CAD: "C$",
+    DKK: "kr",
+    EUR: "€",
+    USD: "$",
+    PLN: "zł",
+  };
+
+  return symbols[code] || code; // fallback to the code if unknown
+}
+
 export const computeAdjustedIncome = (epvObj, qfsSymbol, caseIndex) => {
   /* adjusted income = EBIT + D&A - MaintenanceCapex*/
   if (epvObj) {

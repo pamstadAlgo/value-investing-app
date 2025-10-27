@@ -1,10 +1,13 @@
 import React from "react";
+import { getCurrencySymbol } from "./selectorFunctions";
 
-function PriceTag({ title, price, colorPrice }) {
+function PriceTag({ title, price, colorPrice, currencyCode }) {
   return (
     <div className="flexbox-wrapper-price-tag">
       <div className="title-price-tag">{title}</div>
-      <div className={"price-price-tag " + colorPrice}>$ {price}</div>
+      <div className={"price-price-tag " + colorPrice}>
+        {getCurrencySymbol(currencyCode)} {price}
+      </div>
     </div>
   );
 }

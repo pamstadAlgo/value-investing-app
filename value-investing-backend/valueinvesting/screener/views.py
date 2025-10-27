@@ -1895,16 +1895,14 @@ class LastClosePriceAPIView(APIView):
         result = (
             TradedCompanies.objects
             .filter(qfs_symbol=qfs_symbol)
-            .values('name', 'last_close_price').first()
+            .values('name', 'last_close_price', 'currency').first()
         )
 
         # name, last_close_price = result
 
-        return Response({'qfsSymbol': qfs_symbol, 'lastClosePrice': result['last_close_price'], 'name' : result['name']})
+        return Response({'qfsSymbol': qfs_symbol, 'lastClosePrice': result['last_close_price'], 'name' : result['name'], 'currency' : result['currency']})
 
-        # metrics = CustomMetrics.objects.filter(user=request.user)
-        # serializer = CustomMetricsSerializer(metrics, many=True)
-        # return Response(serializer.data)
+
 
 class CustomMetricsAPIView(APIView):
     def get(self, request):

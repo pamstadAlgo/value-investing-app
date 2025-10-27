@@ -62,16 +62,25 @@ function AccordionTitle({ qfsSymbol }) {
       <div className="accordion-title-flexbox-wrapper">
         <div className="accordion-ticker-title">
           {data?.name}{" "}
-          <span className="accordion-title-qfs-symbol">({qfsSymbol})</span>{" "}
+          <span className="accordion-title-qfs-symbol">
+            ({qfsSymbol}, Currency: {data?.currency})
+          </span>{" "}
         </div>
         <div className="price-tag-wrapper">
           <PriceTag
             title="Last Close Price"
+            currencyCode={data?.currency}
             price={data?.lastClosePrice?.toFixed(2)}
             colorPrice="neutral"
           />
-          <PriceTag title="Asset Price" price="200" colorPrice="undervalued" />
           <PriceTag
+            title="Asset Price"
+            currencyCode={data?.currency}
+            price="200"
+            colorPrice="undervalued"
+          />
+          <PriceTag
+            currencyCode={data?.currency}
             title="EPV (base case)"
             price={epvPerShareBase?.toFixed(2)}
             colorPrice={
