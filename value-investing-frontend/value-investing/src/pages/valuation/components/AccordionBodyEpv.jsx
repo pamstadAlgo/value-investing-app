@@ -11,7 +11,13 @@ import Tooltip from "@mui/material/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { updateEPVValuationData } from "../../../features/valuationSlice";
 import EPVBodyTableRow from "./EPVBodyTableRow";
-import { computeEBIT } from "./selectorFunctions";
+import {
+  computeAdjustedIncome,
+  computeEBIT,
+  computeEPVOpBusiness,
+  computeEpvPerShare,
+  computeNOPAT,
+} from "./selectorFunctions";
 
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
@@ -120,31 +126,6 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
     setFocusedValue(e.target.value);
   };
 
-  // const computeEBIT = (epvObj, qfsSymbol, caseIndex) => {
-  //   console.log("epvObj that we get: ", epvObj);
-
-  //   if (epvObj) {
-  //     //get revenue and op margin values
-  //     var revenues = epvObj[qfsSymbol].find((obj) =>
-  //       obj.hasOwnProperty("Revenue")
-  //     );
-
-  //     revenues = revenues ? revenues["Revenue"] : 0;
-
-  //     var opMargins = epvObj[qfsSymbol].find((obj) =>
-  //       obj.hasOwnProperty("Operating Margin")
-  //     );
-
-  //     opMargins = opMargins ? opMargins["Operating Margin"] : 0;
-
-  //     console.log("revenues: ", revenues);
-  //     console.log("opMargins: ", opMargins);
-
-  //     return revenues[caseIndex] * opMargins[caseIndex];
-  //   }
-
-  // };
-
   const ebitBear = useSelector((state) =>
     computeEBIT(
       //extract only state for qfs symbol of interest
@@ -166,6 +147,122 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
   );
   const ebitBull = useSelector((state) =>
     computeEBIT(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      2
+    )
+  );
+
+  const adjIncBear = useSelector((state) =>
+    computeAdjustedIncome(
+      //extract only state for qfs symbol of interest
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      0
+    )
+  );
+  const adjIncBase = useSelector((state) =>
+    computeAdjustedIncome(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      1
+    )
+  );
+  const adjIncBull = useSelector((state) =>
+    computeAdjustedIncome(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      2
+    )
+  );
+
+  const susNopatBear = useSelector((state) =>
+    computeNOPAT(
+      //extract only state for qfs symbol of interest
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      0
+    )
+  );
+  const susNopatBase = useSelector((state) =>
+    computeNOPAT(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      1
+    )
+  );
+  const susNopatBull = useSelector((state) =>
+    computeNOPAT(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      2
+    )
+  );
+
+  const epvOpBusinessBear = useSelector((state) =>
+    computeEPVOpBusiness(
+      //extract only state for qfs symbol of interest
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      0
+    )
+  );
+  const epvOpBusinessBase = useSelector((state) =>
+    computeEPVOpBusiness(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      1
+    )
+  );
+  const epvOpBusinessBull = useSelector((state) =>
+    computeEPVOpBusiness(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      2
+    )
+  );
+
+  const epvPerShareBear = useSelector((state) =>
+    computeEpvPerShare(
+      //extract only state for qfs symbol of interest
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      0
+    )
+  );
+  const epvPerShareBase = useSelector((state) =>
+    computeEpvPerShare(
+      state.valuation.epvValuations?.find(
+        (item) => Object.keys(item)[0] === qfsSymbol
+      ),
+      qfsSymbol,
+      1
+    )
+  );
+  const epvPerShareBull = useSelector((state) =>
+    computeEpvPerShare(
       state.valuation.epvValuations?.find(
         (item) => Object.keys(item)[0] === qfsSymbol
       ),
@@ -216,9 +313,30 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
             //check for derived quantities
             switch (metricName) {
               case "EBIT":
-                bear = ebitBear;
-                base = ebitBase;
-                bull = ebitBull;
+                bear = ebitBear.toFixed(2);
+                base = ebitBase.toFixed(2);
+                bull = ebitBull.toFixed(2);
+                break;
+              case "Adjusted Income":
+                bear = adjIncBear.toFixed(2);
+                base = adjIncBase.toFixed(2);
+                bull = adjIncBull.toFixed(2);
+                break;
+              case "Sustainable NOPAT":
+                bear = susNopatBear.toFixed(2);
+                base = susNopatBase.toFixed(2);
+                bull = susNopatBull.toFixed(2);
+                break;
+              case "EPV operating business":
+                bear = epvOpBusinessBear.toFixed(2);
+                base = epvOpBusinessBase.toFixed(2);
+                bull = epvOpBusinessBull.toFixed(2);
+                break;
+              case "EPV per share":
+                bear = epvPerShareBear.toFixed(2);
+                base = epvPerShareBase.toFixed(2);
+                bull = epvPerShareBull.toFixed(2);
+                break;
             }
 
             return (
