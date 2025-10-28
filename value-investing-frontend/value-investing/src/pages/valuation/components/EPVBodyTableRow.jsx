@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TableRow from "@mui/material/TableRow";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import TableCell from "@mui/material/TableCell";
@@ -6,6 +6,12 @@ import { useDispatch } from "react-redux";
 import { updateEPVValuationData } from "../../../features/valuationSlice";
 import Tooltip from "@mui/material/Tooltip";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
+import PollOutlinedIcon from "@mui/icons-material/PollOutlined";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
+import AreaChartCompo from "./AreaChartCompo";
+import BarChartNivo from "./BarChartNivo";
+import Popper from "@mui/material/Popper";
 
 function EPVBodyTableRow({
   metricName,
@@ -14,11 +20,23 @@ function EPVBodyTableRow({
   bull,
   qfsSymbol,
   isDerived,
+  hasData,
+  ts,
   description,
 }) {
   const [errrorBearCase, setErrorBearCase] = useState(false);
   const [errrorBaseCase, setErrorBaseCase] = useState(false);
   const [errrorBullCase, setErrorBullCase] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
 
   const dispatch = useDispatch();
 
@@ -28,7 +46,6 @@ function EPVBodyTableRow({
   2. we set an error if in the handle change the e.target.valueAsNumber is nan
   3. We open the tooltip in case the error is true
   */
-
 
   const handleChange = (e, metricName, caseIndex) => {
     const val = e.target.value;
@@ -133,6 +150,15 @@ function EPVBodyTableRow({
     // setFocusedValue(e.target.value);
   };
 
+  //   useEffect(() => {
+  //     if (open) {
+  //       const t = setTimeout(() => {
+  //         window.dispatchEvent(new Event("resize"));
+  //       }, 1000); // small delay; adjust 0..200ms if needed
+  //       return () => clearTimeout(t);
+  //     }
+  //   }, [open]);
+
   return (
     <TableRow
       className="custom-table-row-valuation"
@@ -154,6 +180,35 @@ function EPVBodyTableRow({
                 <HelpOutlineOutlinedIcon className="custom-icon-table" />{" "}
               </div>
             </Tooltip>
+          )}
+          {hasData && (
+            <div
+              onMouseEnter={handlePopoverOpen}
+              onMouseLeave={handlePopoverClose}>
+              {" "}
+              <PollOutlinedIcon className="custom-icon-table" />{" "}
+              <Popper
+                className="custom-popover-charts"
+                // id="mouse-over-popover"
+                // sx={{ pointerEvents: "none" }}
+                open={open}
+                anchorEl={anchorEl}
+                placement="right-start"
+                // anchorOrigin={{
+                //   vertical: "bottom",
+                //   horizontal: "left",
+                // }}
+                // transformOrigin={{
+                //   vertical: "top",
+                //   horizontal: "left",
+                // }}
+                onClose={handlePopoverClose}
+                //   disableRestoreFocus
+              >
+                {/* <Typography sx={{ p: 1 }}>I use Popover.</Typography> */}
+                <BarChartNivo key={open ? "open" : "closed"} />
+              </Popper>
+            </div>
           )}
         </div>
       </TableCell>

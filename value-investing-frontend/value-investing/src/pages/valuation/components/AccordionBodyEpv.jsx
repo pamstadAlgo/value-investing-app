@@ -347,6 +347,8 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
                 base={base}
                 qfsSymbol={qfsSymbol}
                 isDerived={row.isDerived}
+                hasData={row.hasData}
+                ts={row.ts} //stores time series data of this quantity
                 description={row.description}
               />
             );

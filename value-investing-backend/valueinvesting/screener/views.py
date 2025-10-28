@@ -1348,8 +1348,8 @@ class EPVFundamentalsAPIView(APIView):
                 epv_per_share = [round((epv_bus + cash - debt)/nr_shares,1) if (epv_bus is not None and cash is not None and debt is not None and nr_shares is not None and nr_shares != 0) else None
                                  for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
 
-                #create valuation dictionary
-                val_data.append({'Revenue' : revenue_vals, 'isDerived': False})
+                #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
+                val_data.append({'Revenue' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : [{'x' : '2020', 'y' : 10000},{'x' : '2021', 'y' : 1700},{'x' : '2022', 'y' : 21000},{'x' : '2023', 'y' : 25000}]})
                 val_data.append({'Operating Margin' : op_margins, 'isDerived': False})
                 val_data.append({'EBIT' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
                 val_data.append({'D&A' : d_a, 'isDerived': False })
