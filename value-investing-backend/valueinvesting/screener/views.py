@@ -20,6 +20,7 @@ from io import BytesIO
 from scipy.optimize import fsolve,brentq,bisect
 import pandas as pd
 from rest_framework import status
+from django.db.models.functions import ExtractYear
 # from module_name import some_fn
 # from scipy.optimize import brentq
 # from .module_name import extract_revenue, process_list, generate_data
@@ -1169,6 +1170,26 @@ class ComputeEPVAPIView(APIView):
         return Response(response)
 
 
+def get_revenue_ts(qfs_symbol, n=10):
+    """
+    returns revenue as a time series of the following format: [{'year' : '2021', 'value' : 20000}, {'year' : '2022, 'value' : 30000}, etc.]
+    """
+    last_records = (
+    IncomeStatementAnnual.objects
+    .filter(qfs_symbol_id=qfs_symbol)
+    .annotate(year=ExtractYear('period_end_date'))  # get the year
+    .order_by('-period_end_date')[:n]  # get last 5 years
+    .values('year', 'revenue')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['revenue']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
 def get_revenue(qfs_symbol):
     """
     Extracts min, max and avg revenue values of the past 5 years
@@ -1348,8 +1369,12 @@ class EPVFundamentalsAPIView(APIView):
                 epv_per_share = [round((epv_bus + cash - debt)/nr_shares,1) if (epv_bus is not None and cash is not None and debt is not None and nr_shares is not None and nr_shares != 0) else None
                                  for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
 
+                #get revenue time series
+                revenue_ts = get_revenue_ts(qfs_symbol=qfs_symbol)
+                print('this is revenue_ts: ', revenue_ts)
+
                 #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
-                val_data.append({'Revenue' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : [{'x' : '2020', 'y' : 10000},{'x' : '2021', 'y' : 1700},{'x' : '2022', 'y' : 21000},{'x' : '2023', 'y' : 25000}]})
+                val_data.append({'Revenue' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : revenue_ts})
                 val_data.append({'Operating Margin' : op_margins, 'isDerived': False})
                 val_data.append({'EBIT' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
                 val_data.append({'D&A' : d_a, 'isDerived': False })

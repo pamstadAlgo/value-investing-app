@@ -898,9 +898,15 @@ height: 0;
 }
 
 .MuiPopper-root.custom-popover-charts{
-  width: 80vw;
+  width: 70vw;
   height: 300px;
   background: white;
+  max-width: 1000px;
+  border-radius: 20px;
+}
+
+.wrapper-nivo-bar-chart text {
+font-family: var(--font-family) !important;
 }
 
 .title-mid-size{

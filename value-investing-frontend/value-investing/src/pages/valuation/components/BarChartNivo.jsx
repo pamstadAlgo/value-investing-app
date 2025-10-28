@@ -1,7 +1,7 @@
 import React from "react";
 import { ResponsiveBar } from "@nivo/bar";
 
-function BarChartNivo({ key }) {
+function BarChartNivo({ data, xAxisLabel, yAxisLabel }) {
   //   const data = [
   //     { quarter: 1, earnings: 13000 },
   //     { quarter: 2, earnings: 16500 },
@@ -9,63 +9,77 @@ function BarChartNivo({ key }) {
   //     { quarter: 4, earnings: 19000 },
   //   ];
 
-  const data = [
-    {
-      ranking: "A III",
-      value: 140,
-    },
-    {
-      ranking: "A II",
-      value: 140,
-    },
-    {
-      ranking: "A I",
-      value: 140,
-    },
-    {
-      ranking: "B III",
-      value: 160,
-    },
-    {
-      ranking: "B II",
-      value: 160,
-    },
-    {
-      ranking: "B I",
-      value: 160,
-    },
-    {
-      ranking: "C III",
-      value: 200,
-    },
-    {
-      ranking: "C II",
-      value: 200,
-    },
-    {
-      ranking: "C I",
-      value: 200,
-    },
-    {
-      ranking: "D III",
-      value: 180,
-    },
-    {
-      ranking: "D II",
-      value: 180,
-    },
-    {
-      ranking: "D I",
-      value: 180,
-    },
-  ];
+  const rootStyles = getComputedStyle(document.documentElement);
+  const barColor = rootStyles.getPropertyValue("--action-color").trim();
+
+  // Scale down the data values for display
+  const scaledData = data.map((d) => ({
+    ...d,
+    value: d.value / 1_000_000,
+  }));
+
+  //   const data = [
+  //     {
+  //       ranking: "A III",
+  //       value: 140,
+  //     },
+  //     {
+  //       ranking: "A II",
+  //       value: 140,
+  //     },
+  //     {
+  //       ranking: "A I",
+  //       value: 140,
+  //     },
+  //     {
+  //       ranking: "B III",
+  //       value: 160,
+  //     },
+  //     {
+  //       ranking: "B II",
+  //       value: 160,
+  //     },
+  //     {
+  //       ranking: "B I",
+  //       value: 160,
+  //     },
+  //     {
+  //       ranking: "C III",
+  //       value: 200,
+  //     },
+  //     {
+  //       ranking: "C II",
+  //       value: 200,
+  //     },
+  //     {
+  //       ranking: "C I",
+  //       value: 200,
+  //     },
+  //     {
+  //       ranking: "D III",
+  //       value: 180,
+  //     },
+  //     {
+  //       ranking: "D II",
+  //       value: 180,
+  //     },
+  //     {
+  //       ranking: "D I",
+  //       value: 180,
+  //     },
+  //   ];
 
   return (
-    <div style={{ height: "90%", padding: "16px" }}>
+    <div
+      style={{ height: "90%", padding: "16px" }}
+      className="wrapper-nivo-bar-chart">
+      {/* <h3 style={{ textAlign: "center", marginBottom: "16px" }}>
+        My Chart Title
+      </h3> */}
       <ResponsiveBar
-        data={data}
+        data={scaledData}
         keys={["value"]}
-        indexBy="ranking"
+        indexBy="year"
         margin={{
           top: 20,
           right: 0,
@@ -74,25 +88,37 @@ function BarChartNivo({ key }) {
         }}
         padding={0.6}
         groupMode="grouped"
-        colors="#2a7ef0"
-        axisTop={null}
+        colors={barColor}
+        // axisTop={null}
         axisRight={null}
         enableGridX
         enableGridY
         enableLabel={false}
+        axisTop={{
+          tickSize: 0,
+          tickPadding: 0,
+          format: () => "", // no ticks on top
+          legend: "×10⁶", // top label
+          legendPosition: "start",
+          legendOffset: -10,
+        }}
         axisBottom={{
           tickSize: 0,
           tickPadding: 10,
           tickRotation: 0,
+          legend: xAxisLabel,
+          legendPosition: "middle",
+          legendOffset: 32, // distance from axis
+        }}
+        axisLeft={{
+          tickSize: 0,
+          tickPadding: 10,
+          tickRotation: 0,
+          legend: yAxisLabel, // <-- Y axis label
+          legendPosition: "middle",
+          legendOffset: -60, // negative to move left
         }}
       />
-      {/* <ResponsiveBar
-        key={key}
-        data={data}
-        keys={["earnings"]}
-        indexBy="quarter"
-        axisBottom={{ legend: "quarter (indexBy)", legendOffset: 32 }}
-      /> */}
     </div>
   );
 }

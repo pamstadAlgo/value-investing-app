@@ -206,7 +206,11 @@ function EPVBodyTableRow({
                 //   disableRestoreFocus
               >
                 {/* <Typography sx={{ p: 1 }}>I use Popover.</Typography> */}
-                <BarChartNivo key={open ? "open" : "closed"} />
+                <BarChartNivo
+                  data={ts}
+                  xAxisLabel="Year"
+                  yAxisLabel={metricName}
+                />
               </Popper>
             </div>
           )}
