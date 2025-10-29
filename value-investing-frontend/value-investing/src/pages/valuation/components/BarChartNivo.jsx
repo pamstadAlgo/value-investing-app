@@ -12,10 +12,24 @@ function BarChartNivo({ data, xAxisLabel, yAxisLabel }) {
   const rootStyles = getComputedStyle(document.documentElement);
   const barColor = rootStyles.getPropertyValue("--action-color").trim();
 
+  // find max value
+  const maxValue = Math.max(...data.map((d) => d.value));
+  let scale = 1;
+  let unit = "";
+
+  if (maxValue > 1_000_000) {
+    scale = 1_000_000;
+    unit = "×10⁶"; //millions
+  } else if (maxValue > 100_000) {
+    scale = 1_000;
+    unit = "×10³"; // thousands
+  }
+
   // Scale down the data values for display
+
   const scaledData = data.map((d) => ({
     ...d,
-    value: d.value / 1_000_000,
+    value: d.value / scale,
   }));
 
   //   const data = [
@@ -98,7 +112,7 @@ function BarChartNivo({ data, xAxisLabel, yAxisLabel }) {
           tickSize: 0,
           tickPadding: 0,
           format: () => "", // no ticks on top
-          legend: "×10⁶", // top label
+          legend: unit ? unit : "", // top label
           legendPosition: "start",
           legendOffset: -10,
         }}

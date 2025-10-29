@@ -1215,6 +1215,40 @@ def get_revenue(qfs_symbol):
         revenue_stats['max_revenue']
     ]
 
+
+def get_op_margin_ts(qfs_symbol, n=10):
+    """
+    Returns operating margins as a time series of the following format:
+    [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
+    """
+
+    # Query the most recent N records for this symbol
+    last_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')[:n]
+        .values('year', 'operating_income', 'revenue')
+    )
+
+    # Compute operating margin = operating_income / revenue
+    formatted_data = []
+    for record in last_records:
+        revenue = record.get('revenue')
+        op_income = record.get('operating_income')
+
+        if revenue not in (None, 0):
+            margin = op_income / revenue
+            formatted_data.append({
+                'year': str(record['year']),
+                'value': round(margin, 3)  # round to 3 decimals
+            })
+
+    # Sort by year ascending
+    formatted_data.sort(key=lambda x: x['year'])
+
+    return formatted_data
+
 def get_op_margin(qfs_symbol):
     """
     Extracts min, max and avg revenue values of the past 5 years
@@ -1245,6 +1279,23 @@ def get_op_margin(qfs_symbol):
 
     return [round(min_margin,2), round(avg_margin,2), round(max_margin,2)]
 
+def get_cash_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'), total_cash = F('cash_and_equiv') + F('st_investments'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'total_cash')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['total_cash']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
 def get_cash(qfs_symbol):
     # Get the latest record for the given ticker
     latest_record = BalanceSheetQuarter.objects.filter(
@@ -1258,6 +1309,23 @@ def get_cash(qfs_symbol):
 
     return total_cash
 
+def get_debt_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'), total_debt = F('st_debt') + F('lt_debt'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'total_debt')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['total_debt']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
 def get_debt(qfs_symbol):
     # Get the latest record for the given ticker
     latest_record = BalanceSheetQuarter.objects.filter(
@@ -1270,6 +1338,27 @@ def get_debt(qfs_symbol):
         total_debt = None
 
     return total_debt
+
+
+def get_nr_diluted_shares_ts(qfs_symbol, n=10):
+    """
+    returns revenue as a time series of the following format: [{'year' : '2021', 'value' : 20000}, {'year' : '2022, 'value' : 30000}, etc.]
+    """
+    last_records = (
+    IncomeStatementAnnual.objects
+    .filter(qfs_symbol_id=qfs_symbol)
+    .annotate(year=ExtractYear('period_end_date'))  # get the year
+    .order_by('-period_end_date')[:n]  # get last 5 years
+    .values('year', 'shares_diluted')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['shares_diluted']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
 
 def get_nr_diluted_shares(qfs_symbol):
     # Get the latest record for the given ticker
@@ -1371,11 +1460,15 @@ class EPVFundamentalsAPIView(APIView):
 
                 #get revenue time series
                 revenue_ts = get_revenue_ts(qfs_symbol=qfs_symbol)
+                op_margin_ts = get_op_margin_ts(qfs_symbol=qfs_symbol)
+                cash_ts = get_cash_ts(qfs_symbol=qfs_symbol)
+                debt_ts = get_debt_ts(qfs_symbol=qfs_symbol)
+                nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol=qfs_symbol)
                 print('this is revenue_ts: ', revenue_ts)
 
                 #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
                 val_data.append({'Revenue' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : revenue_ts})
-                val_data.append({'Operating Margin' : op_margins, 'isDerived': False})
+                val_data.append({'Operating Margin' : op_margins, 'isDerived': False, 'hasData' : True, 'ts' : op_margin_ts})
                 val_data.append({'EBIT' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
                 val_data.append({'D&A' : d_a, 'isDerived': False })
                 val_data.append({'Maintenance Capex' : main_capex, 'isDerived': False})
@@ -1384,9 +1477,9 @@ class EPVFundamentalsAPIView(APIView):
                 val_data.append({'Sustainable NOPAT' : sus_nopat, 'isDerived': True, 'description': "Sustainable NOPAT is a derived quantity. NOPAT = Adjusted Income*(1 - Tax Rate)"})
                 val_data.append({'WACC' : wacc, 'isDerived': False})
                 val_data.append({'EPV operating business' : epv_op_business, 'isDerived': True, 'description': "EPV operating business is a derived quantity. EPV operating business = Adjusted Income/Wacc"})
-                val_data.append({'Cash' : cash, 'isDerived': False})
-                val_data.append({'Debt' : debt, 'isDerived': False})
-                val_data.append({'Nr. Shares' : nr_shares, 'isDerived': False})
+                val_data.append({'Cash' : cash, 'isDerived': False, 'hasData' : True, 'ts' : cash_ts})
+                val_data.append({'Debt' : debt, 'isDerived': False, 'hasData' : True, 'ts' : debt_ts})
+                val_data.append({'Nr. Shares' : nr_shares, 'isDerived': False, 'hasData' : True, 'ts' : nr_shares_ts})
                 val_data.append({'EPV per share': epv_per_share, 'isDerived': True, 'description': "EPV per share is a derived quantity. EPV per share = (EPV operating business + Cash - Debt)/Nr. Shares"})
 
                 # valuation = {'Revenue' : revenue_vals
