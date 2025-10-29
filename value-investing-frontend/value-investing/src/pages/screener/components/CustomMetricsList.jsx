@@ -60,7 +60,11 @@ function CustomMetricsList({ customMetrics, handleMetricDelete }) {
                   src={`/static/images/avatar/${value + 1}.jpg`}
                 />
               </ListItemAvatar> */}
-              <ListItemText id={metric.id} primary={metric.readable_name} />
+              <ListItemText
+                className="list-item-text-custom"
+                id={metric.id}
+                primary={metric.readable_name}
+              />
             </ListItemButton>
           </ListItem>
         );

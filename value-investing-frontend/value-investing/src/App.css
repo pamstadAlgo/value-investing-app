@@ -92,6 +92,8 @@
   --font-weight-title-mid-size: 600;
   --line-height-title-mid-size: 1.75rem;
 
+  --border-color-button-group: rgba(0, 0, 0, 0.12);
+
 }
 
 .dark-theme {
@@ -100,6 +102,8 @@
 /* --background-color: rgb(16 25 34); */
   --background-color: rgb(16 25 34);
   --background-gradient: none;
+
+  --border-color-button-group: rgba(255,255,255,0.12);
 
 
   --color-floating-hint-editor: var(var(--border-input-fields));
@@ -633,6 +637,11 @@ font-weight: 700;
   scale: 0.7;
 }
 
+.MuiToggleButtonGroup-root.custom-toggle-button-group> button {
+  color: var(--header-color);
+  border-color: var(--border-color-button-group);
+}
+
 .MuiToggleButtonGroup-root.custom-toggle-button-group > :first-child {
   border-radius: 20px 0px 0px 20px;
 }
@@ -683,6 +692,11 @@ font-weight: 700;
   padding: 4px 12px;
   border-radius: 16px;
   text-align: center;
+
+}
+
+.price-price-tag.neutral{
+  color: var(--header-color)
 }
 
 .accordion-title-qfs-symbol{
@@ -904,6 +918,11 @@ height: 0;
   max-width: 1000px;
   border-radius: 20px;
 }
+
+.MuiListItemText-root.MuiListItemText-dense.list-item-text-custom{
+  color: var(--header-color)
+}
+
 
 .wrapper-nivo-bar-chart text {
 font-family: var(--font-family) !important;
