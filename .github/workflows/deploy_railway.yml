@@ -1,4 +1,4 @@
-name: Build Docker Image, push to ECR and deploy ECS Service
+name: Build Docker Image, push to Dockerhub and deploy Railway Service
 
 on:
   workflow_call:
@@ -12,7 +12,6 @@ on:
       context_path:
         required: true
         type: string
-
 
     secrets:
       RAILWAY_TOKEN:
