@@ -1,0 +1,23 @@
+name: Deploy Data migration job
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "value-investing-backend/migrations/quickfs_database/**"
+    workflow_dispatch:
+
+jobs:
+    backend-deploy:
+        uses: ./.github/workflows/deploy_railway.yml
+        with:
+            image_name: ${{ vars.DOCKER_DATAMIGR_IMG_NAME }}
+            image_tag: ${{ vars.BACKEND_IMG_TAG }}
+            context_path: ./value-investing-backend/migrations/quickfs_database/
+        secrets:
+            RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+            DOCKER_PWD: ${{ secrets.DOCKER_PWD }}
+            RAILWAY_SVC_ID: ${{ secrets.RAILWAY_DATAMIGR_SVC_ID }}
+            RAILWAY_SVC2_ID: ${{ secrets.RAILWAY_CLOSEPRICEMIGR_SVC_ID }}

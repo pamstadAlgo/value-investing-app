@@ -64,6 +64,8 @@ psy_connection = psycopg2.connect(host=os.environ['DB_HOST'], database=os.enviro
 
 os.environ['QUICKFS_DB_KEY']
 
+print('test trigger')
+
 stag_table_trad_comp = "stag_table_trad_comp"
 stag_table_income_y = "stag_table_income_y"
 stag_table_income_q = "stag_table_income_q"
