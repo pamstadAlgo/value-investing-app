@@ -91,9 +91,14 @@
   --font-size-title-mid-size: 18px;
   --font-weight-title-mid-size: 600;
   --line-height-title-mid-size: 1.75rem;
-
   --border-color-button-group: rgba(0, 0, 0, 0.12);
 
+
+  /* screener results table */
+  --table-header-actions-bg-color: white;
+  --bg-color-table-header-cell: white;
+
+  --bg-color-custom-metrics-hover: rgba(0, 0, 0, 0.04);
 }
 
 .dark-theme {
@@ -128,19 +133,12 @@
   --input-fields-hover-bg-color: transparent;
   --border-input-fields: white;
   --input-fields-icons-color: white;
-  /* --background-glass-card: rgba(16, 25, 34, 0.5);
-  --border-glass-card: 1px solid rgba(255, 255, 255, 0.1);
-  --background-color: rgb(16 25 34);
-  --background-gradient: none;
 
-  --header-color: rgb(255 255 255);
+  --table-header-actions-bg-color: rgba(36,50,68,0.86);
+  --bg-color-table-header-cell: white;
 
 
-  --action-color: rgb(17 115 212);
-  --action-color-transparent: rgba(17, 115, 212, 0.3);
-  --action-color-more-transparent: rgba(17, 115, 212, 0.15);
-  --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
-  --text-color-grey-scale: rgb(255 255 255 / 0.6); */
+  --bg-color-custom-metrics-hover: rgba(250, 250, 250, 0.08);
  
 }
 
@@ -684,6 +682,10 @@ font-weight: 700;
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--text-color-grey-scale)
+}
+
+.MuiButtonBase-root.MuiListItemButton-root.custom-list-item-button:hover{
+  background-color: var(--bg-color-custom-metrics-hover);
 }
 
 .price-price-tag{

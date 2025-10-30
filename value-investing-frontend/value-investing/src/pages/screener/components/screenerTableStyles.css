@@ -8,7 +8,7 @@
     align-items: flex-start; */
 }
 
-.table-container .MuiPaper-root {
+.table-container.MuiPaper-root {
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(8px);
     border-radius: 16px !important;
@@ -28,7 +28,7 @@
     color: #1e1e1e !important;
     font-size: 14px !important;
     text-align: left !important;
-    background-color: white !important;
+    background-color: var(--bg-color-table-header-cell) !important;
 }
 
 /* Body Rows */
@@ -284,4 +284,8 @@
 .MuiInputBase-input,
 .MuiTypography-root {
     font-family: var(--font-family) !important;
+}
+
+.table-container > .MuiPaper-root.MuiPaper-elevation > .MuiBox-root{
+    background-color: var(--table-header-actions-bg-color);
 }

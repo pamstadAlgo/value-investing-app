@@ -1,20 +1,25 @@
 name: Deploy Frontend
 
+# on:
+#     push:
+#         branches:
+#             - main
+#         paths:
+#             - "value-investing-frontend/value-investing/**"
+# Trigger manually only
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - "value-investing-frontend/value-investing/**"
+  workflow_dispatch:
+
 
 jobs:
     frontend-deploy:
-        uses: ./.github/workflows/deploy_ecs.yml
+        uses: ./.github/workflows/deploy_railway.yml
         with:
-            ecr_image: ${{ vars.ECR_FRONTEND_IMAGE }}
-            ecs_service: ${{ vars.ECS_FRONTEND_SERVICE }}
+            image_name: ${{ vars.DOCKER_FRONTEND_IMG_NAME }}
+            image_tag: ${{ vars.BACKEND_IMG_TAG }}
             context_path: ./value-investing-frontend/value-investing/
         secrets:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+            RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+            DOCKER_PWD: ${{ secrets.DOCKER_PWD }}
+            RAILWAY_SVC_ID: ${{ secrets.RAILWAY_FRONTEND_SVC_ID }}

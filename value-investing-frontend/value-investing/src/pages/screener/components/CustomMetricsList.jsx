@@ -50,7 +50,7 @@ function CustomMetricsList({ customMetrics, handleMetricDelete }) {
               </div>
             }
             disablePadding>
-            <ListItemButton style={{ gap: "10px", paddingLeft: "8px" }}>
+            <ListItemButton className="custom-list-item-button" style={{ gap: "10px", paddingLeft: "8px" }}>
               <ListItemIcon className="custom-list-icon">
                 <CalculateOutlinedIcon />
               </ListItemIcon>
