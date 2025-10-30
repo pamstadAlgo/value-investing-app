@@ -1,14 +1,11 @@
 name: Deploy Backend
 
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - "value-investing-backend/valueinvesting/**"
-
-# Trigger manually only
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "value-investing-backend/valueinvesting/**"
   workflow_dispatch:
 
 jobs:

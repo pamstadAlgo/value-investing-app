@@ -1411,11 +1411,12 @@ class EPVFundamentalsAPIView(APIView):
         response = []
 
         for qfs_symbol in qfs_symbols:
-            val_data = []
-            # valuation = cache.get(f'{qfs_symbol}_EPV_{formatted_date}')
-            valuation = None
+            # val_data = []
+            val_data = cache.get(f'{qfs_symbol}_EPV_{formatted_date}')
             # valuation = None
-            if valuation is None:
+            # valuation = None
+            if val_data is None:
+                val_data = []
                 #compute revenue: bear case = min(past 5 years), base case = avg(past 5 years), bull case = max(past 5 years)
                 revenue_vals = get_revenue(qfs_symbol=qfs_symbol)
                 op_margins = get_op_margin(qfs_symbol=qfs_symbol)
@@ -1503,7 +1504,7 @@ class EPVFundamentalsAPIView(APIView):
                 #valuation = compute_epv(qfs_symbol, op_margin_nr_years=years_op_margin,  avg_revenue_nr_years = avg_revenue_nr_years)
 
                 #store valuation in cache
-                # cache.set(f'{qfs_symbol}_EPV_{formatted_date}', valuation, timeout=CACHE_TTL)
+                cache.set(f'{qfs_symbol}_EPV_{formatted_date}', val_data, timeout=CACHE_TTL)
             
             
             response.append({qfs_symbol: val_data})
