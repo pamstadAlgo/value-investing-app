@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Stitch Design</title>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4f46e5",
+              "background-light": "#f0f2f5",
+              "neutral-100": "#f3f4f6",
+              "neutral-200": "#e5e7eb",
+              "neutral-300": "#d1d5db",
+              "neutral-400": "#9ca3af",
+              "neutral-500": "#6b7280",
+              "neutral-600": "#4b5563",
+              "neutral-700": "#374151",
+              "neutral-800": "#1f2937",
+              "neutral-900": "#111827",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.75rem",
+              lg: "1rem",
+              xl: "1.25rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              subtle: "0 4px 30px rgba(0, 0, 0, 0.05)",
+              glass: "0 8px 32px 0 rgba(31, 38, 135, 0.1)",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet" />
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+      }
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #f0f2f5;
+        background-image: radial-gradient(
+            at 0% 0%,
+            hsla(243, 86%, 95%, 0.4) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            hsla(289, 86%, 95%, 0.4) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            hsla(189, 86%, 95%, 0.4) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 80% 90%,
+            hsla(330, 86%, 95%, 0.4) 0px,
+            transparent 50%
+          );
+      }
+      .form-select,
+      .form-input {
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease-in-out;
+        backdrop-filter: blur(5px);
+      }
+      .form-select:focus,
+      .form-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+      }
+      .header-glass {
+        background: rgba(255, 255, 255, 0.7);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body class="font-display text-neutral-700">
+    <div class="flex min-h-screen flex-col">
+      <header class="sticky top-0 z-20 header-glass">
+        <div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+          <div class="flex h-20 items-center justify-between">
+            <div class="flex items-center gap-12">
+              <div class="flex items-center gap-3 text-neutral-900">
+                <svg
+                  class="h-8 w-8 text-primary"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_6_543)">
+                    <path
+                      d="M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z"
+                      fill="currentColor"></path>
+                    <path
+                      clip-rule="evenodd"
+                      d="M7.24189 26.4066C7.31369 26.4411 7.64204 26.5637 8.52504 26.3738C9.59462 26.1438 11.0343 25.5311 12.7183 24.4963C14.7583 23.2426 17.0256 21.4503 19.238 19.238C21.4503 17.0256 23.2426 14.7583 24.4963 12.7183C25.5311 11.0343 26.1438 9.59463 26.3738 8.52504C26.5637 7.64204 26.4411 7.31369 26.4066 7.24189C26.345 7.21246 26.143 7.14535 25.6664 7.1918C24.9745 7.25925 23.9954 7.5498 22.7699 8.14278C20.3369 9.32007 17.3369 11.4915 14.4142 14.4142C11.4915 17.3369 9.32007 20.3369 8.14278 22.7699C7.5498 23.9954 7.25925 24.9745 7.1918 25.6664C7.14534 26.143 7.21246 26.345 7.24189 26.4066ZM29.9001 10.7285C29.4519 12.0322 28.7617 13.4172 27.9042 14.8126C26.465 17.1544 24.4686 19.6641 22.0664 22.0664C19.6641 24.4686 17.1544 26.465 14.8126 27.9042C13.4172 28.7617 12.0322 29.4519 10.7285 29.9001L21.5754 40.747C21.6001 40.7606 21.8995 40.931 22.8729 40.7217C23.9424 40.4916 25.3821 39.879 27.0661 38.8441C29.1062 37.5904 31.3734 35.7982 33.5858 33.5858C35.7982 31.3734 37.5904 29.1062 38.8441 27.0661C39.879 25.3821 40.4916 23.9425 40.7216 22.8729C40.931 21.8995 40.7606 21.6001 40.747 21.5754L29.9001 10.7285ZM29.2403 4.41187L43.5881 18.7597C44.9757 20.1473 44.9743 22.1235 44.6322 23.7139C44.2714 25.3919 43.4158 27.2666 42.252 29.1604C40.8128 31.5022 38.8165 34.012 36.4142 36.4142C34.012 38.8165 31.5022 40.8128 29.1604 42.252C27.2666 43.4158 25.3919 44.2714 23.7139 44.6322C22.1235 44.9743 20.1473 44.9757 18.7597 43.5881L4.41187 29.2403C3.29027 28.1187 3.08209 26.5973 3.21067 25.2783C3.34099 23.9415 3.8369 22.4852 4.54214 21.0277C5.96129 18.0948 8.43335 14.7382 11.5858 11.5858C14.7382 8.43335 18.0948 5.9613 21.0277 4.54214C22.4852 3.8369 23.9415 3.34099 25.2783 3.21067C26.5973 3.08209 28.1187 3.29028 29.2403 4.41187Z"
+                      fill="currentColor"
+                      fill-rule="evenodd"></path>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_6_543">
+                      <rect fill="white" height="48" width="48"></rect>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <h2 class="text-xl font-bold tracking-tight">StockVal</h2>
+              </div>
+              <nav
+                class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a
+                  class="text-neutral-500 hover:text-primary transition-colors"
+                  href="#"
+                  >Home</a
+                >
+                <a class="text-primary font-semibold" href="#">Screener</a>
+                <a
+                  class="text-neutral-500 hover:text-primary transition-colors"
+                  href="#"
+                  >Portfolio</a
+                >
+                <a
+                  class="text-neutral-500 hover:text-primary transition-colors"
+                  href="#"
+                  >News</a
+                >
+              </nav>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="relative hidden sm:block w-56">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                  style="font-size: 20px"
+                  >search</span
+                >
+                <input
+                  class="w-full rounded-lg form-input py-2 pl-10 pr-4 text-sm"
+                  placeholder="Search"
+                  type="text" />
+              </div>
+              <button
+                class="relative rounded-full p-2 text-neutral-500 hover:bg-white/50 transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+              </button>
+              <div
+                class="h-10 w-10 rounded-full bg-cover bg-center ring-2 ring-white/50"
+                style="
+                  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUHGGid-T04xR-CoUdsXk-LwMipsPVSnyDrsajJu4i4ymJ_jj54q-Kp386Cx_F7ZR-MmTghw76A11ohNRFDHhaWfA0-LSHOFa8oWLPxur-RlOKf_qwnpkxjace5OH_9a2evN4XKyHjB7MFDRAxR0T1iy2HPvVA2maiv85ksUeNA8XQD2gTIgmXwm99KgcXqk7CQam00-8hfZ8Nfx8fHCF04EP-Y7YJN_7vb1juL7ccGLmK5f4ID00dgOEwgIekVGh4JT3Q7O2Hbu4');
+                "></div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main class="flex-1 px-4 sm:px-6 lg:px-8 py-12 pb-40">
+        <div class="mx-auto max-w-screen-xl">
+          <div class="mb-12">
+            <h1 class="text-4xl font-bold tracking-tight text-neutral-900">
+              Stock Screener
+            </h1>
+            <p class="mt-3 text-lg text-neutral-500">
+              Filter stocks to find your next winning investment.
+            </p>
+          </div>
+          <div class="glass-card rounded-xl p-6 mb-8">
+            <div
+              class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <h3 class="text-lg font-semibold text-neutral-800">
+                Screener Templates
+              </h3>
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                  <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                    style="font-size: 20px"
+                    >arrow_drop_down</span
+                  >
+                  <select
+                    class="block w-full rounded-lg form-select py-2.5 px-3 text-sm appearance-none pl-4"
+                    id="template">
+                    <option>Growth Stocks</option>
+                    <option>Value Stocks</option>
+                    <option>Dividend Champions</option>
+                    <option>My Custom Screener 1</option>
+                  </select>
+                </div>
+                <button
+                  class="flex items-center justify-center gap-2 rounded-lg bg-white/60 hover:bg-white/90 transition-colors py-2.5 px-4 text-sm font-semibold text-neutral-600 border border-white/20 shadow-sm">
+                  <span class="material-symbols-outlined text-base">save</span>
+                  <span>Save</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div class="lg:col-span-4 xl:col-span-3">
+              <div class="glass-card rounded-xl p-6 flex flex-col h-full">
+                <div class="flex-grow">
+                  <h3 class="text-lg font-semibold text-neutral-800 mb-6">
+                    Filter Criteria
+                  </h3>
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-1 gap-4">
+                      <select
+                        class="block w-full rounded-lg form-select py-2.5 px-3 text-sm"
+                        id="metric">
+                        <option>P/E Ratio</option>
+                        <option>Revenue Growth</option>
+                        <option>Debt/Equity</option>
+                        <option>Market Cap</option>
+                        <option>Dividend Yield</option>
+                      </select>
+                      <div class="grid grid-cols-2 gap-2">
+                        <select
+                          class="block w-full rounded-lg form-select py-2.5 px-3 text-sm"
+                          id="operator">
+                          <option>&lt; Less than</option>
+                          <option>&gt; Greater than</option>
+                          <option>= Equal to</option>
+                        </select>
+                        <input
+                          class="block w-full rounded-lg form-input py-2.5 px-3 text-sm"
+                          id="value"
+                          placeholder="Value"
+                          type="text" />
+                      </div>
+                    </div>
+                    <button
+                      class="w-full rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors py-2.5 text-sm font-semibold text-primary flex items-center justify-center gap-2 border border-primary/20">
+                      <span class="material-symbols-outlined text-base"
+                        >add_circle_outline</span
+                      >
+                      Add Filter
+                    </button>
+                  </div>
+                  <h3 class="mt-8 mb-4 text-lg font-semibold text-neutral-800">
+                    Applied Filters
+                  </h3>
+                  <div class="flex flex-wrap gap-2">
+                    <div
+                      class="flex items-center gap-2 rounded-full bg-indigo-50/70 py-1 pl-3 pr-1.5 text-sm backdrop-blur-sm border border-indigo-100/80">
+                      <span class="font-medium text-indigo-700"
+                        >P/E Ratio &lt; 20</span
+                      >
+                      <button
+                        class="text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200/50 rounded-full transition-colors">
+                        <span class="material-symbols-outlined !text-base"
+                          >close</span
+                        >
+                      </button>
+                    </div>
+                    <div
+                      class="flex items-center gap-2 rounded-full bg-indigo-50/70 py-1 pl-3 pr-1.5 text-sm backdrop-blur-sm border border-indigo-100/80">
+                      <span class="font-medium text-indigo-700"
+                        >Revenue Growth &gt; 10%</span
+                      >
+                      <button
+                        class="text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200/50 rounded-full transition-colors">
+                        <span class="material-symbols-outlined !text-base"
+                          >close</span
+                        >
+                      </button>
+                    </div>
+                    <div
+                      class="flex items-center gap-2 rounded-full bg-indigo-50/70 py-1 pl-3 pr-1.5 text-sm backdrop-blur-sm border border-indigo-100/80">
+                      <span class="font-medium text-indigo-700"
+                        >Debt/Equity &lt; 0.5</span
+                      >
+                      <button
+                        class="text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200/50 rounded-full transition-colors">
+                        <span class="material-symbols-outlined !text-base"
+                          >close</span
+                        >
+                      </button>
+                    </div>
+                    <div
+                      class="flex items-center gap-2 rounded-full bg-indigo-50/70 py-1 pl-3 pr-1.5 text-sm backdrop-blur-sm border border-indigo-100/80">
+                      <span class="font-medium text-indigo-700"
+                        >Market Cap &gt; $50B</span
+                      >
+                      <button
+                        class="text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200/50 rounded-full transition-colors">
+                        <span class="material-symbols-outlined !text-base"
+                          >close</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lg:col-span-8 xl:col-span-9">
+              <div class="overflow-hidden rounded-xl glass-card">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full">
+                    <thead class="bg-white/30">
+                      <tr>
+                        <th
+                          class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-white/20"
+                          scope="col">
+                          Symbol
+                        </th>
+                        <th
+                          class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-white/20"
+                          scope="col">
+                          Company Name
+                        </th>
+                        <th
+                          class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-white/20"
+                          scope="col">
+                          P/E
+                        </th>
+                        <th
+                          class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-white/20"
+                          scope="col">
+                          Rev. Growth
+                        </th>
+                        <th
+                          class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-white/20"
+                          scope="col">
+                          Debt/Eq.
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/20">
+                      <tr>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-neutral-800">
+                          ABC
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          Alpha Beta Corp
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          15.5
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-emerald-600 font-medium">
+                          12.3%
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          0.4
+                        </td>
+                      </tr>
+                      <tr class="bg-white/20">
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-neutral-800">
+                          XYZ
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          Xenon Yttrium Zeta Inc
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          18.2
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-emerald-600 font-medium">
+                          15.1%
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          0.3
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-neutral-800">
+                          LMN
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          Lambda Mu Nu Ltd
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          12.8
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-emerald-600 font-medium">
+                          11.7%
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          0.2
+                        </td>
+                      </tr>
+                      <tr class="bg-white/20">
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-neutral-800">
+                          PQR
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          Pi Q Rho LLC
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          19.7
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-emerald-600 font-medium">
+                          13.5%
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          0.5
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-neutral-800">
+                          UVW
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          Upsilon Vega W Inc
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          16.9
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-emerald-600 font-medium">
+                          14.2%
+                        </td>
+                        <td
+                          class="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
+                          0.4
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="fixed bottom-0 left-0 right-0 z-10">
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
+          <button
+            class="flex items-center gap-2 rounded-full bg-gradient-to-br from-primary to-indigo-700 py-3.5 px-6 text-base font-semibold text-white shadow-xl shadow-primary/30 transition-all duration-300 ease-in-out hover:shadow-2xl hover:shadow-primary/40 hover:-translate-y-1 backdrop-blur-md border border-white/20">
+            <span class="material-symbols-outlined">filter_alt</span>
+            <span>Run Screener</span>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -133,7 +133,7 @@ class IncomeStatementAnnual(models.Model):
     eps_basic = models.FloatField(null=True, blank=True, verbose_name="EPS (Basic)")
     eps_diluted = models.FloatField(null=True, blank=True, verbose_name="EPS (diluted)")
     shares_basic = models.FloatField(null=True, blank=True, verbose_name="Shares (Basic)")
-    shares_diluted = models.FloatField(null=True, blank=True, verbose_name="Shares (diluted)")
+    shares_diluted = models.FloatField(null=True, blank=True, verbose_name="Shares (Diluted)")
     shares_eop = models.FloatField(null=True, blank=True, verbose_name="Shares (EOP)")
     shares_eop_change = models.FloatField(null=True, blank=True, verbose_name="Shares Change EOP")
     premiums_earned = models.FloatField(null=True, blank=True, verbose_name="Premiums Earned")

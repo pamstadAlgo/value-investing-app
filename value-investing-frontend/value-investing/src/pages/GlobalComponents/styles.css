@@ -17,3 +17,14 @@
 .nav-bar-item{
     cursor: pointer
 }
+
+.nav-link{
+    text-decoration: none;
+    color: var(--text-color-grey-scale);
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: var(--action-color);
+    font-weight: 700;
+}

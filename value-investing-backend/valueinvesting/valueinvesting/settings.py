@@ -21,9 +21,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-print('WE HAVE DEPLOYED A NEW VERSION VIA GITHUB ACTIONS and new print')
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -172,19 +169,13 @@ DATABASES = {
                 "USER": os.environ["POSTGRES_USER"] ,
                 "PASSWORD": os.environ["POSTGRES_PASSWORD"],
                 "PORT": os.environ["DB_PORT"]
+                # "NAME": "value-investing-dev" ,
+                # "HOST": "localhost",
+                # "USER": "postgres",
+                # "PASSWORD": "v,1846PSVv,1846PSV",
+                # "PORT": 5432
             }
 }
-
-# DATABASES = {
-#     "default": {
-#                 "ENGINE": "django.db.backends.postgresql",
-#                 "NAME": os.environ["DB_NAME"] ,
-#                 "HOST": os.environ["DB_HOST"],
-#                 "USER": os.environ["DB_USER"] ,
-#                 "PASSWORD": os.environ["DB_PASSWORD"],
-#                 "PORT": os.environ["DB_PORT"]
-#             }
-# }
 
 
 CACHES = {

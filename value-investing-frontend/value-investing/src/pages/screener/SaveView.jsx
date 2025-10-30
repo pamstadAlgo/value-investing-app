@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,11 +17,17 @@ import {
   setViewName,
   updateSavedFilterViews,
 } from "../../features/stockScreenerSlice";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import { useSnackbar } from "../GlobalComponents/SnackbarProvider";
+import { Persist } from "formik-persist";
 
 function SaveView() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const { showMessage } = useSnackbar();
+  // Formik ref so we can call resetForm from here
+  const formikRef = useRef(null);
 
   const axiosInstanceAuth = useAxiosWithAuth();
   const dispatch = useDispatch();
@@ -36,81 +42,27 @@ function SaveView() {
     viewDescription: Yup.string().required("Metric Description is required"),
   });
 
-  const initialValues = {
-    viewName: screenerState.viewName,
-    viewDescription: screenerState.viewDescription,
-    // viewFilters: "",
-  };
-
   return (
     <div>
       <Tooltip
-        title={
-          screenerState.activFilters?.length === 0
-            ? "You need to add some filters before you can save the view"
-            : "Save Filter View"
-        }
-        arrow>
-        <span>
-          <IconButton
-            disabled={screenerState.activFilters?.length === 0}
-            aria-label="delete"
-            onClick={handleClick}
-            //   onClick={(e) => setIsFilterViewModalOpen(true)}
-          >
-            <SaveIcon />
-          </IconButton>
-        </span>
+        placement="right-start"
+        arrow
+        title="You need to add some filters before you can save the template"
+        // disableHoverListener={screenerState.activFilters?.length !== 0}
+        disableHoverListener={screenerState.selectedFilters?.length !== 0}
+        disableFocusListener={screenerState.selectedFilters?.length !== 0}
+        disableTouchListener={screenerState.selectedFilters?.length !== 0}>
+        <div>
+          <Button
+            variant="contained"
+            disabled={screenerState.selectedFilters?.length === 0}
+            className="contained-custom-button"
+            startIcon={<SaveOutlinedIcon className="button-icon" />}
+            onClick={handleClick}>
+            Save
+          </Button>
+        </div>
       </Tooltip>
-      {/* <Menu
-        id="basic-menu"
-        className="paper-save-filter-view"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={(e) => {
-          e.stopPropagation();
-          setAnchorEl(null);
-        }}
-        transformOrigin={{ horizontal: "right", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        MenuListProps={{
-          "aria-labelledby": "basic-button",
-        }}
-        PaperProps={{
-          style: {
-            marginTop: "40px",
-          },
-        }}
-        slotProps={{
-          paper: {
-            elevation: 0,
-            sx: {
-              padding: "16px",
-              minWidth: "500px",
-              overflow: "visible",
-              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-              mt: 1.5,
-              "& .MuiAvatar-root": {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
-              "&::before": {
-                content: '""',
-                display: "block",
-                position: "absolute",
-                top: 0,
-                right: 14,
-                width: 10,
-                height: 10,
-                bgcolor: "background.paper",
-                transform: "translateY(-50%) rotate(45deg)",
-                zIndex: 0,
-              },
-            },
-          },
-        }}> */}
       <Popover
         open={open}
         anchorEl={anchorEl}
@@ -135,18 +87,27 @@ function SaveView() {
             mt: 1.5,
           },
         }}>
-        <div className="custom-metric-title">Save the current Filters</div>
+        <div className="title-mid-size" style={{ marginBottom: "20px" }}>
+          Save the screener template
+        </div>
 
         <Formik
-          initialValues={initialValues}
+          initialValues={{
+            viewName: screenerState.viewName,
+            viewDescription: screenerState.viewDescription,
+          }}
+          key={screenerState.viewName + screenerState.viewDescription}
           enableReinitialize={true}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
+          onSubmit={(values, { resetForm }) => {
             const payload = {
               view_name: values.viewName,
               view_description: values.viewDescription,
-              view_filters: JSON.stringify(screenerState.activFilters),
+              view_filters: JSON.stringify(screenerState.selectedFilters),
             };
+
+            dispatch(setViewName(values.viewName));
+            dispatch(setViewDescription(values.viewDescription));
 
             //check if currentFilterView has id or not; if yes then filter already exists and should get updated; otherwise new filter will be created
             if (
@@ -170,11 +131,15 @@ function SaveView() {
 
                 if (!filterView) {
                   dispatch(addSaveFilterView(response.data));
+                  showMessage("Template was successfully saved", "success");
+                  // resetForm();
                 } else {
                   dispatch(updateSavedFilterViews(response.data));
+                  showMessage("Template was successfully updated", "success");
                 }
               })
               .catch((error) => {
+                showMessage(`Error saving the template: ${error}`, "error");
                 console.error("ERROR: POST screener/filter-view");
               });
           }}>
@@ -183,13 +148,14 @@ function SaveView() {
               <div className="metric-description-flex-wrapper">
                 <TextField
                   //   fullWidth
-                  label="Filter View Name"
+                  size="small"
+                  label="Template name"
                   variant="outlined"
                   name="viewName"
                   value={formik.values.viewName}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => {
-                    dispatch(setViewName(e.target.value));
+                    // dispatch(setViewName(e.target.value));
                     formik.setFieldValue("viewName", e.target.value);
                   }}
                   helperText={
@@ -205,8 +171,9 @@ function SaveView() {
                 />{" "}
                 <TextField
                   //   fullWidth
+                  size="small"
                   className="custom-metric-description"
-                  label="Filter View Description"
+                  label="Template description"
                   variant="outlined"
                   name="viewDescription"
                   placeholder="Describe your Filter View ..."
@@ -214,7 +181,6 @@ function SaveView() {
                   value={formik.values.viewDescription}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => {
-                    dispatch(setViewDescription(e.target.value));
                     formik.setFieldValue("viewDescription", e.target.value);
                   }}
                   helperText={
@@ -243,15 +209,16 @@ function SaveView() {
                 </button> */}
                 <Button
                   onClick={(e) => {
-                    console.log("button clicked");
                     e.stopPropagation();
                   }}
+                  className="contained-custom-button"
                   type="submit"
                   variant="contained"
-                  startIcon={<SaveIcon />}>
-                  Save Filter View
+                  startIcon={<SaveOutlinedIcon className="button-icon" />}>
+                  Save Template
                 </Button>
               </div>
+              {/* <Persist name="save-screener-template-form" /> */}
             </form>
           )}
         </Formik>

@@ -30,7 +30,7 @@ ENTRYPOINT ["sh", "./entrypoint.sh"]
 # ================================
 # Stage: Production
 # ================================
-FROM python:3.13.3-slim AS prod
+FROM --platform=linux/amd64 python:3.13.3-slim AS prod
 
 ENV PYTHONUNBUFFERED=1
 

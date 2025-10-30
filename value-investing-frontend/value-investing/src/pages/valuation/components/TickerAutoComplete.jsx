@@ -75,11 +75,11 @@ function TickerAutoComplete({ formik }) {
     console.log("event.target.value: ", event.target.value);
     dispatch(setSelectedTickers(newValue));
 
-    if (newValue?.length > 0) {
-      formik.setFieldValue("tickers", "non-empty");
-    } else {
-      formik.setFieldValue("tickers", "");
-    }
+    // if (newValue?.length > 0) {
+    //   formik.setFieldValue("tickers", "non-empty");
+    // } else {
+    //   formik.setFieldValue("tickers", "");
+    // }
   };
 
   return (
@@ -110,6 +110,7 @@ function TickerAutoComplete({ formik }) {
         renderInput={(params) => (
           <TextField
             {...params}
+            size="small"
             label="Select an item"
             name="tickers"
             helperText={

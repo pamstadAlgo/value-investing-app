@@ -99,7 +99,7 @@ function ValuationForm() {
         {(formik) => (
           <form onSubmit={formik.handleSubmit}>
             <TickerAutoComplete formik={formik} />
-            <div style={{ display: "flex", gap: "16px" }}>
+            {/* <div style={{ display: "flex", gap: "16px" }}>
               <FormControl
                 sx={{ width: "50%", marginTop: "16px" }}
                 error={
@@ -195,7 +195,7 @@ function ValuationForm() {
                     : " "}
                 </FormHelperText>
               </FormControl>
-            </div>
+            </div> */}
             <div className="flex-wrapper-submit-button-valuation">
               <Button
                 variant="contained"

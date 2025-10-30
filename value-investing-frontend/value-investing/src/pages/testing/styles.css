@@ -63,7 +63,7 @@
   top: -8px;
   left: 8px;
   font-size: 12px;
-  background-color: white;
+  /* background-color: white; */
   padding: 0 4px;
   color: #757575;
   /* Text color */
@@ -91,3 +91,283 @@
        padding: 10px;
        border: 1px solid #ccc;
      } */
+
+
+.table-container {
+  /* padding: 24px; */
+  background: linear-gradient(to bottom right, #eef2ff, #ffffff, #f3f4f6);
+  /* min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; */
+}
+
+.table-container .MuiPaper-root {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header Row */
+.table-header-row {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+.table-header-cell {
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  color: #1e1e1e !important;
+  font-size: 14px !important;
+  text-align: left !important;
+}
+
+/* Body Rows */
+.table-row {
+  transition: background-color 0.25s ease;
+}
+
+.table-row:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.table-row.even {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-row.odd {
+  background-color: transparent;
+}
+
+.table-body-cell {
+  padding: 12px 24px !important;
+  font-size: 14px !important;
+  white-space: nowrap;
+}
+
+/* Custom Cell Colors */
+.symbol-cell {
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.company-cell {
+  color: #4b5563;
+}
+
+.neutral-cell {
+  color: #4b5563;
+}
+
+.growth-cell {
+  color: #059669;
+  font-weight: 500;
+}
+
+
+/* glass effect card */
+.table-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+/* scroll container */
+.table-container {
+  overflow-x: auto;
+}
+
+/* table layout */
+.screener-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+  /* text-sm */
+}
+
+/* header */
+.screener-table thead {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+.screener-table th {
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  /* neutral-800 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* body rows */
+.screener-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.screener-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.screener-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* cells */
+.screener-table td {
+  padding: 1rem 1.5rem;
+  color: #4b5563;
+  /* neutral-600 */
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.screener-table td:first-child {
+  font-weight: 600;
+  color: #1f2937;
+  /* neutral-800 */
+}
+
+/* positive value (green) */
+.screener-table td.positive {
+  color: #059669;
+  /* emerald-600 */
+  font-weight: 500;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* second table */
+/* Page background (soft gradient + subtle blobs like original design) */
+.page-bg {
+  min-height: 100vh;
+  padding: 36px;
+  background-color: #f0f2f5;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(189, 140, 255, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 139, 250, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(145, 254, 240, 0.04) 0px, transparent 50%),
+    radial-gradient(at 80% 90%, rgba(255, 200, 200, 0.03) 0px, transparent 50%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #374151;
+  /* neutral-700 */
+}
+
+/* outer wrapper to center the table */
+.glass-wrapper {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Header row styling (applies to MRT head row through className) */
+.table-header-row {
+  background: rgba(255, 255, 255, 0.30) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Head cells */
+.table-header-cell {
+  padding: 16px 24px !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  /* neutral-800 */
+  font-size: 14px !important;
+  text-align: left !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+}
+
+/* Table rows */
+.table-row {
+  transition: background-color 0.22s ease;
+}
+
+.table-row:hover {
+  background-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+.table-row.even {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.table-row.odd {
+  background-color: transparent !important;
+}
+
+/* Cells */
+.table-body-cell {
+  padding: 14px 24px !important;
+  font-size: 14px !important;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #4b5563;
+  /* neutral-600 */
+}
+
+/* First column (Symbol) stronger */
+.table-body-cell:first-child {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* specific inline cell classes from Cell renderers */
+.symbol-cell {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.company-cell,
+.neutral-cell {
+  color: #4b5563;
+}
+
+.growth-cell {
+  color: #059669;
+  font-weight: 500;
+}
+
+/* make sure MRT's pagination / toolbar backgrounds don't override */
+.MuiToolbar-root,
+.MuiTablePagination-root {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* A safety override: remove any solid background on inner paper-like containers (helps cases where older MRT/MUI adds sub-papers) */
+.mrt-table-container .MuiPaper-root,
+.mrt-table-container .MuiTableContainer-root {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Force Plus Jakarta Sans on all MUI table text */
+.MuiTableCell-root,
+.MuiTableHead-root,
+.MuiTableBody-root,
+.MuiTablePagination-root,
+.MuiToolbar-root,
+.MuiButtonBase-root,
+.MuiInputBase-input,
+.MuiTypography-root {
+  font-family: var(--font-family) !important;
+}

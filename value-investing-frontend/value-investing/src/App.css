@@ -5,12 +5,349 @@
   --padding-right-left-main-content: 16px; /* this defines the padding of the main content */
 
 
+  /* defines the font used in the application */
+  --font-family: "Plus Jakarta Sans",
+    sans-serif;
+
   --main-color: #004170;
+
+  /* background color and gradient */
+--background-color: #f0f2f5;
+--background-gradient: radial-gradient(at 0% 0%,
+    hsla(243, 86%, 95%, 0.4) 0px,
+    transparent 50%),
+  radial-gradient(at 100% 0%,
+    hsla(289, 86%, 95%, 0.4) 0px,
+    transparent 50%),
+  radial-gradient(at 0% 100%,
+    hsla(189, 86%, 95%, 0.4) 0px,
+    transparent 50%),
+  radial-gradient(at 80% 90%,
+    hsla(330, 86%, 95%, 0.4) 0px,
+    transparent 50%);
+  /* old colors */
+  /* --background-color: #f0f2f5;
+  --background-gradient: radial-gradient(at 0% 0%,
+      hsla(243, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 100% 0%,
+      hsla(289, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 0% 100%,
+      hsla(189, 86%, 95%, 0.4) 0px,
+      transparent 50%),
+    radial-gradient(at 80% 90%,
+      hsla(330, 86%, 95%, 0.4) 0px,
+      transparent 50%); */
+
+  --error-red: red;
+  --bg-color-error: rgba(255, 0, 0, 0.1);
+    --bg-color-neutral: rgba(107, 114, 128, 0.1);
+  --success-color: rgb(22 163 74);
+--bg-color-success: rgb(34 197 94 / 0.1);
+  --bg-color-google-login-button: white;
+
+  --background-color-mui-backdrop: rgba(0, 0, 0, 0.4);
+
+  /* styles glass card */
+  --background-glass-card: rgba(255, 255, 255, 0.6);
+  --background-glass-card-less-transparent: rgba(255, 255, 255, 0.8);
+  --backdrop-filter-glass-card: blur(12px);
+  --box-shadow-glass-card: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
+  --border-glass-card: 1px solid rgba(255, 255, 255, 0.18);
+
+  /* defines the grey scale text color */
+  --text-color-grey-scale: rgb(107 114 128);
+
+  /* defines the action color; this includes buttons and logo */
+  --action-color: rgb(79 70 229);
+  --action-color-transparent: rgba(79 ,70, 229,0.3);
+  --action-color-more-transparent: rgba(79, 70, 229, 0.15);
+  --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
+
+  --color-floating-hint-editor: #838282;
+
+  /* defines the black color, mainyl used for header */
+  --header-color: rgb(17 24 39);
+
+  --table-border: 1px solid rgba(107, 114, 128, 0.2);
+
+  --background-color-nav-bar: rgba(255, 255, 255, 0.7);
+
+  /* material ui colors */
+  --label-color-input-fields: rgba(0, 0, 0, 0.6);
+  --label-color-input-fields-focused: ;
+  --inner-text-input-fields: #000000DE;
+  --border-input-fields: #000000DE;
+  --input-fields-icons-color: #000000DE;
+  --input-fields-icons-color-bright: white;
+  --input-fields-hover-bg-color: rgba(235, 234, 236, 0.42);
+
+
+  /* button group */
+  --background-color-button-group-active: rgba(255, 255, 255, 0.4);
+
+  /* title mid size */
+  --font-size-title-mid-size: 18px;
+  --font-weight-title-mid-size: 600;
+  --line-height-title-mid-size: 1.75rem;
+  --border-color-button-group: rgba(0, 0, 0, 0.12);
+
+
+  /* screener results table */
+  --table-header-actions-bg-color: white;
+  --bg-color-table-header-cell: white;
+
+  --bg-color-custom-metrics-hover: rgba(0, 0, 0, 0.04);
 }
 
-/* html{
-  font-size: 62.5%;
-} */
+.dark-theme {
+  /* Dark theme overrides */
+
+/* --background-color: rgb(16 25 34); */
+  --background-color: rgb(16 25 34);
+  --background-gradient: none;
+
+  --border-color-button-group: rgba(255,255,255,0.12);
+
+
+  --color-floating-hint-editor: var(var(--border-input-fields));
+  --background-color-mui-backdrop: rgba(0, 0, 0, 0.8);
+
+  --background-glass-card: rgba(55, 74, 102, 0.5);
+  --backdrop-filter-glass-card: none;
+  --box-shadow-glass-card: none;
+  --border-glass-card: none;
+  /* --background-glass-card-less-transparent: rgba(55, 74, 102, 1);; */
+  --background-glass-card-less-transparent: rgba(55, 74, 102, 1);
+  --text-color-grey-scale: rgb(156 163 175);
+
+  --action-color: rgb(17 115 212);
+
+  --header-color: white;
+
+  --background-color-nav-bar: rgb(16 25 34);
+
+  --label-color-input-fields: rgb(156 163 175);
+  --inner-text-input-fields: white;
+  --input-fields-hover-bg-color: transparent;
+  --border-input-fields: white;
+  --input-fields-icons-color: white;
+
+  --table-header-actions-bg-color: rgba(36,50,68,0.86);
+  --bg-color-table-header-cell: white;
+
+
+  --bg-color-custom-metrics-hover: rgba(250, 250, 250, 0.08);
+ 
+}
+
+
+body, html{
+  font-family: var(--font-family);
+  background-repeat: no-repeat;
+  /* sets the background color to light purple */
+  background-color: var(--background-color);
+  background-image: var(--background-gradient);
+}
+
+/* Override MUI Typography and other components globally */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiSelect-root,
+.MuiTextField-root,
+.MuiAutocomplete-option,
+.MuiMenuItem-root,
+.MuiToggleButtonGroup-root {
+  font-family: var(--font-family) !important;
+}
+
+  .background-chart {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80vh;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .background-chart svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dark .background-chart {
+    opacity: 0.2;
+  }
+
+     .candle-shimmer {
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: linear-gradient(90deg,
+           rgba(255, 255, 255, 0) 0%,
+           rgba(255, 255, 255, 0.2) 50%,
+           rgba(255, 255, 255, 0) 100%);
+       animation: shimmer 4s infinite linear;
+       opacity: 0.1;
+     }
+  
+     @keyframes shimmer {
+       0% {
+         transform: translateX(-100%);
+       }
+  
+       100% {
+         transform: translateX(100%);
+       }
+     }
+.opacity-30 {
+  opacity: 0.3;
+}
+/* define colors of mui input elements */
+.MuiFormLabel-root.MuiInputLabel-root{
+  /* color: red !important; */
+  color: var(--label-color-input-fields) !important;
+}
+
+.MuiFormLabel-root.MuiInputLabel-root.Mui-focused {
+  /* color: red !important; */
+  color: var(--action-color) !important;
+}
+
+.MuiDrawer-root.MuiDrawer-modal.custom-drawer > .MuiBackdrop-root.MuiModal-backdrop{
+background: var(--background-gradient);
+background-color: var(--background-color-mui-backdrop);
+}
+
+.custom-fieldset {
+  border: 1px solid var(--border-input-fields);
+  border-radius: 4px;
+  padding: 12px;
+  position: relative;
+}
+
+.mtk1{
+  color: var(--border-input-fields) !important;
+}
+
+.editor-error-state{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-family: var(--font-family);
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--error-red)
+}
+
+.success{
+  color: var(--action-color)
+}
+
+.mjx-chtml{
+  white-space: none;
+}
+
+.editor-state-and-icon{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: start;
+}
+
+.MuiSvgIcon-root.success-icon{
+  fill: var(--action-color)
+}
+
+.MuiSvgIcon-root.fail-icon {
+  fill: var(--error-red)
+}
+
+.warning-icon{
+  fill: var(--text-color-grey-scale)
+}
+
+.latex-formula{
+  align-self: center;
+}
+
+.formula-editor-latex-repr{
+  margin-top: 16px;
+  padding: 8px;
+  /* background: var(--background-glass-card-less-transparent); */
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--border-input-fields)
+}
+
+.legend-formula-editor{
+  font-size: 13px;
+  color: var(--label-color-input-fields)
+}
+
+.custom-fieldset legend {
+  padding: 0 4px;
+  font-size: 0.9em;
+}
+
+.MuiDrawer-root.custom-drawer>.MuiPaper-root {
+  width: 90vw !important;
+  /* height: 80vh !important; */
+  overflow: visible !important;
+  justify-self: center !important;
+  /* background: white; */
+  background: var(--background-glass-card-less-transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  box-shadow: var(--box-shadow-glass-card);
+  padding: 24px;
+  border-radius: 0px 0px 20px 20px;
+  border: 1px var(--border-input-fields);
+}
+
+.wrapper-editor{
+  border: 1px solid var(--border-input-fields);
+  border-radius: 12px;
+  background: transparent
+}
+
+.MuiSelect-select.MuiSelect-outlined{
+  /* color: red; */
+  color: var(--inner-text-input-fields) !important;
+}
+
+.MuiInputBase-root.MuiOutlinedInput-root{
+  color: var(--border-input-fields) !important;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiSelect-icon{
+  color: var(--input-fields-icons-color) !important;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium{
+  color: var(--input-fields-icons-color) !important;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.button-icon{
+  fill:var(--input-fields-icons-color-bright);
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.button-icon-action {
+  fill: var(--action-color);
+}
 
 /* remove arrows from input field type number START */
 /* Chrome, Safari, Edge, Opera */
@@ -24,6 +361,729 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+
+/* redesign START */
+.google-icon-login-button{
+  width: 18px;
+  height: 18px;
+}
+
+.main-content-wrapper{
+  max-width: 1260px;
+  padding-left: 32px;
+  padding-right: 32px;
+  padding-top: 48px;
+  padding-bottom: 48px;
+  display: flex;
+  justify-content: center;
+  margin: auto;
+}
+
+.flex-wrapper-main-content{
+  flex-grow: 1;
+  position: relative;
+}
+
+.MuiButtonBase-root.MuiFab-root.custom-fab-filtering{
+  position: absolute;
+  /* bottom: 32px; */
+  /* top: 85vh; */
+  bottom: 16px;
+  right: 16px;
+  background: var(--action-color);
+  color: white;
+  font-family: var(--font-family);
+}
+
+.MuiTableContainer-root.custom-mui-table{
+  border: var(--table-border);
+}
+
+.MuiTooltip-tooltip.MuiTooltip-tooltipArrow{
+  background: var(--action-color) !important;
+}
+
+.MuiTooltip-tooltip.MuiTooltip-tooltipArrow.MuiTooltip-tooltipPlacementRight {
+/* margin-top: -15px !important; */
+font-family: var(--font-family);
+font-size: 13px;
+}
+
+.flex-wrapper-login-card{
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: -30px;
+  padding: 32px;
+}
+
+.login-page-title{
+  color: var(--header-color);
+  text-align: center;
+  font-weight: 600;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.login-sub-title{
+  color: var(--text-color-grey-scale);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.wrapper-google-button{
+  justify-self: center;
+  width: 100%;
+  border-radius: 8px;
+  font-family: var(--font-family);
+}
+
+.price-tag-wrapper{
+  display: flex;
+  gap: 52px;
+}
+
+.price-tag-wrapper:last-child {
+  margin-right: 12px;
+}
+
+.login-button-text{
+font-size: 15px;
+  font-family: var(--font-family);
+}
+
+.MuiFormHelperText-root{
+  font-family: var(--font-family) !important;
+}
+
+.MuiPaper-root.MuiAlert-root.custom-alert{
+  background-color: var(--action-color);
+  border-radius: 8px;
+  font-family: var(--font-family);
+}
+
+.MuiPaper-root.MuiAlert-colorError.custom-alert{
+  background-color: var(--error-red);
+  font-weight: 700;
+}
+
+.google-button-login{
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--action-color);
+  color: white;
+  cursor: grab;
+  justify-content: center;
+  font-size: 14px;
+  width: 100%;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 12px;
+  font-weight: 600;
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+
+.MuiTooltip-arrow{
+  color: var(--action-color) !important;
+}
+
+/* .view-lines.monaco-mouse-cursor-text{
+  font-family: var(--font-family) !important;
+} */
+
+.monaco-editor{
+  background: transparent !important;
+}
+
+/* Suggest dropdown background */
+.monaco-editor .suggest-widget {
+  border-radius: 8px !important;
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important; */
+  /* background: #fdfdfd !important; */
+  /* border: 1px solid #ccc !important; */
+}
+
+.monaco-editor,
+.monaco-editor .monaco-editor-background,
+.monaco-editor .inputarea.ime-input {
+  border: none !important;
+  outline: none !important;
+}
+
+.monaco-editor-label{
+  color: var(--text-color-grey-scale);
+  font-family: var(--font-family);
+  background: var(--background-glass-card-less-transparent);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+}
+
+
+
+.floating-hint {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 0.75rem;
+  color: var(--color-floating-hint-editor);
+  /* background: rgba(255, 255, 255, 0.8); */
+  border-radius: 6px;
+  padding: 2px 6px;
+  pointer-events: none;
+  font-weight: 600;
+  /* backdrop-filter: blur(4px); */
+  font-family: var(--font-family);
+  z-index: 1000;
+}
+
+.floating-hint kbd {
+  background: #eee;
+  border-radius: 3px;
+  padding: 1px 3px;
+  font-family: monospace;
+}
+
+/* Each suggestion item */
+/* .monaco-editor .monaco-list-row {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  font-size: 13px !important;
+} */
+
+/* Highlighted suggestion */
+.monaco-editor .monaco-list-row.focused {
+  background: var(--action-color-more-transparent) !important;
+/* background: red;   */
+  color: var(--header-color) !important;
+}
+
+.monaco-editor .suggest-icon.codicon.codicon-symbol-variable::before {
+  content: "";
+  /* remove the codicon glyph */
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-image: url('https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/variable.svg');  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.accordion-title-flexbox-wrapper{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+}
+
+.accordion-ticker-title{
+  font-size: var(--font-size-title-mid-size);
+  font-weight: var(--font-weight-title-mid-size);
+  line-height: var(--line-height-title-mid-size);
+  color: var(--header-color)
+}
+
+.MuiAccordion-root.MuiAccordion-rounded.custom-accordion::before{
+  height: 0;
+}
+
+.monaco-highlighted-label > .highlight{
+  color: var(--action-color) !important;
+}
+
+/* .suggest-icon.codicon.codicon-symbol-variable{
+  display: none !important;
+} */
+
+.monaco-editor .suggest-widget .label .highlight {
+  color: red !important;
+  /* match highlight color */
+  font-weight: 600 !important;
+  /* bold highlight */
+}
+
+.MuiButtonBase-root.MuiChip-root{
+  color: var(--action-color);
+  background-color: var(--chip-applied-filter-bg-color);
+  font-family: var(--font-family);
+  border-color: var(--action-color);
+  font-weight: 600;
+  border: 1px solid var(--action-color);
+}
+
+.MuiButtonBase-root.MuiToggleButtonGroup-grouped.Mui-selected{
+/* background-color: var(--background-color-button-group-active);
+backdrop-filter: blur(5px);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+background: var(--background-glass-card);
+box-shadow: var(--box-shadow-glass-card);
+backdrop-filter: var(--backdrop-filter-glass-card);
+font-weight: 700;
+}
+
+.MuiButtonBase-root.MuiToggleButtonGroup-grouped.Mui-selected:hover {
+  background: var(--background-glass-card)
+}
+
+.MuiCircularProgress-root.custom-circular-progress{
+  color: white;
+  scale: 0.7;
+}
+
+.MuiToggleButtonGroup-root.custom-toggle-button-group> button {
+  color: var(--header-color);
+  border-color: var(--border-color-button-group);
+}
+
+.MuiToggleButtonGroup-root.custom-toggle-button-group > :first-child {
+  border-radius: 20px 0px 0px 20px;
+}
+
+.MuiToggleButtonGroup-root.custom-toggle-button-group> :last-child {
+  border-radius: 0px 20px 20px 0px;
+}
+
+.MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion{
+  box-shadow: var(--box-shadow-glass-card);
+  background: var(--background-glass-card);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  border-radius: 20px 20px 20px 20px;
+  padding: 20px;
+  margin-top: 0px;
+}
+
+.flexbox-wrapper-price-tag{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.undervalued{
+  color: var(--success-color);
+  background-color: var(--bg-color-success);
+}
+
+.neutral{
+    background-color: var(--bg-color-neutral);
+}
+
+.overvalued {
+  color: var(--error-red);
+  background-color: var(--bg-color-error);
+}
+
+.title-price-tag{
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-color-grey-scale)
+}
+
+.MuiButtonBase-root.MuiListItemButton-root.custom-list-item-button:hover{
+  background-color: var(--bg-color-custom-metrics-hover);
+}
+
+.price-price-tag{
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 16px;
+  text-align: center;
+
+}
+
+.price-price-tag.neutral{
+  color: var(--header-color)
+}
+
+.accordion-title-qfs-symbol{
+  color: var(--text-color-grey-scale);
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.MuiOutlinedInput-root.custom-input-valuation-table > fieldset {
+  border: none;
+}
+
+.MuiOutlinedInput-root.custom-input-valuation-table>input {
+  text-align: right;
+  padding-right: 2px;
+}
+
+.MuiTableRow-root.custom-table-row-valuation:hover{
+  background-color: rgba(178, 178, 178, 0.3);
+}
+
+.MuiTableHead-root.custom-table-head{
+  background-color: var(--action-color);
+}
+
+.MuiTableHead-root.custom-table-head > tr > th {
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.MuiSvgIcon-root.custom-icon-table{
+  vertical-align: bottom;
+  fill: var(--text-color-grey-scale)
+}
+
+
+.MuiAccordion-rounded.MuiAccordion-gutters.custom-accordion:befre {
+height: 0;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiChip-deleteIcon{
+  color: var(--action-color)
+}
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiChip-deleteIcon:hover {
+  color: var(--action-color)
+}
+
+.MuiButtonBase-root{
+  text-transform: none !important;
+}
+
+.MuiButtonBase-root.contained-custom-button{
+  background-color: var(--action-color) !important;
+  border-radius: 12px;
+}
+
+.MuiButtonBase-root.Mui-disabled.contained-custom-button{
+  color: white;
+}
+
+.relative-position{
+  position: relative;
+}
+
+.title{
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--header-color)
+}
+
+.sub-title{
+  color: var(--text-color-grey-scale)
+
+}
+
+/* override color of nav bar */
+.MuiPaper-root.nav-bar-custom{
+  background: var(--background-color-nav-bar);
+  /* background: blue; */
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0px 0px 16px 16px;
+}
+
+.company-logo-nav-bar{
+  height: 32px;
+  width: 32px;
+  color: var(--action-color);
+  margin-right: 4px;
+}
+
+.flex-box-wrapper-logo{
+  display: flex;
+  align-items: center;
+}
+
+.header-color-black-scale{
+  color: var(--header-color)
+}
+
+.screener-templates-flex-wrapper{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.MuiInputBase-root.custom-select{
+  border-radius: 12px;
+}
+
+.MuiButtonBase-root.contained-custom-button.custom-metric{
+  width: 100%;
+  margin-top: 20px;
+}
+
+.text-empty-filters{
+  color: var(--text-color-grey-scale)
+}
+
+.grid-wrapper-template-filter-custom{
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.grid-wrapper-screener{
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+}
+
+.flexbox-wrapper-filter-criteria-fields{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px
+  /* flex-direction: column; */
+}
+
+.fit-content-button{
+  height: fit-content;
+}
+
+/* .flex-item-filter-field{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+} */
+
+.flex-item-filter-field {
+  flex: 1;
+  min-width: 160px;
+}
+
+.smaller-flex-item-select{
+  /* flex: 0.5; */
+}
+
+.flex-item-filter-field >* {
+  flex: 1 1 160px;
+  /* grow and shrink equally, but not smaller than 150px */
+  min-width: 160px;
+  /* explicit safeguard */
+}
+
+.filters-criteria-grid-item{
+  height: fit-content;
+}
+
+.applied-filters-flexbox-wrapper{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+/* .filters-criteria-grid-item {
+  grid-column: span 5;
+}
+
+.screener-results-grid-item {
+  grid-column: span 7;
+} */
+
+.MuiInputBase-root.MuiOutlinedInput-root{
+  border-radius: 12px !important;
+}
+
+.MuiFormLabel-root.MuiInputLabel-root.Mui-focused{
+  color: var(--action-color) !important;
+}
+
+.MuiFormLabel-root.custom-input-label.Mui-focused{
+  color: var(--action-color) !important;
+}
+
+.MuiMenuItem-root.Mui-selected{
+  background-color: var(--action-color-transparent) !important;
+}
+
+.flex-wrapper-filter-views-compo{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.MuiPopover-root.custom-popover-charts > .MuiPaper-root.MuiPaper-elevation{
+  width: 80vw;
+  /* width: 300px; */
+  height: 300px;
+}
+
+.MuiPopper-root.custom-popover-charts{
+  width: 70vw;
+  height: 300px;
+  background: white;
+  max-width: 1000px;
+  border-radius: 20px;
+}
+
+.MuiListItemText-root.MuiListItemText-dense.list-item-text-custom{
+  color: var(--header-color)
+}
+
+
+.wrapper-nivo-bar-chart text {
+font-family: var(--font-family) !important;
+}
+
+.title-mid-size{
+  font-weight: var(--font-weight-title-mid-size);
+  font-size: var(--font-size-title-mid-size);
+  line-height: var(--line-height-title-mid-size);
+  color: var(--header-color)
+}
+
+.glass-card {
+  background: var(--background-glass-card);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--backdrop-filter-glass-card);
+  border: var(--border-glass-card);
+  box-shadow: var(--box-shadow-glass-card);
+  padding: 24px;
+  border-radius: 20px;
+}
+
+ .nav-items-flexbox-wraper {
+   display: flex;
+   flex-grow: 1;
+   gap: 20px;
+   margin-left: 40px;
+   color: var(--text-color-grey-scale);
+   font-weight: 500;
+ }
+
+ .wrapper-hamburger-menu{
+  color: var(--action-color)
+ }
+
+ .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.hamburger-icon-svg{
+  fill: var(--action-color)
+ }
+
+ .MuiAvatar-root.custom-avatar{
+    background: var(--action-color)
+ }
+
+/* For screens smaller than 600px (phones) */
+@media (max-width: 599.95px) {
+.company-name-left-side {
+    display: none;
+  }
+
+  .company-name-middle{
+    display: flex;
+  }
+
+  .MuiToolbar-root.mui-toolbar-custom{
+    justify-content: space-between;
+  }
+
+  .nav-items-flexbox-wraper{
+    display: none;
+  }
+
+    .grid-wrapper-screener {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+ 
+
+}
+
+/* Small and up (>=600px) */
+@media (min-width: 600px) {
+  .company-name-left-side {
+    display: none;
+  }
+
+  .company-name-middle {
+    display: flex;
+  }
+
+  .MuiToolbar-root.mui-toolbar-custom {
+    justify-content: space-between;
+  }
+
+  .nav-items-flexbox-wraper {
+    display: none;
+  }
+
+  .filters-criteria-grid-item {
+    grid-column: span 8;
+  }
+
+  .screener-templates-grid-item{
+    grid-column: span 4;
+    height: fit-content;
+  }
+
+  .screener-results-grid-item {
+    /* grid-column: span 7; */
+        grid-column: span 12;
+  }
+
+}
+
+/* Medium and up (>=900px) */
+@media (min-width: 900px) {
+  .company-name-left-side {
+      display: flex;
+    }
+
+    .company-name-middle {
+      display: none;
+    }
+
+    .wrapper-hamburger-menu {
+      display: none;
+    }
+
+    .nav-items-flexbox-wraper {
+      display: flex;
+      flex-grow: 1;
+      gap: 20px;
+      margin-left: 40px;
+    }
+
+    .container-grid {
+      grid-template-columns: repeat(12, 1fr);
+      /* lg:grid-cols-12 */
+    }
+
+    .filters-criteria-grid-item{
+      grid-column: span 8;
+    }
+
+    .screener-templates-grid-item {
+      grid-column: span 4;
+    }
+
+    .screener-results-grid-item{
+      /* grid-column: span 8; */
+      grid-column: span 12;
+    }
+
+}
+
+/* Large and up (>=1200px) */
+@media (min-width: 1200px) {
+  
+}
+
+/* Extra large and up (>=1536px) */
+@media (min-width: 1536px) {
+  
+}
+
+/* redesign END */
+
+
 /* remove arrows from input field type number END */
 
 .column-title{
@@ -126,7 +1186,7 @@ input[type=number] {
 }
 
 .MuiOutlinedInput-input:hover {
-  background-color: rgba(235, 234, 236, 0.42) !important;
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 .MuiOutlinedInput-notchedOutline {
@@ -134,7 +1194,7 @@ input[type=number] {
 }
 
 .MuiOutlinedInput-root.Mui-focused input {
-  background-color: rgba(235, 234, 236, 0.42) !important;
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 /* Customize MUIRichTextEditor START */

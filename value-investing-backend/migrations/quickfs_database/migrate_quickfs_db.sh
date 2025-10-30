@@ -18,9 +18,9 @@ docker run --rm \
   -v $TEMP_VOLUME:/Data \
   --name  $IMAGE_NAME \
   $IMAGE_NAME \
-  sh -c "python migrate_screener_data.py && sleep 300"
-  #sh -c "python download_quickfs_data.py && python main.py && python migrate_close_prices.py && python migrate_valuation_data.py && python migrate_screener_data.py && sleep 300"
+  sh -c "python download_quickfs_data.py && python main.py && sleep 300"
 
+#  sh -c "python download_quickfs_data.py && python main.py && python migrate_close_prices.py && python migrate_valuation_data.py && python migrate_screener_data.py && sleep 300"
 
 # delete volume as it is no longer needed
  docker volume rm $TEMP_VOLUME

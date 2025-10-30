@@ -1,4 +1,8 @@
 import React from "react";
+import BackgroundChart from "./components/BackgroundChart";
+import CompanyLogo from "../GlobalComponents/CompanyLogo";
+import GoogleIcon from "./components/GoogleIcon";
+import BackgroundChartSecond from "./components/BackgroundChartSecond";
 
 function ContentLoginPage() {
   const googleLogin = () => {
@@ -19,7 +23,30 @@ function ContentLoginPage() {
     }
   };
 
-  return <button onClick={googleLogin}>Google Login (first cache run)</button>;
+  return (
+    <>
+      <BackgroundChart />
+      {/* <BackgroundChartSecond /> */}
+      <div className="flex-wrapper-login-card">
+        <div className="flex-box-wrapper-logo">
+          <CompanyLogo />
+          <h2 className="header-color-black-scale ">StockVal</h2>
+        </div>
+        <div className="login-card glass-card">
+          <div className="login-page-title">Welcome Back</div>
+          <div className="login-sub-title">
+            Login to access the application.
+          </div>
+          <div className="wrapper-google-button">
+            <button onClick={googleLogin} className="google-button-login">
+              <GoogleIcon className="google-icon-login-button" />
+              <div className="login-button-text">Google Login</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default ContentLoginPage;

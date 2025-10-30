@@ -25,6 +25,8 @@ const initialState = {
   charFieldOptions: {},
   dataViewTickers: [],
   additionalColumns: [],
+  selectedFilters: [],
+  customMetrics: [],
 };
 
 export const stockScreenerSlice = createSlice({
@@ -43,8 +45,32 @@ export const stockScreenerSlice = createSlice({
     initializeActivFilters: (state, action) => {
       state.activFilters = action.payload;
     },
+    initializeSelectedFilters: (state, action) => {
+      state.selectedFilters = action.payload;
+    },
     resetActiveFilters: (state, action) => {
       state.activFilters = [];
+    },
+    addSelectedFilter: (state, action) => {
+      const filter = { id: uuidv4(), ...action.payload };
+
+      state.selectedFilters.push(filter);
+    },
+    remvSelectedFilter: (state, action) => {
+      //an active filter is either removed with id or its techName; note that it is only removed via techName in the modal with checkbox; it the bin icon is clicked the id is used to delete it
+      var filteredArray;
+      //check if id property is present
+      if (action.payload.hasOwnProperty("id")) {
+        filteredArray = state.selectedFilters.filter(
+          (item) => item.id !== action.payload.id
+        );
+      } else {
+        filteredArray = state.selectedFilters.filter(
+          (item) => item.techName !== action.payload.techName
+        );
+      }
+
+      state.selectedFilters = filteredArray;
     },
     addActiveFilter: (state, action) => {
       //create a unique id to identify the activeFilter
@@ -174,6 +200,12 @@ export const stockScreenerSlice = createSlice({
     AddAdditionalColumns: (state, action) => {
       state.additionalColumns.push(action.payload);
     },
+    initializeCustomMetrics: (state, action) => {
+      state.customMetrics = action.payload;
+    },
+    addCustomMetric: (state, action) => {
+      state.customMetrics.push(action.payload);
+    },
     RemvAdditionalColumns: (state, action) => {
       const newArray = state.additionalColumns.filter(
         (item) => item !== action.payload
@@ -185,7 +217,10 @@ export const stockScreenerSlice = createSlice({
 });
 
 export const {
+  initializeCustomMetrics,
+  addCustomMetric,
   initalizeFilters,
+  addSelectedFilter,
   initalizeAutocompleteFilters,
   editSetFilters,
   initalizeFilteredStocks,
@@ -206,6 +241,7 @@ export const {
   setCurrentFilterView,
   setSavedFilterViews,
   setViewName,
+  initializeSelectedFilters,
   setViewDescription,
   initializeActivFilters,
   addSaveFilterView,
@@ -215,6 +251,7 @@ export const {
   setDataViewTickers,
   AddAdditionalColumns,
   RemvAdditionalColumns,
+  remvSelectedFilter,
 } = stockScreenerSlice.actions;
 
 export default stockScreenerSlice.reducer;

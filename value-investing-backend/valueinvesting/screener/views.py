@@ -20,12 +20,14 @@ from io import BytesIO
 from scipy.optimize import fsolve,brentq,bisect
 import pandas as pd
 from rest_framework import status
+from django.db.models.functions import ExtractYear
 # from module_name import some_fn
 # from scipy.optimize import brentq
 # from .module_name import extract_revenue, process_list, generate_data
 #from .epv import compute_epv_cpp
 # from .helpers import add
 from django.db.models import Q
+from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg
 
 
 
@@ -1168,6 +1170,346 @@ class ComputeEPVAPIView(APIView):
         return Response(response)
 
 
+def get_revenue_ts(qfs_symbol, n=10):
+    """
+    returns revenue as a time series of the following format: [{'year' : '2021', 'value' : 20000}, {'year' : '2022, 'value' : 30000}, etc.]
+    """
+    last_records = (
+    IncomeStatementAnnual.objects
+    .filter(qfs_symbol_id=qfs_symbol)
+    .annotate(year=ExtractYear('period_end_date'))  # get the year
+    .order_by('-period_end_date')[:n]  # get last 5 years
+    .values('year', 'revenue')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['revenue']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
+def get_revenue(qfs_symbol):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    last_5_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')
+        .values('revenue')[:5]  # only retrieve revenue field
+    )
+
+    # Aggregate min, avg, max revenue on those 5 records
+    revenue_stats = last_5_records.aggregate(
+        min_revenue=Min('revenue'),
+        avg_revenue=Avg('revenue'),
+        max_revenue=Max('revenue')
+    )
+
+    return [
+        revenue_stats['min_revenue'],
+        revenue_stats['avg_revenue'],
+        revenue_stats['max_revenue']
+    ]
+
+
+def get_op_margin_ts(qfs_symbol, n=10):
+    """
+    Returns operating margins as a time series of the following format:
+    [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
+    """
+
+    # Query the most recent N records for this symbol
+    last_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')[:n]
+        .values('year', 'operating_income', 'revenue')
+    )
+
+    # Compute operating margin = operating_income / revenue
+    formatted_data = []
+    for record in last_records:
+        revenue = record.get('revenue')
+        op_income = record.get('operating_income')
+
+        if revenue not in (None, 0):
+            margin = op_income / revenue
+            formatted_data.append({
+                'year': str(record['year']),
+                'value': round(margin, 3)  # round to 3 decimals
+            })
+
+    # Sort by year ascending
+    formatted_data.sort(key=lambda x: x['year'])
+
+    return formatted_data
+
+def get_op_margin(qfs_symbol):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_5_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')
+        .values('operating_income', 'revenue')[:5]
+    )
+
+    # Compute the operating margins (safely handle division by zero)
+    margins = [
+        record['operating_income'] / record['revenue']
+        for record in last_5_records
+        if record['revenue'] not in (None, 0)
+    ]
+
+    if not margins:  # No valid margins (e.g., missing or zero revenues)
+        return [None, None, None]
+
+    # Compute min, average, max manually in Python
+    min_margin = min(margins)
+    avg_margin = sum(margins) / len(margins)
+    max_margin = max(margins)
+
+    return [round(min_margin,2), round(avg_margin,2), round(max_margin,2)]
+
+def get_cash_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'), total_cash = F('cash_and_equiv') + F('st_investments'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'total_cash')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['total_cash']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
+def get_cash(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = BalanceSheetQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+    if latest_record:
+        total_cash = latest_record.cash_and_equiv + latest_record.st_investments
+    else:
+        total_cash = None
+
+    return total_cash
+
+def get_debt_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'), total_debt = F('st_debt') + F('lt_debt'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'total_debt')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['total_debt']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
+def get_debt(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = BalanceSheetQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+    if latest_record:
+        total_debt = latest_record.st_debt + latest_record.lt_debt
+    else:
+        total_debt = None
+
+    return total_debt
+
+
+def get_nr_diluted_shares_ts(qfs_symbol, n=10):
+    """
+    returns revenue as a time series of the following format: [{'year' : '2021', 'value' : 20000}, {'year' : '2022, 'value' : 30000}, etc.]
+    """
+    last_records = (
+    IncomeStatementAnnual.objects
+    .filter(qfs_symbol_id=qfs_symbol)
+    .annotate(year=ExtractYear('period_end_date'))  # get the year
+    .order_by('-period_end_date')[:n]  # get last 5 years
+    .values('year', 'shares_diluted')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['shares_diluted']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
+
+def get_nr_diluted_shares(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = IncomeStatementQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+
+    if latest_record:
+        nr_shares_dil = latest_record.shares_diluted
+    else:
+        nr_shares_dil = None
+
+    return nr_shares_dil
+
+class EPVFundamentalsAPIView(APIView):
+    def post(self, request):
+        """
+        This endpoint returns the fundamentals needed for valuing a company based on Earnings Power Value.
+        The return structure will be:
+
+        const exampleData = [
+            { Revenue: [159, 237, 262] }, // bear, base, bull
+            { "Operating Margin": [6.0, 9.0, 24] },
+            { EBIT: [262, 16.0, 24] },
+            { "D&A": [305, 3.7, 67] },
+            { "Maintenance Capex": [356, 16.0, 49] },
+            { "Adjusted Income": [356, 16.0, 49] },
+            { "Tax Rate": [356, 16.0, 49] },
+            { "Sustainable NOPAT": [356, 16.0, 49] },
+            { WACC: [356, 16.0, 49] },
+            { "EPV operating business": [356, 16.0, 49] },
+            { Cash: [356, 16.0, 49] },
+            { Debt: [356, 16.0, 49] },
+            { "Nr. shares": [356, 16.0, 49] },
+            { "EPV per share": [356, 16.0, 49] },
+            ];
+
+        Each value in a metric array corresponds to bear, base, bull case
+        """
+        #tickers is of type list
+        qfs_symbols = request.data['qfs_symbols']
+        today = datetime.today()
+
+        # Format as dd-mm-yyyy
+        formatted_date = today.strftime("%d-%m-%Y")
+
+
+        #response list
+        response = []
+
+        for qfs_symbol in qfs_symbols:
+            val_data = []
+            # valuation = cache.get(f'{qfs_symbol}_EPV_{formatted_date}')
+            valuation = None
+            # valuation = None
+            if valuation is None:
+                #compute revenue: bear case = min(past 5 years), base case = avg(past 5 years), bull case = max(past 5 years)
+                revenue_vals = get_revenue(qfs_symbol=qfs_symbol)
+                op_margins = get_op_margin(qfs_symbol=qfs_symbol)
+
+                #compute ebit
+                ebit = [rev*op_margin if (rev is not None and op_margin is not None) else None
+                         for rev, op_margin in zip(revenue_vals, op_margins)]
+
+                #get cash (includes cash_and_equiv + st investments)
+                cash = get_cash(qfs_symbol=qfs_symbol)
+                cash = [cash]*3
+
+                #get total debt
+                debt = get_debt(qfs_symbol=qfs_symbol)
+                debt = [debt]*3
+
+                #get number of shares
+                nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
+                nr_shares = [nr_shares]*3
+
+                #define constant values like d&a, maintenance capex, tax rate, wacc
+                d_a = [0]*3
+                main_capex = [0]*3
+                tax_rate = [0.3]*3
+                wacc = [0.11, 0.1, 0.09]
+
+                #compute adjusted income
+                adj_income = [ebit+d_a+main_capex if (ebit is not None and d_a is not None and main_capex is not None) else None
+                              for ebit, d_a, main_capex in zip(ebit, d_a, main_capex)] 
+
+                #compute sustainable nopat
+                sus_nopat = [adj_inc *(1-tr) if (adj_inc is not None and tr is not None) else None
+                             for adj_inc, tr in zip(adj_income, tax_rate)]
+
+                #compute EPV operating business
+                epv_op_business = [sus_nopat/wacc if (sus_nopat is not None and wacc is not None and wacc != 0) else None
+                                   for sus_nopat, wacc in zip(sus_nopat, wacc)]
+
+                #compute epv per share
+                epv_per_share = [round((epv_bus + cash - debt)/nr_shares,1) if (epv_bus is not None and cash is not None and debt is not None and nr_shares is not None and nr_shares != 0) else None
+                                 for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
+
+                #get revenue time series
+                revenue_ts = get_revenue_ts(qfs_symbol=qfs_symbol)
+                op_margin_ts = get_op_margin_ts(qfs_symbol=qfs_symbol)
+                cash_ts = get_cash_ts(qfs_symbol=qfs_symbol)
+                debt_ts = get_debt_ts(qfs_symbol=qfs_symbol)
+                nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol=qfs_symbol)
+                print('this is revenue_ts: ', revenue_ts)
+
+                #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
+                val_data.append({'Revenue' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : revenue_ts})
+                val_data.append({'Operating Margin' : op_margins, 'isDerived': False, 'hasData' : True, 'ts' : op_margin_ts})
+                val_data.append({'EBIT' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
+                val_data.append({'D&A' : d_a, 'isDerived': False })
+                val_data.append({'Maintenance Capex' : main_capex, 'isDerived': False})
+                val_data.append({'Adjusted Income' : adj_income, 'isDerived': True, 'description': "Adjusted Income is a derived quantity. Adjusted Income = EBIT + D&A - Maintenance Capex"})
+                val_data.append({'Tax Rate' : tax_rate, 'isDerived': False})
+                val_data.append({'Sustainable NOPAT' : sus_nopat, 'isDerived': True, 'description': "Sustainable NOPAT is a derived quantity. NOPAT = Adjusted Income*(1 - Tax Rate)"})
+                val_data.append({'WACC' : wacc, 'isDerived': False})
+                val_data.append({'EPV operating business' : epv_op_business, 'isDerived': True, 'description': "EPV operating business is a derived quantity. EPV operating business = Adjusted Income/Wacc"})
+                val_data.append({'Cash' : cash, 'isDerived': False, 'hasData' : True, 'ts' : cash_ts})
+                val_data.append({'Debt' : debt, 'isDerived': False, 'hasData' : True, 'ts' : debt_ts})
+                val_data.append({'Nr. Shares' : nr_shares, 'isDerived': False, 'hasData' : True, 'ts' : nr_shares_ts})
+                val_data.append({'EPV per share': epv_per_share, 'isDerived': True, 'description': "EPV per share is a derived quantity. EPV per share = (EPV operating business + Cash - Debt)/Nr. Shares"})
+
+                # valuation = {'Revenue' : revenue_vals
+                #             ,'Operating Margin' : op_margins 
+                #             ,'EBIT' : ebit 
+                #             ,'D&A' : d_a 
+                #             ,'Maintenance Capex' : main_capex
+                #             ,'Adjusted Income' : adj_income
+                #             ,'Tax Rate' : tax_rate 
+                #             ,'Sustainable NOPAT' : sus_nopat
+                #             ,'WACC' : wacc
+                #             ,'EPV operating business' : epv_op_business
+                #             ,'Cash' : cash
+                #             ,'Debt' : debt
+                #             ,'Nr. Shares' : nr_shares
+                #             ,'EPV per share': epv_per_share
+                #             }
+
+
+                #compute epv for ticker
+                #valuation = compute_epv(qfs_symbol, op_margin_nr_years=years_op_margin,  avg_revenue_nr_years = avg_revenue_nr_years)
+
+                #store valuation in cache
+                # cache.set(f'{qfs_symbol}_EPV_{formatted_date}', valuation, timeout=CACHE_TTL)
+            
+            
+            response.append({qfs_symbol: val_data})
+
+        return Response(response)
+
 def get_eps_forecasts(ticker):
     """gets eps forecasts from yahoo finance (if available for given company)"""
     #yahoo finance url
@@ -1608,9 +1950,6 @@ def get_model_fields(model, filter_value, fields_to_exclude=[], is_custom_metric
     - Income Statement (Y)
     - valuation
     """
-
-    print('model.column_metadata: ', model.column_metadata)
-
     return [{'techName' : field.name, 'readableName' : field.verbose_name if field.verbose_name != field.name else "", "fieldType": field.get_internal_type(), 'isCustomMetric' : is_custom_metric, 'table' : model.column_metadata[field.name] if field.name in model.column_metadata else ""} for field in model._meta.get_fields() if field.name not in fields_to_exclude and field.is_relation is False and model.column_metadata[field.name] == filter_value]
 
 def get_custom_metrics(model):
@@ -1647,14 +1986,6 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         customFields = get_custom_metrics(CustomMetrics)
         
         
-        #print('these are valuation fields: ', screener_filter_fields)
-        # balanceSheetFields = get_model_fields(BalanceSheetAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # incomeStatementFields = get_model_fields(IncomeStatementAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # cashFlowStatementFields = get_model_fields(CashFlowStatementAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # keyRatioFields = get_model_fields(KeyRatiosAnnual, fields_to_exclude=FIELDS_TO_EXCLUDE)
-        # companyFields = get_model_fields(TradedCompanies, fields_to_exclude=["id", "ticker", "qfs_symbol", "company_type", "name"])
-        # customFields = get_custom_metrics(CustomMetrics)
-
         responseList = []
 
         responseBalanceSheet = {"tableName" : "Balance Sheet (Y)", "tableColumns" : balance_y_fields}
@@ -1667,19 +1998,29 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         responseValuation = {"tableName" : "Valuation", "tableColumns" : valuation_fields}
         responseCustomMetrics = {"tableName": "CustomMetrics", "tableColumns" : customFields}
         
-        # responseIncomeStatement = {"tableName" : "IncomeStatement", "tableColumns" : incomeStatementFields}
-        # responseCashFlowStatement = {"tableName" : "CashFlowStatement", "tableColumns" : cashFlowStatementFields}
-        # responseKeyRatios = {"tableName" : "KeyRatios", "tableColumns" : keyRatioFields}
-        # responseCompanyFields = {"tableName" : "CompanyInfo", "tableColumns": companyFields}
-        # responseCustomMetrics = {"tableName": "CustomMetrics", "tableColumns" : customFields}
-       
         responseList.extend([responseIncomeY, responseCompanyFields, responseBalanceSheet, responseBalanceSheetQ, responseValuation, responseKrY, responseKrQ,responseCfY,responseCustomMetrics])
 
         responseSerialized = StockScreenerFiltersSerializer(responseList, many=True).data
 
-        # return Response({'test' : 10})
         return Response(responseSerialized)
-    
+
+class LastClosePriceAPIView(APIView):
+    def get(self, request, qfs_symbol):
+        """
+        endpoint that returns all available fields that can be used as a filter for the stock screener
+        {incomeStatement: ["field1", "field2", "field3", "field4", "field5", etc.], balanceSheet: ["fieldb1", "fieldb2", etc.], ...}
+        """
+        result = (
+            TradedCompanies.objects
+            .filter(qfs_symbol=qfs_symbol)
+            .values('name', 'last_close_price', 'currency').first()
+        )
+
+        # name, last_close_price = result
+
+        return Response({'qfsSymbol': qfs_symbol, 'lastClosePrice': result['last_close_price'], 'name' : result['name'], 'currency' : result['currency']})
+
+
 
 class CustomMetricsAPIView(APIView):
     def get(self, request):
@@ -1687,11 +2028,9 @@ class CustomMetricsAPIView(APIView):
         endpoint that returns all available fields that can be used as a filter for the stock screener
         {incomeStatement: ["field1", "field2", "field3", "field4", "field5", etc.], balanceSheet: ["fieldb1", "fieldb2", etc.], ...}
         """
-
-        # CustomMetrics
-
-       
-        return Response("ok")
+        metrics = CustomMetrics.objects.filter(user=request.user)
+        serializer = CustomMetricsSerializer(metrics, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
         serializer = CustomMetricsSerializer(data=request.data)
@@ -1704,6 +2043,26 @@ class CustomMetricsAPIView(APIView):
 
         #send the newly created db entry as a response along with the message
         return Response(serializer.data)
+
+    def delete(self, request):
+        """
+        Deletes a saved view filter
+        """
+        try:
+            # Step 1: Get the object by its primary key
+            obj = CustomMetrics.objects.get(pk=request.data.get("id"))
+            
+            # Step 2: Delete the object
+            obj.delete()
+
+            #get all remaining objects and return
+            custom_metrics = CustomMetrics.objects.filter(user=request.user)
+            # Serialize the queryset
+            serializer = CustomMetricsSerializer(custom_metrics, many=True)
+            # Return the serialized data
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"An error occurred: {e}")
     
     def put(self, request):
         (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)

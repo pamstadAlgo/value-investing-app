@@ -8,17 +8,25 @@ import { store, persistor } from "./app/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import { CookiesProvider } from "react-cookie";
+import SnackbarProvider from "./pages/GlobalComponents/SnackbarProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+const queryClient = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
   // <React.StrictMode>
   <BrowserRouter>
     <Provider store={store}>
-      <PersistGate persistor={persistor}>
-        <CookiesProvider>
-          <App />
-        </CookiesProvider>
-      </PersistGate>
+      <QueryClientProvider client={queryClient}>
+        <PersistGate persistor={persistor}>
+          <CookiesProvider>
+            <SnackbarProvider>
+              <App />
+            </SnackbarProvider>
+          </CookiesProvider>
+        </PersistGate>
+      </QueryClientProvider>
     </Provider>
   </BrowserRouter>
 

@@ -8,6 +8,9 @@ from io import StringIO
 
 #define fields for different financial statements
 traded_companies_fields = ["symbol", "qfs_symbol", "exchange", "name", "company_type", "currency", "industry"] #these correspond to column names in .csv files from quick fs
+
+# traded_companies_fields_testing = ["ticker", "qfs_symbol", "exchange", "name", "company_type", "currency", "industry"] #these correspond to column names in .csv files from quick fs
+
 income_statement_fields = ["qfs_symbol", "period_end_date", "revenue", "cogs", "gross_profit", "sga", "rnd", "special_charges", "other_opex", "total_opex", "operating_income", "interest_income", "interest_expense", "net_interest_income_normal", "other_nonoperating_income", "pretax_income", "income_tax", "net_income_continuing", "net_income_discontinued", "income_allocated_to_minority_interest", "other_income_statement_items", "net_income", "preferred_dividends", "net_income_available_to_shareholders", "eps_basic", "eps_diluted", "shares_basic", "shares_diluted", "shares_eop", "shares_eop_change", "premiums_earned", "net_investment_income", "fees_and_other_income", "net_policyholder_claims_expense", "policy_acquisition_expense", "interest_expense_insurance", "total_interest_income", "total_interest_expense", "net_interest_income", "total_noninterest_revenue", "credit_losses_provision", "net_interest_income_after_credit_losses_provision", "total_noninterest_expense", "da_income_statement_supplemental" ]
 balance_sheet_fields = ["qfs_symbol", "period_end_date", "cash_and_equiv", "st_investments", "receivables", "inventories", "other_current_assets", "total_current_assets", "equity_and_other_investments", "ppe_gross", "accumulated_depreciation", "ppe_net", "intangible_assets", "goodwill", "other_lt_assets", "total_assets", "accounts_payable", "tax_payable", "current_accrued_liabilities", "st_debt", "current_deferred_revenue", "current_deferred_tax_liability", "current_capital_leases", "other_current_liabilities", "total_current_liabilities", "lt_debt", "noncurrent_capital_leases", "pension_liabilities", "noncurrent_deferred_revenue", "other_lt_liabilities", "total_liabilities", "common_stock", "preferred_stock", "retained_earnings", "aoci", "apic", "treasury_stock", "other_equity", "minority_interest_liability", "total_equity", "total_liabilities_and_equity", "total_investments", "deferred_policy_acquisition_cost", "unearned_premiums", "future_policy_benefits", "loans_gross", "allowance_for_loan_losses", "unearned_income", "loans_net", "deposits_liability"]
 cf_statement_fields = ["qfs_symbol", "period_end_date", "cfo_net_income", "cfo_da", "cfo_receivables", "cfo_inventory", "cfo_prepaid_expenses", "cfo_other_working_capital", "cfo_change_in_working_capital", "cfo_deferred_tax", "cfo_stock_comp", "cfo_other_noncash_items", "cf_cfo", "cfi_ppe_purchases", "cfi_ppe_sales", "cfi_ppe_net", "cfi_acquisitions", "cfi_divestitures", "cfi_acquisitions_net", "cfi_investment_purchases", "cfi_investment_sales", "cfi_investment_net", "cfi_intangibles_net", "cfi_other", "cf_cfi", "cff_common_stock_issued", "cff_common_stock_repurchased", "cff_common_stock_net", "cff_pfd_issued", "cff_pfd_repurchased", "cff_pfd_net", "cff_debt_issued", "cff_debt_repaid", "cff_debt_net", "cff_dividend_paid", "cff_other", "cf_cff", "cf_forex", "cf_net_change_in_cash"]
@@ -49,6 +52,82 @@ def transform_date_to_string(date):
 def transform_date(date):
     return date + "-01"
 
+def create_temp_staging_table(conn, target_table, staging_table):
+    """Create a temporary staging table with the same structure as the target table"""
+    with conn.cursor() as cur:
+        # cur.execute(f"""
+        #     CREATE TEMP TABLE {staging_table} (LIKE {target_table} INCLUDING ALL)
+        # """)
+        #when creating the temporary table based on the main table, we include constraints (like unique qfs_symbol + period_end_date). Quickfs has some dirty data where it has duplicates of qfs_symbol + period_end_date. When staging the data we don't want to handle duplicates. We will handle these later when inserting into the main table
+        cur.execute(f"""
+            CREATE TEMP TABLE {staging_table} (LIKE {target_table} EXCLUDING CONSTRAINTS EXCLUDING DEFAULTS)
+        """)
+        # drop the id column
+        cur.execute(f"ALTER TABLE {staging_table} DROP COLUMN id;")
+        conn.commit()
+
+            # Query to list columns
+        cur.execute("""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = %s
+            ORDER BY ordinal_position
+        """, (staging_table,))
+        
+        columns = cur.fetchall()
+
+    print(f"\n✅ Created temp table '{staging_table}' with the following columns:")
+    for name, dtype in columns:
+        print(f"  - {name} ({dtype})")
+
+
+def bulk_insert_staging(conn, df, staging_table):
+    """Copy dataframe into staging table"""
+    buffer = StringIO()
+    df.to_csv(buffer, index=False, header=False)
+    buffer.seek(0)
+    with conn.cursor() as cur:
+        cur.copy_expert(
+            f"COPY {staging_table} ({', '.join(df.columns)}) FROM STDIN WITH CSV",
+            buffer
+        )
+    conn.commit()
+
+def get_relevant_columns(conn, staging_table, exclude_columns=["id"]):
+    with conn.cursor() as cur:
+    # Query to list columns
+        cur.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = %s
+            ORDER BY ordinal_position
+        """, (staging_table,))
+        
+        columns = [row[0] for row in cur.fetchall() if row[0] not in exclude_columns]
+
+    return columns
+
+
+def insert_from_staging(conn, staging_table, target_table, conflict_columns, cols_inserted_rows='qfs_symbol_id'):
+    """Move unique rows from staging to target table"""
+    conflict_cols = ", ".join(conflict_columns)
+
+    #get all columns that should get inserted
+    columns = get_relevant_columns(conn, staging_table)
+
+    # print('relevant fields when inserting from staging to main: ', ', '.join(relevant_fields))
+    with conn.cursor() as cur:
+        cur.execute(f"""
+            INSERT INTO {target_table} ({', '.join(columns)}) SELECT {', '.join(columns)} FROM {staging_table}
+            ON CONFLICT ({conflict_cols}) DO NOTHING
+            RETURNING {cols_inserted_rows}
+        """)
+        inserted_rows = cur.fetchall()
+    conn.commit()
+
+    # Return all qfs symbols that were inserted
+    return [row[0] for row in inserted_rows]
+
 def perform_consistency_check(df_migrated, df_database, file_name):
     """
     Function that checks whether rows present in the dataframe that has been migrated are consistent with rows present in the database
@@ -72,6 +151,52 @@ def perform_consistency_check(df_migrated, df_database, file_name):
         raise Exception(f'Nr. of migrated rows: {df_migrated.shape[0]} is not the same as new rows in database: {df_database.shape[0] - df_merged[df_merged["exists"] == False].shape[0]}, for file: {file_name}')
     else:
         print(f'file {file_name} has passed the consistency check!')
+
+
+def migrate_financial_statements_optimized(sqlalchemy_engine, quickfs_df, psycopg2_connection, relevant_fields, target_table, staging_table, file_name = "", duplicate_subset=['qfs_symbol_id','period_end_date'], rename_columns = {'qfs_symbol' : 'qfs_symbol_id'}, set_has_new_financials=False):
+    """
+    migrates financial data in a more memory efficient way
+    """
+    #extract relevant fields
+    df_extracted = quickfs_df[relevant_fields] 
+
+    #rename columns, because django adds an _id to foreign key columns
+    df_extracted = df_extracted.rename(columns=rename_columns)
+
+    #remove ttm row (not possible to store string in date column)
+    df_extracted = df_extracted[df_extracted.period_end_date != 'TTM']
+
+    #transform date column from quickfs format YYYY-MM to django compatible format YYYY-MM-DD
+    df_extracted['period_end_date'] = df_extracted['period_end_date'].apply(transform_date)   
+
+    #bulk insert into staging table
+    bulk_insert_staging(psycopg2_connection, df_extracted, staging_table)
+
+    # print(f'migration table {target_table}, file: {file_name.split("/")[-1]} started!')
+    #move entries from staging table to main table. We return a list of qfs symbols for which rows have been inserted
+    rows_inserted = insert_from_staging(psycopg2_connection, staging_table, target_table, duplicate_subset)
+    # print(f'migration table {target_table}, file: {file_name.split("/")[-1]} finished!')
+
+    #set flag to true for qfs symbols which have new rows. companies with has_new_financials=true will be considered in valuation script
+    if set_has_new_financials:
+        query = """
+                UPDATE quickfs_dj_tradedcompanies
+                SET has_new_financials = TRUE
+                WHERE qfs_symbol = ANY(%s)
+                """
+
+        # Execute the query
+        psycopg2_connection.cursor().execute(query, (rows_inserted,))
+
+        # Commit the changes
+        psycopg2_connection.commit()
+
+
+    # Clear staging table for next chunk
+    with psycopg2_connection.cursor() as cur:
+        cur.execute(f"TRUNCATE {staging_table}")
+        psycopg2_connection.commit()
+
 
 def migrate_financial_statements(sqlalchemy_engine, quickfs_df, psycopg2_connection, relevant_fields, target_table, file_name = "", duplicate_subset=['qfs_symbol_id','period_end_date'], rename_columns = {'qfs_symbol' : 'qfs_symbol_id'}, set_has_new_financials=False):
     """
@@ -122,7 +247,7 @@ def migrate_financial_statements(sqlalchemy_engine, quickfs_df, psycopg2_connect
     df_extracted['period_end_date'] = df_extracted['period_end_date'].apply(transform_date)   
 
     #define select query to extract existing rows in database; only get columns which are needed for merge
-    # query = f"SELECT {cols} from public.{target_table}"
+    # !!! here we load complete sql table into memory --> inefficient
     query = f"SELECT {', '.join(duplicate_subset)} FROM public.{target_table}"
 
     #create a psycopg cursor to execute query
@@ -168,7 +293,7 @@ def migrate_financial_statements(sqlalchemy_engine, quickfs_df, psycopg2_connect
 
 
     #writes entries to database which are not duplicate
-    print(f'migration table {target_table}, file: {file_name.split("/")[-1]} started!')
+    # print(f'migration table {target_table}, file: {file_name.split("/")[-1]} started!')
 
     #migrate the data
     bulk_insert(cursor, concat_result, target_table)
@@ -177,15 +302,35 @@ def migrate_financial_statements(sqlalchemy_engine, quickfs_df, psycopg2_connect
 
 
     #result = new_entries.to_sql(target_table, con=sqlalchemy_engine, if_exists='append', index=False, chunksize=chunk_size, method=method)
-    print(f'migration table {target_table}, file: {file_name} end! Nr. rows migrated: {concat_result.shape[0]}')
-
-    #perform consistency check to see whether rows were correctly migrated
-    # perform_consistency_check(df_extracted, df_database, file_name)
-    # if new_entries.shape[0] != result:
-    #     raise Exception(f"number of new_entries {new_entries.shape[0]} is not the same as number of migrate rows: {result}")
+    # print(f'migration table {target_table}, file: {file_name} end! Nr. rows migrated: {concat_result.shape[0]}')
 
     return concat_result
 
+
+def migrate_traded_companies_optimized(sqlalchemy_engine, quickfs_df, psycopg2_connection, relevant_fields, target_table, staging_table, file_name="", duplicate_subset=['qfs_symbol'], rename_columns = {'symbol' : 'ticker'}):
+    #extract data needed for TradedCompanies table
+    df_traded_companies = quickfs_df[relevant_fields]
+
+    #drop duplicates in traded companies dataframe based on ticker symbol
+    df_traded_companies = df_traded_companies.drop_duplicates(subset='qfs_symbol', keep="first")
+
+    #rename symbol column to ticker in order to match django model
+    df_traded_companies.rename(columns=rename_columns, inplace=True)
+
+    #bulk insert into staging table
+    bulk_insert_staging(psycopg2_connection, df_traded_companies, staging_table)
+
+    # print(f'migration table {target_table}, file: {file_name.split("/")[-1]} started!')
+    #move entries from staging table to main table. We return a list of qfs symbols for which rows have been inserted
+    rows_inserted = insert_from_staging(psycopg2_connection, staging_table, target_table, duplicate_subset, cols_inserted_rows='qfs_symbol')
+    # print(f'migration table {target_table}, file: {file_name.split("/")[-1]} finished!')
+
+    # print('rows inserted migrate_traded_companies_optimized: ' , rows_inserted)
+
+    # Clear staging table for next chunk
+    with psycopg2_connection.cursor() as cur:
+        cur.execute(f"TRUNCATE {staging_table}")
+        psycopg2_connection.commit()
 
 def migrate_traded_companies(sqlalchemy_engine, quickfs_df, psycopg2_connection, relevant_fields, target_table, file_name="", duplicate_subset=['qfs_symbol'], rename_columns = {'symbol' : 'ticker'}):
     #extract data needed for TradedCompanies table
