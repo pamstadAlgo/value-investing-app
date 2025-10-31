@@ -9,6 +9,31 @@
     font-weight: 700 !important;
 }
 
+tr.MuiTableRow-root.custom-table-row div {
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+    visibility: hidden;
+    overflow: hidden;
+    /* transition:
+            max-height 0.4s ease-in-out,
+            opacity 0.3s ease-in-out; */
+}
+
+tr.MuiTableRow-root.custom-table-row.open div {
+    max-height: 500px;
+    visibility: visible;
+    opacity: 1;
+}
+
+.MuiTableCell-root.custom-cell{
+    padding: 6px 16px;
+}
+
+.MuiTableCell-root.custom-cell.no-padding-cell {
+    padding: 0px;
+    border-bottom: 0px;
+}
+
 .rechart-element{
     background-color: white !important;
     margin-left: 30px !important;
@@ -131,4 +156,25 @@ padding-bottom: 12px !important;
 .chip-subscript{
     font-size: 10px;
     margin-left: -2px;
+}
+
+.fade-row {
+    opacity: 0;
+    transform: translateY(-6px);
+    height: 0;
+    display: none;
+    overflow: hidden;
+    visibility: hidden;
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        height 0.35s ease;
+}
+
+.fade-row.open {
+    opacity: 1;
+    transform: translateY(0);
+    height: 56px;
+    /* or whatever your table row height is */
+    visibility: visible;
 }

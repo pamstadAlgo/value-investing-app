@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.db import connection
 import yfinance as yf
 from quickfs import QuickFS
-from .helpers import transform_expression
+from .helpers import transform_expression, BALANCE_SHEET_GROUPS
 import uuid
 import os
 #import yahoo_fin.stock_info as si
@@ -2004,6 +2004,41 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         responseSerialized = StockScreenerFiltersSerializer(responseList, many=True).data
 
         return Response(responseSerialized)
+
+
+class AssetValFundamentalsAPIView(APIView):
+    def get(self, request, qfs_symbol):
+        """
+        returns the most recent quarterly balance sheet. Null or zero values are not returned
+        """
+        try:
+            record = BalanceSheetQuarter.objects.filter(
+                qfs_symbol_id=qfs_symbol
+            ).order_by("-period_end_date").first()
+        except BalanceSheetQuarter.DoesNotExist:
+            return Response({"detail": "Not found."}, status=404)
+
+        data = {}
+        for group_name, fields in BALANCE_SHEET_GROUPS.items():
+            group_metrics = []
+            for field in fields:
+                value = getattr(record, field["metric"])
+                if value not in (None, 0, 0.0):
+                    group_metrics.append({
+                        "metric": field["metric"],
+                        "label": field["label"],
+                        "value": value,
+                    })
+            if group_metrics:
+                data[group_name] = group_metrics
+
+        return Response({
+            "symbol": qfs_symbol,
+            "period_end_date": record.period_end_date,
+            "data": data,
+        })
+
+
 
 class LastClosePriceAPIView(APIView):
     def get(self, request, qfs_symbol):

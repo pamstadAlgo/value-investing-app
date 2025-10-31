@@ -108,7 +108,7 @@ BALANCE_SHEET_GROUPS = {
         {"metric" : "loans_gross", "label" : "Gross Loans"},
         {"metric" : "allowance_for_loan_losses", "label" : "Loan Loss Reserve"},
         {"metric" : "loans_net", "label" : "Net Loans"},
-        {"metric" : "ppe_net", "label" : "Property, Plant, & Equipment (net)"},
+        {"metric" : "ppe_net", "label" : "Property, Plant & Equipment (net)"},
         {"metric" : "deferred_policy_acquisition_cost", "label" : "Deferred Policy Acquisition Cost"},
         {"metric" : "equity_and_other_investments", "label" : "Equity & Investments"},
         {"metric" : "intangible_assets", "label" : "Intangible Assets"},
