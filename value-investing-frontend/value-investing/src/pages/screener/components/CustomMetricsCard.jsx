@@ -53,18 +53,23 @@ function CustomMetricsCard() {
         console.error("ERROR: GET screener/custom-metrics//: ", error);
       });
   }, []);
+
   return (
     <div className="glass-card">
       <div className="title-mid-size" style={{ marginBottom: "10px" }}>
         Custom Metrics
       </div>
-      <div className="flex-wrapper-filter-views-compo">
+      <div className="flex-wrapper-filter-views-compo custom-list">
         {/* <SavedFilterViews />
         <SaveView /> */}
-        <CustomMetricsList
-          customMetrics={screenerState.customMetrics}
-          handleMetricDelete={handleMetricDelete}
-        />
+        {screenerState?.customMetrics.length > 2 ? (
+          <CustomMetricsList
+            customMetrics={screenerState.customMetrics}
+            handleMetricDelete={handleMetricDelete}
+          />
+        ) : (
+          <div className="no-custom-metrics-element">No custom metrics </div>
+        )}
         <CustomMetrics />
       </div>
     </div>
