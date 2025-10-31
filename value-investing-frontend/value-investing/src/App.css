@@ -223,6 +223,11 @@ body, html{
   color: var(--action-color) !important;
 }
 
+.no-custom-metrics-element{
+  font-style: italic;
+  color: var(--text-color-grey-scale)
+}
+
 .MuiDrawer-root.MuiDrawer-modal.custom-drawer > .MuiBackdrop-root.MuiModal-backdrop{
 background: var(--background-gradient);
 background-color: var(--background-color-mui-backdrop);
@@ -905,6 +910,10 @@ height: 0;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.flex-wrapper-filter-views-compo.custom-list{
+  gap: 0px;
 }
 
 .MuiPopover-root.custom-popover-charts > .MuiPaper-root.MuiPaper-elevation{
