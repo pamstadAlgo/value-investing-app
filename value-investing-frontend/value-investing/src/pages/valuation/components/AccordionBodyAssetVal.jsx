@@ -10,10 +10,13 @@ import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Collapse from "@mui/material/Collapse";
+import { OutlinedInput } from "@mui/material";
+
+const tableColumnWidths = ["30%", "25%", "20%", "25%"];
 
 function AccordionBodyAssetVal() {
   const [openAsset, setOpenAssets] = useState(false);
-  const [openCurrentAsset, setOpenCurrentAsset] = useState(true);
+  const [openCurrentAsset, setOpenCurrentAsset] = useState(false);
   const [openNonCurrentAssets, setOpenNonCurrentAssets] = useState(true);
 
   return (
@@ -36,10 +39,16 @@ function AccordionBodyAssetVal() {
       <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
           <TableRow>
-            <TableCell></TableCell>
-            <TableCell>205-06-12</TableCell>
-            <TableCell>Multiplier</TableCell>
-            <TableCell>Value</TableCell>
+            <TableCell style={{ width: tableColumnWidths[0] }}></TableCell>
+            <TableCell style={{ width: tableColumnWidths[1] }} align="right">
+              2025-06-12
+            </TableCell>
+            <TableCell style={{ width: tableColumnWidths[2] }} align="right">
+              Multiplier
+            </TableCell>
+            <TableCell style={{ width: tableColumnWidths[3] }} align="right">
+              Value
+            </TableCell>
 
             {/* {columns.map((column) => {
               return <TableCell align="right">{column}</TableCell>;
@@ -56,11 +65,17 @@ function AccordionBodyAssetVal() {
         //           }}
         >
           <TableRow>
-            <TableCell>
+            <TableCell style={{ width: tableColumnWidths[0] }}>
               <IconButton
                 aria-label="expand row"
                 size="small"
-                onClick={() => setOpenAssets(!openAsset)}>
+                onClick={() => {
+                  //make sure that also current and non-current items are no longer visible
+                  if (openCurrentAsset) {
+                    setOpenCurrentAsset(false);
+                  }
+                  setOpenAssets(!openAsset);
+                }}>
                 {openAsset ? (
                   <KeyboardArrowUpIcon />
                 ) : (
@@ -69,21 +84,18 @@ function AccordionBodyAssetVal() {
               </IconButton>
               <span>Assets</span>
             </TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-            <TableCell align="left">100'000</TableCell>
+            <TableCell style={{ width: tableColumnWidths[1] }}></TableCell>
+            <TableCell style={{ width: tableColumnWidths[2] }}></TableCell>
+            <TableCell style={{ width: tableColumnWidths[3] }} align="right">
+              100'000
+            </TableCell>
           </TableRow>
-          {/* collapsable section of assets */}
-          {/* {openAsset && ( */}
-          {/* <TableRow className={`fade-row ${openAsset ? "open" : ""}`}> */}
           <TableRow className={`custom-table-row ${openAsset ? "open" : ""}`}>
-            {/* <Collapse in={openAsset} timeout="auto" unmountOnExit> */}
             <TableCell
               className={`custom-cell ${openAsset ? "" : "no-padding-cell"}`}>
-              {/* <Collapse in={openAsset} timeout="auto" unmountOnExit> */}
-              <div>
+              <Collapse in={openAsset} timeout="auto" unmountOnExit>
                 <IconButton
-                  style={{ marginLeft: "32px" }}
+                  style={{ marginLeft: "10px" }}
                   aria-label="expand row"
                   size="small"
                   onClick={() => setOpenCurrentAsset(!openCurrentAsset)}>
@@ -94,44 +106,113 @@ function AccordionBodyAssetVal() {
                   )}
                 </IconButton>
                 <span>Current Assets</span>
-              </div>
-              {/* </Collapse> */}
+              </Collapse>
             </TableCell>
-            {/* <TableCell></TableCell>
-            <TableCell></TableCell> */}
             <TableCell
-              align="left"
               className={`custom-cell ${openAsset ? "" : "no-padding-cell"}`}>
               {" "}
-              {/* <Collapse in={openAsset} timeout="auto" unmountOnExit> */}
-              <div>30'000</div>
-              {/* </Collapse> */}
             </TableCell>
-            {/* </Collapse> */}
+            <TableCell
+              className={`custom-cell ${
+                openAsset ? "" : "no-padding-cell"
+              }`}></TableCell>
+            <TableCell
+              align="right"
+              className={`custom-cell ${openAsset ? "" : "no-padding-cell"}`}>
+              {" "}
+              <Collapse in={openAsset} timeout="auto" unmountOnExit>
+                30'000{" "}
+              </Collapse>
+            </TableCell>
           </TableRow>
-          {/* )} */}
-          {/* <TableRow>
-            <Collapse in={openAsset} timeout="auto" unmountOnExit>
-              <TableCell>
-                <IconButton
-                  aria-label="expand row"
+          <TableRow
+            className={`custom-table-row ${openCurrentAsset ? "open" : ""}`}>
+            <TableCell
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                <span style={{ marginLeft: "54px" }}>Cash & Equivalents</span>
+              </Collapse>
+            </TableCell>
+            <TableCell
+              align="right"
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                <OutlinedInput
+                  // disabled={isDerived}
+                  type="number"
+                  // value={bull}
                   size="small"
-                  onClick={() =>
-                    setOpenNonCurrentAssets(!openNonCurrentAssets)
-                  }>
-                  {openNonCurrentAssets ? (
-                    <KeyboardArrowUpIcon />
-                  ) : (
-                    <KeyboardArrowDownIcon />
-                  )}
-                </IconButton>
-                <span>Non-Current Assets</span>
-              </TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell align="left">70'000</TableCell>
-            </Collapse>
-          </TableRow> */}
+                  className="custom-input-valuation-table"
+                  // onBlur={(e) => handleChange(e, metricName, 1)}
+                  // onChange={(e) => handleChange(e, metricName, 2)}
+                />
+              </Collapse>
+            </TableCell>
+            <TableCell
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                <OutlinedInput
+                  // disabled={isDerived}
+                  type="number"
+                  // value={bull}
+                  size="small"
+                  className="custom-input-valuation-table"
+                  // onBlur={(e) => handleChange(e, metricName, 1)}
+                  // onChange={(e) => handleChange(e, metricName, 2)}
+                />
+              </Collapse>
+            </TableCell>
+            <TableCell
+              align="right"
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              {" "}
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                10'000{" "}
+              </Collapse>
+            </TableCell>
+          </TableRow>
+          <TableRow
+            className={`custom-table-row ${openCurrentAsset ? "open" : ""}`}>
+            <TableCell
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                <span style={{ marginLeft: "54px" }}>
+                  Short-Term Investments
+                </span>
+              </Collapse>
+            </TableCell>
+            <TableCell
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              {" "}
+            </TableCell>
+            <TableCell
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}></TableCell>
+            <TableCell
+              align="right"
+              className={`custom-cell ${
+                openCurrentAsset ? "" : "no-padding-cell"
+              }`}>
+              {" "}
+              <Collapse in={openCurrentAsset} timeout="auto" unmountOnExit>
+                10'000{" "}
+              </Collapse>
+            </TableCell>
+          </TableRow>
+
           {/* {data?.map((row) => {
             const metricName = Object.keys(row)[0];
             var [bear, base, bull] = row[metricName];

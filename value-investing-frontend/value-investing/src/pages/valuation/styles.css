@@ -9,19 +9,12 @@
     font-weight: 700 !important;
 }
 
-tr.MuiTableRow-root.custom-table-row div {
-    max-height: 0;
-    transition: max-height 0.3s ease-in-out;
-    visibility: hidden;
-    overflow: hidden;
-    /* transition:
-            max-height 0.4s ease-in-out,
-            opacity 0.3s ease-in-out; */
+ tr.MuiTableRow-root.custom-table-row div {
+    opacity: 0;
+    /* transition: opacity 0.3s ease-in-out; */
 }
 
 tr.MuiTableRow-root.custom-table-row.open div {
-    max-height: 500px;
-    visibility: visible;
     opacity: 1;
 }
 
