@@ -11,13 +11,42 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Collapse from "@mui/material/Collapse";
 import { OutlinedInput } from "@mui/material";
+import AssetValCollapsableHeader from "./AssetValCollapsableHeader";
+import AssetValLineItem from "./AssetValLineItem";
+import { useDispatch } from "react-redux";
+import { updateAssetValuationData } from "../../../features/valuationSlice";
 
 const tableColumnWidths = ["30%", "25%", "20%", "25%"];
 
-function AccordionBodyAssetVal() {
+function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
   const [openAsset, setOpenAssets] = useState(false);
   const [openCurrentAsset, setOpenCurrentAsset] = useState(false);
   const [openNonCurrentAssets, setOpenNonCurrentAssets] = useState(true);
+  const dispatch = useDispatch();
+
+  const handleAssetClick = () => {
+    if (openCurrentAsset) {
+      setOpenCurrentAsset(false);
+    }
+    setOpenAssets(!openAsset);
+  };
+
+  const handleCurrentAssetClick = () => {
+    setOpenCurrentAsset(!openCurrentAsset);
+  };
+
+  const handleMetricChange = (e,  category, metric) => {
+    const newValue = e.target.value;
+
+    console.log("metric change asset val: qfsSymbol: ", qfsSymbol);
+    console.log("metric change asset val: category: ", category);
+    console.log("metric change asset val: metric: ", metric);
+    console.log("metric change asset val: newValue: ", newValue);
+
+    dispatch(
+      updateAssetValuationData({ qfsSymbol, category, metric, newValue })
+    );
+  };
 
   return (
     <TableContainer
@@ -28,14 +57,7 @@ function AccordionBodyAssetVal() {
         borderRadius: "16px",
         marginTop: "12px",
       }}
-      className="custom-mui-table"
-      //   sx={{
-      //     // backgroundColor: "rgba(255, 255, 255, 0.6)",
-      //     backgroundColor: "transparent",
-      //     boxShadow: "0 8px 32px 0 rgba(79, 70, 229, 0.1)",
-      //     backdropFilter: "blur(12px)",
-      //       }}
-    >
+      className="custom-mui-table">
       <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
           <TableRow>
@@ -64,7 +86,45 @@ function AccordionBodyAssetVal() {
         //     backgroundColor: "rgba(255, 255, 255, 0.6)", // translucent white
         //           }}
         >
-          <TableRow>
+          <AssetValCollapsableHeader
+            label="Assets"
+            columnWidths={tableColumnWidths}
+            handleClick={handleAssetClick}
+            open={openAsset}
+            openCollapse={true} //highest level cannot be collapsed
+            hasCellPadding={true}
+            marginLeft=""
+          />
+          <AssetValCollapsableHeader
+            label="Current Assets"
+            columnWidths={tableColumnWidths}
+            handleClick={handleCurrentAssetClick}
+            open={openCurrentAsset}
+            openCollapse={openAsset}
+            hasCellPadding={openAsset ? true : false}
+            marginLeft="10px"
+          />
+          {data?.currentAssets?.map((lineItem) => {
+            return (
+              <AssetValLineItem
+                handleChange={handleMetricChange}
+                key={lineItem.metric}
+                open={openCurrentAsset}
+                label={lineItem.label}
+                value={lineItem.value}
+                category="currentAssets"
+                metric={lineItem.metric}
+              />
+            );
+          })}
+
+          {/* <AssetValLineItem open={openCurrentAsset} label="Cash & Equivalent" />
+          <AssetValLineItem
+            open={openCurrentAsset}
+            label="Short-Term Investments"
+          /> */}
+
+          {/* <TableRow>
             <TableCell style={{ width: tableColumnWidths[0] }}>
               <IconButton
                 aria-label="expand row"
@@ -89,8 +149,8 @@ function AccordionBodyAssetVal() {
             <TableCell style={{ width: tableColumnWidths[3] }} align="right">
               100'000
             </TableCell>
-          </TableRow>
-          <TableRow className={`custom-table-row ${openAsset ? "open" : ""}`}>
+          </TableRow> */}
+          {/* <TableRow className={`custom-table-row ${openAsset ? "open" : ""}`}>
             <TableCell
               className={`custom-cell ${openAsset ? "" : "no-padding-cell"}`}>
               <Collapse in={openAsset} timeout="auto" unmountOnExit>
@@ -124,8 +184,8 @@ function AccordionBodyAssetVal() {
                 30'000{" "}
               </Collapse>
             </TableCell>
-          </TableRow>
-          <TableRow
+          </TableRow> */}
+          {/* <TableRow
             className={`custom-table-row ${openCurrentAsset ? "open" : ""}`}>
             <TableCell
               className={`custom-cell ${
@@ -178,8 +238,8 @@ function AccordionBodyAssetVal() {
                 10'000{" "}
               </Collapse>
             </TableCell>
-          </TableRow>
-          <TableRow
+          </TableRow> */}
+          {/* <TableRow
             className={`custom-table-row ${openCurrentAsset ? "open" : ""}`}>
             <TableCell
               className={`custom-cell ${
@@ -211,7 +271,7 @@ function AccordionBodyAssetVal() {
                 10'000{" "}
               </Collapse>
             </TableCell>
-          </TableRow>
+          </TableRow> */}
 
           {/* {data?.map((row) => {
             const metricName = Object.keys(row)[0];

@@ -8,7 +8,10 @@ import { Button } from "@mui/material";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
-import { initializeEPVValuations } from "../../../features/valuationSlice";
+import {
+  initializeAssetValuations,
+  initializeEPVValuations,
+} from "../../../features/valuationSlice";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
 function CompanySearchField() {
@@ -20,7 +23,6 @@ function CompanySearchField() {
   //   const handleSubmit = () => {};
   const axiosInstanceAuth = useAxiosWithAuth();
   const dispatch = useDispatch();
-
 
   const initialValues = {
     tickers:
@@ -68,13 +70,27 @@ function CompanySearchField() {
               //   dispatch(setEpvData(response.data));
               dispatch(initializeEPVValuations(response.data));
               showMessage("Computed EPV successfully", "success");
-
-              // setBackdropOpen(false);
             })
             .catch((error) => {
               showMessage(`Error computing EPV ${error}`, "error");
               // setBackdropOpen(false);
               console.error("ERROR: POST /screener/compute-epv/: ", error);
+            });
+
+          //make request for asset valuation
+          axiosInstanceAuth
+            .post("/screener/asset-val-fundamentals/", requestBody)
+            .then((response) => {
+              console.log("response.data asset fundamentals: ", response.data);
+              dispatch(initializeAssetValuations(response.data));
+            })
+            .catch((error) => {
+              showMessage(`Error computing asset val ${error}`, "error");
+              // setBackdropOpen(false);
+              console.error(
+                "ERROR: POST /screener/asset-val-fundamentals/: ",
+                error
+              );
             });
 
           setLoading(false);

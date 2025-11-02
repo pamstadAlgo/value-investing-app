@@ -6,6 +6,7 @@ const initialState = {
   epvData: [],
   equityValuePenman: [],
   epvValuations: [],
+  assetValuations: [],
 };
 
 export const valuationSlice = createSlice({
@@ -27,6 +28,31 @@ export const valuationSlice = createSlice({
     initializeEPVValuations: (state, action) => {
       state.epvValuations = action.payload;
     },
+    initializeAssetValuations: (state, action) => {
+      state.assetValuations = action.payload;
+    },
+    updateAssetValuationData: (state, action) => {
+      const { qfsSymbol, category, metric, newValue } = action.payload;
+
+      // get company out of asset valuation data
+      const company = state.assetValuations.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      );
+      if (!company) return; // Symbol not found
+
+      // categories are currentAssets, nonCurrentAssets, etc.
+      const items = company.data[category];
+      if (!items) return; // Invalid category
+
+      // find the metric of interest
+      const target = items.find((entry) => entry.metric === metric);
+      if (!target) return; // Metric not found
+
+      console.log("target: ", target);
+
+      target.value = newValue; // Immer lets you mutate directly
+      console.log("newValue we set: ", newValue);
+    },
     updateEPVValuationData: (state, action) => {
       const { newValue, qfsSymbol, metricName, caseIndex } = action.payload;
 
@@ -45,21 +71,15 @@ export const valuationSlice = createSlice({
           // Only update the matching metric
           if (key === metricName) {
             const updatedValues = [...metricObj[key]]; // copy the array
-            console.log("newValue we set: ", Number(newValue));
-            console.log("newValue we get: ", newValue);
 
-            // updatedValues[caseIndex] = Number(newValue); // update the specific case
             updatedValues[caseIndex] = newValue; // update the specific case
 
-            console.log("updates Values: ", updatedValues);
             return { [key]: updatedValues }; // return updated object
           }
 
           return metricObj; // leave others unchanged
         });
 
-        //
-        console.log("this is udpated state: ", updatedState);
         targetObj[qfsSymbol] = updatedState;
 
         //update state
@@ -76,6 +96,8 @@ export const {
   setEpvData,
   setPenmanEquityValue,
   updateEPVValuationData,
+  updateAssetValuationData,
+  initializeAssetValuations,
 } = valuationSlice.actions;
 
 export default valuationSlice.reducer;

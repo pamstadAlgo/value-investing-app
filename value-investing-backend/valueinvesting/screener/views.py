@@ -1411,10 +1411,9 @@ class EPVFundamentalsAPIView(APIView):
         response = []
 
         for qfs_symbol in qfs_symbols:
-            # val_data = []
+            #check if valuation is in cache
             val_data = cache.get(f'{qfs_symbol}_EPV_{formatted_date}')
-            # valuation = None
-            # valuation = None
+
             if val_data is None:
                 val_data = []
                 #compute revenue: bear case = min(past 5 years), base case = avg(past 5 years), bull case = max(past 5 years)
@@ -2006,8 +2005,7 @@ class StockFilterAvailableQuantitiesAPIView(APIView):
         return Response(responseSerialized)
 
 
-class AssetValFundamentalsAPIView(APIView):
-    def get(self, request, qfs_symbol):
+def computeAssetVal(qfs_symbol):
         """
         returns the most recent quarterly balance sheet. Null or zero values are not returned
         """
@@ -2032,11 +2030,88 @@ class AssetValFundamentalsAPIView(APIView):
             if group_metrics:
                 data[group_name] = group_metrics
 
-        return Response({
-            "symbol": qfs_symbol,
-            "period_end_date": record.period_end_date,
+        return {
+            "qfsSymbol": qfs_symbol,
+            "periodEndDate": record.period_end_date,
             "data": data,
-        })
+             }
+
+class AssetValFundamentalsAPIView(APIView):
+    def post(self, request):
+        qfs_symbols = request.data['qfs_symbols']
+        today = datetime.today()
+
+        # Format as dd-mm-yyyy
+        formatted_date = today.strftime("%d-%m-%Y")
+
+        #response list
+        response = []
+
+        for qfs_symbol in qfs_symbols:
+            #check if value in cache
+            asset_val = cache.get(f'{qfs_symbol}_AssetVal_{formatted_date}')
+            asset_val = None
+
+            if asset_val is None:
+                #compute asset value
+                asset_val = computeAssetVal(qfs_symbol=qfs_symbol)
+
+                #store asset value in cache
+                cache.set(f'{qfs_symbol}_AssetVal_{formatted_date}', asset_val, timeout=CACHE_TTL)
+
+
+            #add asset val to response
+            response.append(asset_val)
+        
+        return Response(response)
+
+    def get(self, request, qfs_symbol):
+        """
+        returns the most recent quarterly balance sheet. Null or zero values are not returned
+        """
+        today = datetime.today()
+
+        # Format as dd-mm-yyyy
+        formatted_date = today.strftime("%d-%m-%Y")
+
+        #check if asset val is cached
+        asset_val = cache.get(f'{qfs_symbol}_AssetVal_{formatted_date}')
+
+        if asset_val is None:
+            #compute asset value
+            asset_val = computeAssetVal(qfs_symbol=qfs_symbol)
+
+            #store asset value in cache
+            cache.set(f'{qfs_symbol}_AssetVal_{formatted_date}', asset_val, timeout=CACHE_TTL)
+
+        return Response(asset_val)
+
+        # try:
+        #     record = BalanceSheetQuarter.objects.filter(
+        #         qfs_symbol_id=qfs_symbol
+        #     ).order_by("-period_end_date").first()
+        # except BalanceSheetQuarter.DoesNotExist:
+        #     return Response({"detail": "Not found."}, status=404)
+
+        # data = {}
+        # for group_name, fields in BALANCE_SHEET_GROUPS.items():
+        #     group_metrics = []
+        #     for field in fields:
+        #         value = getattr(record, field["metric"])
+        #         if value not in (None, 0, 0.0):
+        #             group_metrics.append({
+        #                 "metric": field["metric"],
+        #                 "label": field["label"],
+        #                 "value": value,
+        #             })
+        #     if group_metrics:
+        #         data[group_name] = group_metrics
+
+        # return Response({
+        #     "symbol": qfs_symbol,
+        #     "period_end_date": record.period_end_date,
+        #     "data": data,
+        # })
 
 
 
