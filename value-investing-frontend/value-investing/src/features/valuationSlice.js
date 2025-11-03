@@ -31,6 +31,25 @@ export const valuationSlice = createSlice({
     initializeAssetValuations: (state, action) => {
       state.assetValuations = action.payload;
     },
+    updateAssetValMultChange: (state, action) => {
+      const { qfsSymbol, category, metric, newValue } = action.payload;
+
+      // get company out of asset valuation data
+      const company = state.assetValuations.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      );
+      if (!company) return; // Symbol not found
+
+      // categories are currentAssets, nonCurrentAssets, etc.
+      const items = company.data[category];
+      if (!items) return; // Invalid category
+
+      // find the metric of interest
+      const target = items.find((entry) => entry.metric === metric);
+      if (!target) return; // Metric not found
+
+      target.multiplier = newValue; // Immer lets you mutate directly
+    },
     updateAssetValuationData: (state, action) => {
       const { qfsSymbol, category, metric, newValue } = action.payload;
 
@@ -48,10 +67,7 @@ export const valuationSlice = createSlice({
       const target = items.find((entry) => entry.metric === metric);
       if (!target) return; // Metric not found
 
-      console.log("target: ", target);
-
       target.value = newValue; // Immer lets you mutate directly
-      console.log("newValue we set: ", newValue);
     },
     updateEPVValuationData: (state, action) => {
       const { newValue, qfsSymbol, metricName, caseIndex } = action.payload;
@@ -97,6 +113,7 @@ export const {
   setPenmanEquityValue,
   updateEPVValuationData,
   updateAssetValuationData,
+  updateAssetValMultChange,
   initializeAssetValuations,
 } = valuationSlice.actions;
 

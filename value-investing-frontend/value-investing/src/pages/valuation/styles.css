@@ -14,6 +14,16 @@
     /* transition: opacity 0.3s ease-in-out; */
 }
 
+.asset-val-big-title{
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.asset-val-medium-title {
+    font-size: 15px;    
+    font-weight: 700;
+}
+
 tr.MuiTableRow-root.custom-table-row.open div {
     opacity: 1;
 }

@@ -99,6 +99,9 @@
   --bg-color-table-header-cell: white;
 
   --bg-color-custom-metrics-hover: rgba(0, 0, 0, 0.04);
+  --valuation-table-cell-font-color: rgba(0, 0, 0, 0.87);
+
+  --disabled-valuation-fields-color: rgba(0, 0, 0, 0.38);
 }
 
 .dark-theme {
@@ -107,6 +110,8 @@
 /* --background-color: rgb(16 25 34); */
   --background-color: rgb(16 25 34);
   --background-gradient: none;
+
+  --disabled-valuation-fields-color: rgba(255, 255, 255, 0.55);
 
   --border-color-button-group: rgba(255,255,255,0.12);
 
@@ -140,6 +145,7 @@
 
   --bg-color-custom-metrics-hover: rgba(250, 250, 250, 0.08);
  
+  --valuation-table-cell-font-color: white;
 }
 
 
@@ -515,6 +521,11 @@ font-size: 15px;
   /* border: 1px solid #ccc !important; */
 }
 
+.MuiTableRow-root.custom-table-row-valuation > th,
+.MuiTableRow-root.custom-table-row > td {
+  color: var(--valuation-table-cell-font-color);
+}
+
 .monaco-editor,
 .monaco-editor .monaco-editor-background,
 .monaco-editor .inputarea.ime-input {
@@ -710,6 +721,10 @@ font-weight: 700;
   color: var(--text-color-grey-scale);
   margin-left: 10px;
   font-size: 14px;
+}
+
+.MuiOutlinedInput-root.custom-input-valuation-table> input.Mui-disabled {
+  -webkit-text-fill-color: var(--disabled-valuation-fields-color);
 }
 
 .MuiOutlinedInput-root.custom-input-valuation-table > fieldset {

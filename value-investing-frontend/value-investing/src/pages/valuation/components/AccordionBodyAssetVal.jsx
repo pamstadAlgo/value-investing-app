@@ -13,29 +13,72 @@ import Collapse from "@mui/material/Collapse";
 import { OutlinedInput } from "@mui/material";
 import AssetValCollapsableHeader from "./AssetValCollapsableHeader";
 import AssetValLineItem from "./AssetValLineItem";
-import { useDispatch } from "react-redux";
-import { updateAssetValuationData } from "../../../features/valuationSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  updateAssetValMultChange,
+  updateAssetValuationData,
+} from "../../../features/valuationSlice";
+import {
+  computeSumBalanceSheet,
+  computeTotalAssets,
+  computeTotalLiabilities,
+} from "./selectorFunctions";
 
 const tableColumnWidths = ["30%", "25%", "20%", "25%"];
 
 function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
-  const [openAsset, setOpenAssets] = useState(false);
+  const [openAsset, setOpenAssets] = useState(true);
   const [openCurrentAsset, setOpenCurrentAsset] = useState(false);
-  const [openNonCurrentAssets, setOpenNonCurrentAssets] = useState(true);
+  const [openNonCurrentAssets, setOpenNonCurrentAssets] = useState(false);
+  const [openLiab, setOpenLiab] = useState(true);
+  const [openCurrentLiab, setOpenCurrentLiab] = useState(false);
+  const [openNonCurrentLiab, setOpenNonCurrentLiab] = useState(false);
+
   const dispatch = useDispatch();
 
   const handleAssetClick = () => {
+    //if total assets are closed also close current assets
     if (openCurrentAsset) {
       setOpenCurrentAsset(false);
     }
+
+    //if total assets are closed also close non-current assets
+    if (openNonCurrentAssets) {
+      setOpenNonCurrentAssets(false);
+    }
     setOpenAssets(!openAsset);
+  };
+
+  const handleLiabilityClick = () => {
+    //if total assets are closed also close current assets
+    if (openCurrentLiab) {
+      setOpenCurrentLiab(false);
+    }
+
+    //if total assets are closed also close non-current assets
+    if (openNonCurrentLiab) {
+      setOpenNonCurrentLiab(false);
+    }
+    setOpenLiab(!openLiab);
+  };
+
+  const handleCurrentLiabClick = () => {
+    setOpenCurrentLiab(!openCurrentLiab);
   };
 
   const handleCurrentAssetClick = () => {
     setOpenCurrentAsset(!openCurrentAsset);
   };
 
-  const handleMetricChange = (e,  category, metric) => {
+  const handleNonCurrentLiabClick = () => {
+    setOpenNonCurrentLiab(!openNonCurrentLiab);
+  };
+
+  const handleNonCurrentAssetClick = () => {
+    setOpenNonCurrentAssets(!openNonCurrentAssets);
+  };
+
+  const handleMetricChange = (e, category, metric) => {
     const newValue = e.target.value;
 
     console.log("metric change asset val: qfsSymbol: ", qfsSymbol);
@@ -47,6 +90,71 @@ function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
       updateAssetValuationData({ qfsSymbol, category, metric, newValue })
     );
   };
+
+  const handleMultiplierChange = (e, category, metric) => {
+    const newValue = e.target.value;
+
+    console.log("metric change asset val: qfsSymbol: ", qfsSymbol);
+    console.log("metric change asset val: category: ", category);
+    console.log("metric change asset val: metric: ", metric);
+    console.log("metric change asset val: newValue: ", newValue);
+
+    dispatch(
+      updateAssetValMultChange({ qfsSymbol, category, metric, newValue })
+    );
+  };
+
+  const totalCurrentAssets = useSelector((state) =>
+    computeSumBalanceSheet(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      ),
+      "currentAssets"
+    )
+  );
+
+  const totalNonCurrentAssets = useSelector((state) =>
+    computeSumBalanceSheet(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      ),
+      "nonCurrentAssets"
+    )
+  );
+
+  const totalAssets = useSelector((state) =>
+    computeTotalAssets(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      )
+    )
+  );
+
+  const totalCurrentLiabs = useSelector((state) =>
+    computeSumBalanceSheet(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      ),
+      "currentLiab"
+    )
+  );
+
+  const totalNonCurrentLiabs = useSelector((state) =>
+    computeSumBalanceSheet(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      ),
+      "nonCurrentLiab"
+    )
+  );
+
+  const totalLiabilities = useSelector((state) =>
+    computeTotalLiabilities(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      )
+    )
+  );
 
   return (
     <TableContainer
@@ -71,21 +179,9 @@ function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
             <TableCell style={{ width: tableColumnWidths[3] }} align="right">
               Value
             </TableCell>
-
-            {/* {columns.map((column) => {
-              return <TableCell align="right">{column}</TableCell>;
-            })} */}
-            {/* <TableCell align="right">Calories</TableCell>
-            <TableCell align="right">Fat&nbsp;(g)</TableCell>
-            <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-            <TableCell align="right">Protein&nbsp;(g)</TableCell> */}
           </TableRow>
         </TableHead>
-        <TableBody
-        //   sx={{
-        //     backgroundColor: "rgba(255, 255, 255, 0.6)", // translucent white
-        //           }}
-        >
+        <TableBody>
           <AssetValCollapsableHeader
             label="Assets"
             columnWidths={tableColumnWidths}
@@ -94,6 +190,8 @@ function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
             openCollapse={true} //highest level cannot be collapsed
             hasCellPadding={true}
             marginLeft=""
+            titleType="big"
+            value={totalAssets}
           />
           <AssetValCollapsableHeader
             label="Current Assets"
@@ -103,16 +201,105 @@ function AccordionBodyAssetVal({ data, reportingDate, qfsSymbol }) {
             openCollapse={openAsset}
             hasCellPadding={openAsset ? true : false}
             marginLeft="10px"
+            value={totalCurrentAssets}
           />
           {data?.currentAssets?.map((lineItem) => {
             return (
               <AssetValLineItem
                 handleChange={handleMetricChange}
                 key={lineItem.metric}
+                multiplier={lineItem.multiplier}
                 open={openCurrentAsset}
+                handleMultiplierChange={handleMultiplierChange}
                 label={lineItem.label}
                 value={lineItem.value}
                 category="currentAssets"
+                metric={lineItem.metric}
+              />
+            );
+          })}
+          <AssetValCollapsableHeader
+            label="Non-Current Assets"
+            columnWidths={tableColumnWidths}
+            handleClick={handleNonCurrentAssetClick}
+            open={openNonCurrentAssets}
+            openCollapse={openAsset}
+            hasCellPadding={openAsset ? true : false}
+            marginLeft="10px"
+            value={totalNonCurrentAssets}
+          />
+          {data?.nonCurrentAssets?.map((lineItem) => {
+            return (
+              <AssetValLineItem
+                handleChange={handleMetricChange}
+                key={lineItem.metric}
+                multiplier={lineItem.multiplier}
+                open={openNonCurrentAssets}
+                handleMultiplierChange={handleMultiplierChange}
+                label={lineItem.label}
+                value={lineItem.value}
+                category="nonCurrentAssets"
+                metric={lineItem.metric}
+              />
+            );
+          })}
+          <AssetValCollapsableHeader
+            label="Liabilities"
+            columnWidths={tableColumnWidths}
+            handleClick={handleLiabilityClick}
+            open={openLiab}
+            openCollapse={true} //highest level cannot be collapsed
+            hasCellPadding={true}
+            marginLeft=""
+            titleType="big"
+            value={totalLiabilities}
+          />
+          <AssetValCollapsableHeader
+            label="Current Liabilities"
+            columnWidths={tableColumnWidths}
+            handleClick={handleCurrentLiabClick}
+            open={openCurrentLiab}
+            openCollapse={openLiab}
+            hasCellPadding={openLiab ? true : false}
+            marginLeft="10px"
+            value={totalCurrentLiabs}
+          />
+          {data?.currentLiab?.map((lineItem) => {
+            return (
+              <AssetValLineItem
+                handleChange={handleMetricChange}
+                key={lineItem.metric}
+                multiplier={lineItem.multiplier}
+                open={openCurrentLiab}
+                handleMultiplierChange={handleMultiplierChange}
+                label={lineItem.label}
+                value={lineItem.value}
+                category="currentLiab"
+                metric={lineItem.metric}
+              />
+            );
+          })}
+          <AssetValCollapsableHeader
+            label="Non-Current Liabilities"
+            columnWidths={tableColumnWidths}
+            handleClick={handleNonCurrentLiabClick}
+            open={openNonCurrentLiab}
+            openCollapse={openLiab}
+            hasCellPadding={openLiab ? true : false}
+            marginLeft="10px"
+            value={totalNonCurrentLiabs}
+          />
+          {data?.currentLiab?.map((lineItem) => {
+            return (
+              <AssetValLineItem
+                handleChange={handleMetricChange}
+                key={lineItem.metric}
+                multiplier={lineItem.multiplier}
+                open={openNonCurrentLiab}
+                handleMultiplierChange={handleMultiplierChange}
+                label={lineItem.label}
+                value={lineItem.value}
+                category="nonCurrentLiab"
                 metric={lineItem.metric}
               />
             );

@@ -83,17 +83,18 @@ function CompanySearchField() {
             .then((response) => {
               console.log("response.data asset fundamentals: ", response.data);
               dispatch(initializeAssetValuations(response.data));
+              setLoading(false);
             })
             .catch((error) => {
               showMessage(`Error computing asset val ${error}`, "error");
+              setLoading(false);
+
               // setBackdropOpen(false);
               console.error(
                 "ERROR: POST /screener/asset-val-fundamentals/: ",
                 error
               );
             });
-
-          setLoading(false);
 
           // axiosInstanceAuth
           //   .post("/screener/equity-value-penman/", requestBodyPenman)
@@ -217,7 +218,10 @@ function CompanySearchField() {
                 className="contained-custom-button fit-content-button"
                 startIcon={
                   loading ? (
-                    <CircularProgress className="custom-circular-progress" />
+                    <CircularProgress
+                      className="custom-circular-progress"
+                      style={{ width: "20px", height: "20px" }}
+                    />
                   ) : (
                     <AttachMoneyOutlinedIcon className="button-icon" />
                   )

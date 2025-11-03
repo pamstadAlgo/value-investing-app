@@ -10,6 +10,8 @@ function AssetValLineItem({
   value,
   metric,
   handleChange,
+  multiplier,
+  handleMultiplierChange,
   category,
 }) {
   return (
@@ -40,6 +42,8 @@ function AssetValLineItem({
         className={`custom-cell ${open ? "" : "no-padding-cell"}`}>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <OutlinedInput
+            value={multiplier}
+            onChange={(e) => handleMultiplierChange(e, category, metric)}
             // disabled={isDerived}
             type="number"
             // value={bull}
@@ -55,7 +59,7 @@ function AssetValLineItem({
         className={`custom-cell ${open ? "" : "no-padding-cell"}`}>
         {" "}
         <Collapse in={open} timeout="auto" unmountOnExit>
-          10'000{" "}
+          {multiplier * value}
         </Collapse>
       </TableCell>
     </TableRow>

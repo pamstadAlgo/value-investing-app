@@ -2026,13 +2026,18 @@ def computeAssetVal(qfs_symbol):
                         "metric": field["metric"],
                         "label": field["label"],
                         "value": value,
+                        "multiplier" : 1
                     })
             if group_metrics:
                 data[group_name] = group_metrics
 
+        #get number of shares
+        nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
+
         return {
             "qfsSymbol": qfs_symbol,
             "periodEndDate": record.period_end_date,
+            "nrShares" : nr_shares,
             "data": data,
              }
 

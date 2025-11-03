@@ -16,6 +16,8 @@ function AssetValCollapsableHeader({
   label,
   hasCellPadding,
   marginLeft,
+  titleType,
+  value,
 }) {
   return (
     <TableRow className={`custom-table-row ${hasCellPadding ? "open" : ""}`}>
@@ -30,7 +32,6 @@ function AssetValCollapsableHeader({
             onClick={handleClick}>
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
-
           <span>{label}</span>
         </Collapse>
       </TableCell>
@@ -44,8 +45,16 @@ function AssetValCollapsableHeader({
         className={`custom-cell ${hasCellPadding ? "" : "no-padding-cell"}`}
         style={{ width: columnWidths[3] }}
         align="right">
-        <Collapse in={openCollapse} timeout="auto" unmountOnExit>
-          100'000
+        <Collapse
+          in={openCollapse}
+          timeout="auto"
+          unmountOnExit
+          className={
+            titleType === "big"
+              ? "asset-val-big-title"
+              : "asset-val-medium-title"
+          }>
+          {value}
         </Collapse>
       </TableCell>
     </TableRow>

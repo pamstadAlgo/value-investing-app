@@ -102,7 +102,7 @@ BALANCE_SHEET_GROUPS = {
         {"metric" : "receivables", "label" : "Accounts Receivable"},
         {"metric" : "inventories", "label" : "Inventories"},
         {"metric" : "other_current_assets", "label" : "Other Current Assets"},
-        {"metric" : "total_current_assets", "label" : "Total Current Assets"},
+        # {"metric" : "total_current_assets", "label" : "Total Current Assets"},
     ],
     "nonCurrentAssets": [
         {"metric" : "loans_gross", "label" : "Gross Loans"},
@@ -114,7 +114,7 @@ BALANCE_SHEET_GROUPS = {
         {"metric" : "intangible_assets", "label" : "Intangible Assets"},
         {"metric" : "goodwill", "label" : "Goodwill"},
         {"metric" : "other_lt_assets", "label" : "Other Assets"},
-        {"metric" : "total_assets", "label" : "Total Assets"},
+        # {"metric" : "total_assets", "label" : "Total Assets"},
     ],
     "currentLiab": [
         {"metric" : "accounts_payable", "label" : "Accounts Payable"},
@@ -127,7 +127,7 @@ BALANCE_SHEET_GROUPS = {
         {"metric" : "current_deferred_tax_liability", "label" : "Deferred Tax Liability"},
         {"metric" : "current_capital_leases", "label" : "Current Capital Leases"},
         {"metric" : "other_current_liabilities", "label" : "Other Current Liabilities"},
-        {"metric" : "total_current_liabilities", "label" : "Total Current Liabilities"},
+        # {"metric" : "total_current_liabilities", "label" : "Total Current Liabilities"},
     ],   
     "nonCurrentLiab": [
         {"metric" : "deposits_liability", "label" : "Deposits"},
@@ -136,7 +136,7 @@ BALANCE_SHEET_GROUPS = {
         {"metric" : "pension_liabilities", "label" : "Pension Liabilities"},
         {"metric" : "noncurrent_deferred_revenue", "label" : "Deferred Revenue"},
         {"metric" : "other_lt_liabilities", "label" : "Other Liabilities"},
-        {"metric" : "total_liabilities", "label" : "Total Liabilities"},
+        # {"metric" : "total_liabilities", "label" : "Total Liabilities"},
     ],
     "equity": [
         {"metric" : "retained_earnings", "label" : "Retained Earnings"},
