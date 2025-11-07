@@ -5,7 +5,7 @@ import PriceTag from "./PriceTag";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { computeEpvPerShare } from "./selectorFunctions";
+import { computeEpvPerShare, computeEquityPerShare } from "./selectorFunctions";
 
 function useLastClosePrice(qfsSymbol, axiosInstance) {
   return useQuery({
@@ -33,9 +33,15 @@ function AccordionTitle({ qfsSymbol }) {
     )
   );
 
+  const equityPerShare = useSelector((state) =>
+    computeEquityPerShare(
+      state.valuation.assetValuations?.find(
+        (item) => item.qfsSymbol === qfsSymbol
+      )
+    )
+  );
+
   const { data, isLoading } = useLastClosePrice(qfsSymbol, axiosInstanceAuth);
-  console.log("data we get from react query: ", data);
-  console.log("epvPerShareBase: ", epvPerShareBase);
 
   if (isLoading) return;
 
@@ -76,8 +82,12 @@ function AccordionTitle({ qfsSymbol }) {
           <PriceTag
             title="Asset Price"
             currencyCode={data?.currency}
-            price="200"
-            colorPrice="undervalued"
+            price={equityPerShare?.toFixed(2)}
+            colorPrice={
+              equityPerShare > data?.lastClosePrice
+                ? "undervalued"
+                : "overvalued"
+            }
           />
           <PriceTag
             currencyCode={data?.currency}

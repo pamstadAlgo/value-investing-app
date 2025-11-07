@@ -7,9 +7,6 @@ import { updateEPVValuationData } from "../../../features/valuationSlice";
 import Tooltip from "@mui/material/Tooltip";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import PollOutlinedIcon from "@mui/icons-material/PollOutlined";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
-import AreaChartCompo from "./AreaChartCompo";
 import BarChartNivo from "./BarChartNivo";
 import Popper from "@mui/material/Popper";
 

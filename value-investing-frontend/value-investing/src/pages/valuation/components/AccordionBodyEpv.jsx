@@ -19,43 +19,6 @@ import {
   computeNOPAT,
 } from "./selectorFunctions";
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const exampleData = [
-  { Revenue: [159, 237, 262] }, // bear, base, bull
-  { "Operating Margin": [6.0, 9.0, 24] },
-  { EBIT: [262, 16.0, 24] },
-  { "D&A": [305, 3.7, 67] },
-  { "Maintenance Capex": [356, 16.0, 49] },
-  { "Adjusted Income": [356, 16.0, 49] },
-  { "Tax Rate": [356, 16.0, 49] },
-  { "Sustainable NOPAT": [356, 16.0, 49] },
-  { WACC: [356, 16.0, 49] },
-  { "EPV operating business": [356, 16.0, 49] },
-  { Cash: [356, 16.0, 49] },
-  { Debt: [356, 16.0, 49] },
-  { "Nr. shares": [356, 16.0, 49] },
-  { "EPV per share": [356, 16.0, 49] },
-];
-
-const rows = [
-  createData("Revenue", 159, 6.0, 24),
-  createData("Operating Margin", 237, 9.0, 37),
-  createData("EBIT", 262, 16.0, 24),
-  createData("D&A", 305, 3.7, 67),
-  createData("Maintenance Capex", 356, 16.0, 49),
-  createData("Adjusted Income", 356, 16.0, 49),
-  createData("Tax Rate", 356, 16.0, 49),
-  createData("Sustainable NOPAT", 356, 16.0, 49),
-  createData("WACC", 356, 16.0, 49),
-  createData("EPV operating business", 356, 16.0, 49),
-  createData("Cash", 356, 16.0, 49),
-  createData("Debt", 356, 16.0, 49),
-  createData("Nr. shares", 356, 16.0, 49),
-  createData("EPV per share", 356, 16.0, 49),
-];
 
 const columns = ["Bear Case", "Base Case", "Bull Case"];
 
@@ -281,12 +244,7 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
         marginTop: "12px",
       }}
       className="custom-mui-table"
-      //   sx={{
-      //     // backgroundColor: "rgba(255, 255, 255, 0.6)",
-      //     backgroundColor: "transparent",
-      //     boxShadow: "0 8px 32px 0 rgba(79, 70, 229, 0.1)",
-      //     backdropFilter: "blur(12px)",
-      //       }}
+
     >
       <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
@@ -294,17 +252,10 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
             <TableCell></TableCell>
             {columns.map((column) => {
               return <TableCell align="right">{column}</TableCell>;
-            })}
-            {/* <TableCell align="right">Calories</TableCell>
-            <TableCell align="right">Fat&nbsp;(g)</TableCell>
-            <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-            <TableCell align="right">Protein&nbsp;(g)</TableCell> */}
+            })}           
           </TableRow>
         </TableHead>
-        <TableBody
-        //   sx={{
-        //     backgroundColor: "rgba(255, 255, 255, 0.6)", // translucent white
-        //           }}
+        <TableBody 
         >
           {data?.map((row) => {
             const metricName = Object.keys(row)[0];
@@ -352,74 +303,7 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
                 description={row.description}
               />
             );
-            //   return (
-            //     <TableRow
-            //       className="custom-table-row-valuation"
-            //       sx={{
-            //         "&:last-child td, &:last-child th": { border: 0 },
-            //       }}>
-            //       <TableCell component="th" scope="row">
-            //         {metricName}
-            //       </TableCell>
-            //       <TableCell align="right">
-            //         {/* <Tooltip
-            //           placement="right-start"
-            //           arrow
-            //           open={isNaN(Number(bear)) ? true : true}
-            //           title="Invalid number"> */}
-            //         <div>
-            //           <OutlinedInput
-            //             type="number"
-            //             value={bear}
-            //             onFocus={(e) => handleFocus(e, metricName, 0)}
-            //             onBlur={(e) => handleBlur(e, metricName, 0)}
-            //             // onBlur={(e) => handleChange(e, metricName, 0)}
-            //             // onBlur={setError(false)}
-            //             size="small"
-            //             className="custom-input-valuation-table"
-            //             onChange={(e) => {
-            //               console.log("this is number(bear): ", Number(bear));
-            //               handleChange(e, metricName, 0);
-            //             }}
-            //           />
-            //         </div>
-            //         {/* </Tooltip> */}
-            //       </TableCell>
-            //       <TableCell align="right">
-            //         {/* <Tooltip
-            //           placement="right-start"
-            //           arrow
-
-            //           title="Only numeric values are allowed"> */}
-            //         <OutlinedInput
-            //           type="number"
-            //           value={base}
-            //           size="small"
-            //           onBlur={(e) => handleBlur(e, metricName, 1)}
-            //           // onBlur={(e) => handleChange(e, metricName, 1)}
-            //           className="custom-input-valuation-table"
-            //           onChange={(e) => handleChange(e, metricName, 1)}
-            //         />
-            //         {/* </Tooltip> */}
-            //       </TableCell>
-            //       <TableCell align="right">
-            //         {/* <Tooltip
-            //           placement="right-start"
-            //           arrow
-
-            //           title="Only numeric values are allowed"> */}
-            //         <OutlinedInput
-            //           type="number"
-            //           value={bull}
-            //           size="small"
-            //           className="custom-input-valuation-table"
-            //           // onBlur={(e) => handleChange(e, metricName, 1)}
-            //           onChange={(e) => handleChange(e, metricName, 2)}
-            //         />
-            //         {/* </Tooltip> */}
-            //       </TableCell>
-            //     </TableRow>
-            //   );
+   
           })}
         </TableBody>
       </Table>

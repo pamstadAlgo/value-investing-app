@@ -116,3 +116,61 @@ export const computeEpvPerShare = (epvObj, qfsSymbol, caseIndex) => {
     );
   }
 };
+
+function sumBalanceSheetItems(arr) {
+  return arr.reduce((sum, item) => {
+    const num = Number(item.value);
+    const multiplier = Number(item.multiplier ?? 1);
+    const product = num * multiplier;
+
+    return sum + (Number.isFinite(product) ? product : 0);
+  }, 0);
+}
+
+export function computeSumBalanceSheet(assetValObj, itemKey) {
+  /* itemKey should be currentAssets, nonCurrentAssets, currentLiab, nonCurrentLiab */
+
+  if (!assetValObj) return null;
+
+  // destructure to get currentAssets
+  const itemsArray = assetValObj.data?.[itemKey] ?? [];
+
+  // sum current assets item
+  const sum = sumBalanceSheetItems(itemsArray);
+
+  return sum;
+}
+
+export function computeTotalAssets(assetValObj) {
+  if (!assetValObj) return null;
+
+  const sumCurrentAssets = computeSumBalanceSheet(assetValObj, "currentAssets");
+  const sumNonCurrentAssets = computeSumBalanceSheet(
+    assetValObj,
+    "nonCurrentAssets"
+  );
+
+  return sumCurrentAssets + sumNonCurrentAssets;
+}
+
+export function computeTotalLiabilities(assetValObj) {
+  if (!assetValObj) return null;
+
+  const sumCurrentLiab = computeSumBalanceSheet(assetValObj, "currentLiab");
+  const sumNonCurrentLiab = computeSumBalanceSheet(
+    assetValObj,
+    "nonCurrentLiab"
+  );
+
+  return sumCurrentLiab + sumNonCurrentLiab;
+}
+
+export function computeEquityPerShare(assetValObj) {
+  if (!assetValObj) return null;
+
+  const totalAssets = computeTotalAssets(assetValObj);
+  const totalLiabilities = computeTotalLiabilities(assetValObj);
+  const nrShares = assetValObj.nrShares;
+
+  return (totalAssets - totalLiabilities) / nrShares;
+}

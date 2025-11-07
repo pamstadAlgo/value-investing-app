@@ -25,6 +25,132 @@ from quickfs_dj.models import BalanceSheetAnnual, IncomeStatementAnnual, CashFlo
     
 #     return tokens
 
+
+# classif balance sheet entries into:
+# 1. current assets
+# 2. non-current assets
+# 3. current liabilities
+# 4. non-current liabilities
+# 5. equity
+
+
+    # qfs_symbol = models.ForeignKey(TradedCompanies, to_field='qfs_symbol', on_delete=models.CASCADE, db_index=True)
+    # period_end_date = models.DateField(db_index=True)
+    # DONE cash_and_equiv = models.FloatField(null=True, blank=True, db_index=True)
+    # DONE st_investments = models.FloatField(null=True, blank=True)
+    # DONE receivables = models.FloatField(null=True, blank=True)
+    # DONE inventories = models.FloatField(null=True, blank=True)
+    # DONE other_current_assets = models.FloatField(null=True, blank=True)
+    # DONE total_current_assets = models.FloatField(null=True, blank=True)
+    # DONE equity_and_other_investments = models.FloatField(null=True, blank=True)
+    # NOT TAKEN ppe_gross = models.FloatField(null=True, blank=True)
+    # NOT TAKEN accumulated_depreciation = models.FloatField(null=True, blank=True)
+    # DONE ppe_net = models.FloatField(null=True, blank=True)
+    # DONE intangible_assets = models.FloatField(null=True, blank=True)
+    # DONE goodwill = models.FloatField(null=True, blank=True)
+    # DONE other_lt_assets = models.FloatField(null=True, blank=True)
+    # DONE total_assets = models.FloatField(null=True, blank=True)
+    # DONE accounts_payable = models.FloatField(null=True, blank=True)
+    # DONE tax_payable = models.FloatField(null=True, blank=True)
+    # DONE current_accrued_liabilities = models.FloatField(null=True, blank=True)
+    # DONE st_debt = models.FloatField(null=True, blank=True)
+    # DONE current_deferred_revenue = models.FloatField(null=True, blank=True)
+    # DONE current_deferred_tax_liability = models.FloatField(null=True, blank=True)
+    # DONE current_capital_leases = models.FloatField(null=True, blank=True)
+    # DONE other_current_liabilities = models.FloatField(null=True, blank=True)
+    # DONE total_current_liabilities = models.FloatField(null=True, blank=True)
+    # DONE lt_debt = models.FloatField(null=True, blank=True)
+    # DONE noncurrent_capital_leases = models.FloatField(null=True, blank=True)
+    # DONE pension_liabilities = models.FloatField(null=True, blank=True)
+    # DONE noncurrent_deferred_revenue = models.FloatField(null=True, blank=True)
+    # DONE other_lt_liabilities = models.FloatField(null=True, blank=True)
+    # DONE total_liabilities = models.FloatField(null=True, blank=True)
+    # DONE common_stock = models.FloatField(null=True, blank=True)
+    # DONE preferred_stock = models.FloatField(null=True, blank=True)
+    # DONE retained_earnings = models.FloatField(null=True, blank=True)
+    # DONE aoci = models.FloatField(null=True, blank=True)
+    # DONE apic = models.FloatField(null=True, blank=True)
+    # DONE treasury_stock = models.FloatField(null=True, blank=True)
+    # other_equity = models.FloatField(null=True, blank=True)
+    # minority_interest_liability = models.FloatField(null=True, blank=True)
+    # total_equity = models.FloatField(null=True, blank=True)
+    # total_liabilities_and_equity = models.FloatField(null=True, blank=True)
+    # DONE total_investments = models.FloatField(null=True, blank=True)
+    # DONE deferred_policy_acquisition_cost = models.FloatField(null=True, blank=True)
+    # DONE unearned_premiums = models.FloatField(null=True, blank=True)
+    # DONE future_policy_benefits = models.FloatField(null=True, blank=True)
+    # DONE loans_gross = models.FloatField(null=True, blank=True)
+    # DONE allowance_for_loan_losses = models.FloatField(null=True, blank=True)
+    # DONE unearned_income = models.FloatField(null=True, blank=True)
+    # DONE loans_net = models.FloatField(null=True, blank=True)
+    # DONE deposits_liability = models.FloatField(null=True, blank=True)
+    # operating_assets = models.FloatField(null=True, blank=True, verbose_name="Operating Assets") #this field is computed with management command
+    # operating_liabilities = models.FloatField(null=True, blank=True, verbose_name="Operating Liabilities") #this field is computed with management command
+    # net_operating_assets = models.FloatField(null=True, blank=True, verbose_name="Net Operating Assets") #this field is computed with management command
+
+
+
+
+
+
+
+BALANCE_SHEET_GROUPS = {
+    "currentAssets": [
+        {"metric" : "cash_and_equiv", "label" : "Cash and Equivalents"},
+        {"metric" : "st_investments", "label" : "Short-Term Investments"},
+        {"metric" : "total_investments", "label" : "Securities & Investments"},
+        {"metric" : "receivables", "label" : "Accounts Receivable"},
+        {"metric" : "inventories", "label" : "Inventories"},
+        {"metric" : "other_current_assets", "label" : "Other Current Assets"},
+        # {"metric" : "total_current_assets", "label" : "Total Current Assets"},
+    ],
+    "nonCurrentAssets": [
+        {"metric" : "loans_gross", "label" : "Gross Loans"},
+        {"metric" : "allowance_for_loan_losses", "label" : "Loan Loss Reserve"},
+        {"metric" : "loans_net", "label" : "Net Loans"},
+        {"metric" : "ppe_net", "label" : "Property, Plant & Equipment (net)"},
+        {"metric" : "deferred_policy_acquisition_cost", "label" : "Deferred Policy Acquisition Cost"},
+        {"metric" : "equity_and_other_investments", "label" : "Equity & Investments"},
+        {"metric" : "intangible_assets", "label" : "Intangible Assets"},
+        {"metric" : "goodwill", "label" : "Goodwill"},
+        {"metric" : "other_lt_assets", "label" : "Other Assets"},
+        # {"metric" : "total_assets", "label" : "Total Assets"},
+    ],
+    "currentLiab": [
+        {"metric" : "accounts_payable", "label" : "Accounts Payable"},
+        {"metric" : "tax_payable", "label" : "Tax Payable"},
+        {"metric" : "current_accrued_liabilities", "label" : "Accrued Liabilities"},
+        {"metric" : "unearned_premiums", "label" : "Unearned Premiums"},
+        {"metric" : "future_policy_benefits", "label" : "Future Policy Benefits"},
+        {"metric" : "st_debt", "label" : "Short-Term Debt"},
+        {"metric" : "current_deferred_revenue", "label" : "Current Deferred Revenue"},
+        {"metric" : "current_deferred_tax_liability", "label" : "Deferred Tax Liability"},
+        {"metric" : "current_capital_leases", "label" : "Current Capital Leases"},
+        {"metric" : "other_current_liabilities", "label" : "Other Current Liabilities"},
+        # {"metric" : "total_current_liabilities", "label" : "Total Current Liabilities"},
+    ],   
+    "nonCurrentLiab": [
+        {"metric" : "deposits_liability", "label" : "Deposits"},
+        {"metric" : "lt_debt", "label" : "Long-Term Debt"},
+        {"metric" : "noncurrent_capital_leases", "label" : "Capital Leases"},
+        {"metric" : "pension_liabilities", "label" : "Pension Liabilities"},
+        {"metric" : "noncurrent_deferred_revenue", "label" : "Deferred Revenue"},
+        {"metric" : "other_lt_liabilities", "label" : "Other Liabilities"},
+        # {"metric" : "total_liabilities", "label" : "Total Liabilities"},
+    ],
+    "equity": [
+        {"metric" : "retained_earnings", "label" : "Retained Earnings"},
+        {"metric" : "apic", "label" : "Paid-in Capital"},
+        {"metric" : "common_stock", "label" : "Common Stock"},
+        {"metric" : "preferred_stock", "label" : "Preferred Stock"},
+        {"metric" : "aoci", "label" : "AOCI"},
+        {"metric" : "treasury_stock", "label" : "Treasury Stock"},
+        {"metric" : "other_equity", "label" : "Other"},
+        {"metric" : "total_equity", "label" : "Shareholder's Equity"},
+    ],
+}
+
+
 def test_func(a,b):
     return a + b
 
