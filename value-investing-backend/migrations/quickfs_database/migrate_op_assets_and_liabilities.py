@@ -112,7 +112,7 @@ def update_operating_entries(
                     if rows_updated == 0:
                         break
 
-                    print(f"Updated {rows_updated} rows in {table}...")
+                    # print(f"Updated {rows_updated} rows in {table}...")
         print(f"Updated all rows successfully for {table} in a single SQL statement.")
     finally:
         conn.close()
