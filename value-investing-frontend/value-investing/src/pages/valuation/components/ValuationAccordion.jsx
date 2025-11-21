@@ -4,17 +4,26 @@ import AccordionTitle from "./AccordionTitle";
 import AccordionBodyEpv from "./AccordionBodyEpv";
 import AccordionBodyAssetVal from "./AccordionBodyAssetVal";
 import { useSelector } from "react-redux";
+import AccordionBodyPenman from "./AccordionBodyPenman";
 
 function ValuationAccordion({ epvData, qfsSymbol, valuationMethod }) {
   //extract asset valuation data
   const assetValuations = useSelector(
     (state) => state.valuation.assetValuations
   );
+
+  const penmanValuations = useSelector(
+    (state) => state.valuation.penmanValuations
+  );
+
   var data;
   var periodEndDate;
 
-  // get asset val data for given qfsSymbol
+  var dataPenman;
+
+  // get asset and penman val data for given qfsSymbol
   const assetVal = assetValuations.find((item) => item.qfsSymbol === qfsSymbol);
+  const penmanVal = penmanValuations[qfsSymbol];
 
   if (assetVal) {
     data = assetVal["data"];
@@ -40,6 +49,7 @@ function ValuationAccordion({ epvData, qfsSymbol, valuationMethod }) {
           reportingDate={periodEndDate}
         />
       )}
+      {valuationMethod === "penman" && <AccordionBodyPenman data={penmanVal} />}
     </Accordion>
   );
 }

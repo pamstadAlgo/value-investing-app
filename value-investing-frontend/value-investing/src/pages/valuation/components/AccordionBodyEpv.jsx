@@ -19,7 +19,6 @@ import {
   computeNOPAT,
 } from "./selectorFunctions";
 
-
 const columns = ["Bear Case", "Base Case", "Bull Case"];
 
 function AccordionBodyEpv({ data, qfsSymbol }) {
@@ -28,66 +27,6 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
   const [focusedValue, setFocusedValue] = useState("");
   const [error, setError] = useState(false);
   const dispatch = useDispatch();
-
-  const handleChange = (e, metricName, caseIndex) => {
-    const val = e.target.value;
-    // const val = e.target.valueAsNumber;
-
-    console.log("e.target.value: ", e.target.value);
-    console.log("e.target.valueAsNumber: ", e.target.valueAsNumber);
-
-    console.log("metricName: ", metricName);
-    console.log("caseIndex: ", caseIndex);
-
-    // Allow empty input or valid decimal numbers
-    // if (
-    //   val === "" ||
-    //   /^-?$/.test(val) || // just "-" is fine
-    //   /^-?\d+\.?\d*$/.test(val) || // digits, optional dot, then more digits
-    //   /^-?\d*\.$/.test(val) // "1." or "-1." (user might still type decimals)
-    // ) {
-    // setValue(val);
-    // if (!isNaN(Number(e.target.valueAsNumber))) {
-    dispatch(
-      updateEPVValuationData({
-        newValue: val,
-        qfsSymbol: qfsSymbol,
-        metricName: metricName,
-        caseIndex: caseIndex,
-      })
-    );
-    // } else {
-
-    if (isNaN(Number(e.target.valueAsNumber))) {
-      console.log(
-        "error with e.target.valueAsNumber: ",
-        e.target.valueAsNumber
-      );
-    }
-    // }
-    setError(false);
-    // } else {
-    //   // Invalid input: show error
-    //   setError(true);
-    // }
-  };
-
-  const handleBlur = (e, metricName, caseIndex) => {
-    // const val = e.target.value;
-    // const val = e.target.valueAsNumber;
-
-    console.log("e.target.value blur: ", e.target.value);
-    console.log("e.target.valueAsNumber blur: ", e.target.valueAsNumber);
-    console.log("transformed number: ", Number(e.target.value));
-  };
-
-  const handleFocus = (e, metricName, caseIndex) => {
-    // const val = e.target.value;
-    // const val = e.target.valueAsNumber;
-
-    console.log("focused value we set: ", e.target.value);
-    setFocusedValue(e.target.value);
-  };
 
   const ebitBear = useSelector((state) =>
     computeEBIT(
@@ -243,20 +182,17 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
         borderRadius: "16px",
         marginTop: "12px",
       }}
-      className="custom-mui-table"
-
-    >
+      className="custom-mui-table">
       <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
           <TableRow>
             <TableCell></TableCell>
             {columns.map((column) => {
               return <TableCell align="right">{column}</TableCell>;
-            })}           
+            })}
           </TableRow>
         </TableHead>
-        <TableBody 
-        >
+        <TableBody>
           {data?.map((row) => {
             const metricName = Object.keys(row)[0];
             var [bear, base, bull] = row[metricName];
@@ -303,7 +239,6 @@ function AccordionBodyEpv({ data, qfsSymbol }) {
                 description={row.description}
               />
             );
-   
           })}
         </TableBody>
       </Table>

@@ -371,3 +371,11 @@
 .MuiTypography-root {
   font-family: var(--font-family) !important;
 }
+
+
+.katex {
+  font-family: var(--font-family);
+  font-size: 1.1rem;
+  color: #111827;
+  /* Tailwind gray-900 */
+}

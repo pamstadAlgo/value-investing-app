@@ -7,6 +7,7 @@ const initialState = {
   equityValuePenman: [],
   epvValuations: [],
   assetValuations: [],
+  penmanValuations: [],
 };
 
 export const valuationSlice = createSlice({
@@ -30,6 +31,9 @@ export const valuationSlice = createSlice({
     },
     initializeAssetValuations: (state, action) => {
       state.assetValuations = action.payload;
+    },
+    initializePenmanValuations: (state, action) => {
+      state.penmanValuations = action.payload;
     },
     updateAssetValMultChange: (state, action) => {
       const { qfsSymbol, category, metric, newValue } = action.payload;
@@ -115,6 +119,7 @@ export const {
   updateAssetValuationData,
   updateAssetValMultChange,
   initializeAssetValuations,
+  initializePenmanValuations,
 } = valuationSlice.actions;
 
 export default valuationSlice.reducer;

@@ -1215,6 +1215,182 @@ def get_revenue(qfs_symbol):
         revenue_stats['max_revenue']
     ]
 
+def get_nopat(qfs_symbol, n=5, tax_rate=0.3):
+    """
+    Function returns min, max and average nopat
+    """
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(
+            nopat=ExpressionWrapper(
+                F('operating_income') *(1-tax_rate),
+                output_field=FloatField()
+            )
+        )
+        .order_by('-period_end_date')  # ascending for correct RNOA calculation
+        .only('period_end_date', 'operating_income')  # fetch only needed fields
+    )[:n]
+
+
+    # Aggregate min, avg, max revenue on those 5 records
+    nopat_stats = incomes.aggregate(
+        min_nopat=Min('nopat'),
+        avg_nopat=Avg('nopat'),
+        max_nopat=Max('nopat')
+    )
+
+    return [
+        nopat_stats['min_nopat'],
+        nopat_stats['avg_nopat'],
+        nopat_stats['max_nopat']
+    ]
+
+def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
+    """
+    Computes RNOA_t = NOPAT_t/NOA_t-1 where NOPAT_t = EBIT_t*(1-tr) and NOA_t-1 = OperatingAssets_t-1 - operatingLiabilities_t-1
+    Returns bear, base, bull RNOA. Bear is min(RNOA) over the last n-1 years; base is avg(RNOA) over the last n-1 years; bull is max(RNOA) over the last n-1 years
+    """
+    #compute net operating assets
+    # balances = (
+    #     BalanceSheetAnnual.objects
+    #     .filter(qfs_symbol_id=qfs_symbol)
+    #     .annotate(
+    #         noa=ExpressionWrapper(
+    #             F('operating_assets') - F('operating_liabilities'),
+    #             output_field=FloatField()
+    #         )
+    #     )
+    #     .order_by('-period_end_date')  # ascending for correct RNOA calculation
+    #     .only('period_end_date', 'operating_assets', 'operating_liabilities')  # fetch only needed fields
+    # )[:n+1]
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # descending to get latest n+1 periods
+        .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
+    )[:n+1]
+
+    # Step 2: fetch last n+1 income statements (only needed fields)
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # ascending
+        .only('period_end_date', 'operating_income')
+    )[:n+1]
+
+    print('qfs symbol: ', qfs_symbol)
+
+    # step 3: compute rnoa. Remember we have ordered entries in descending order, so at position 0 we have the newest value
+    rnoa_values = []
+    for i in range(0, len(balances)-1):
+        income_t = incomes[i]
+        balance_t_1 = balances[i+1]
+
+        print('income.operating_income: ', income_t.operating_income)
+        print('income.net_operating_assets: ', balance_t_1.net_operating_assets)
+
+        # avoid none or zero division
+        if balance_t_1.net_operating_assets is None or balance_t_1.net_operating_assets == 0:
+            continue
+
+        rnoa = income_t.operating_income*(1-tax_rate)/balance_t_1.net_operating_assets
+        rnoa_values.append(rnoa)
+
+    # return bear, base and bull case
+    return [
+        round(min(rnoa_values),2) if rnoa_values else None,
+        round((sum(rnoa_values)/len(rnoa_values)),2) if rnoa_values else None,
+        round(max(rnoa_values),2) if rnoa_values else None,
+    ]
+
+def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3):
+     # Step 1: fetch last n+1 balances with net_operating_assets
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'net_operating_assets')
+    )[:n+1]
+
+
+    # Step 2: fetch corresponding income statements
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'operating_income')
+    )[:n+1]
+
+    incomes = sorted(incomes, key=lambda i: i.period_end_date)  # oldest -> newest
+    balances = sorted(balances, key=lambda b: b.period_end_date)  # oldest -> newest
+
+    # Step 3: compute RNOA using NOA from previous period
+    rnoa_series = []
+    for i in range(1, len(balances)):
+        income_t = incomes[i]
+        noa_prev = balances[i-1].net_operating_assets
+
+        if noa_prev == 0:
+            continue  # avoid division by zero
+
+        rnoa = income_t.operating_income * (1 - tax_rate) / noa_prev
+        year = income_t.period_end_date.year
+        rnoa_series.append({'year': str(year), 'value': rnoa})
+
+    # Step 4: keep only last n values
+    rnoa_series = rnoa_series[-n:]
+
+    return rnoa_series
+
+def get_noa(qfs_symbol, n=2):
+    """
+    Compute net operating assets = operating_assets - operating liabilities
+    Return a list [bear, base, bull]. Each case is computed as the average noa over the past n years
+    """ 
+    #compute net operating assets
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'net_operating_assets')
+    )[:n]
+
+    # balances = (
+    #     BalanceSheetAnnual.objects
+    #     .filter(qfs_symbol_id=qfs_symbol)
+    #     .annotate(
+    #         noa=ExpressionWrapper(
+    #             F('operating_assets') - F('operating_liabilities'),
+    #             output_field=FloatField()
+    #         )
+    #     )
+    #     .order_by('-period_end_date')  # ascending for correct RNOA calculation
+    #     .only('period_end_date', 'operating_assets', 'operating_liabilities')  # fetch only needed fields
+    # )[:n]
+
+   # Compute average NOA
+    average_noa = balances.aggregate(avg_noa=Avg('net_operating_assets'))['avg_noa']
+
+    return [average_noa, average_noa, average_noa]
+
+
+def get_noa_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'net_operating_assets')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['net_operating_assets']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
 
 def get_op_margin_ts(qfs_symbol, n=10):
     """
@@ -1308,6 +1484,36 @@ def get_cash(qfs_symbol):
         total_cash = None
 
     return total_cash
+
+def get_book_value(qfs_symbol):
+    # Get the latest record for the given ticker
+    latest_record = BalanceSheetQuarter.objects.filter(
+        qfs_symbol_id=qfs_symbol
+    ).order_by('-period_end_date').first()
+
+    if latest_record:
+        total_equity = latest_record.total_equity
+    else:
+        total_equity = None
+
+    return total_equity
+
+def get_book_value_ts(qfs_symbol, n=10):
+    last_records = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))  # get the year
+        .order_by('-period_end_date')[:n]  # get last 5 years
+        .values('year', 'total_equity')
+    )
+
+    # Convert to desired format and sort by year ascending
+    formatted_data = [
+        {'year': str(record['year']), 'value': record['total_equity']}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return formatted_data
 
 def get_debt_ts(qfs_symbol, n=10):
     last_records = (
@@ -1406,7 +1612,6 @@ class EPVFundamentalsAPIView(APIView):
         # Format as dd-mm-yyyy
         formatted_date = today.strftime("%d-%m-%Y")
 
-
         #response list
         response = []
 
@@ -1458,7 +1663,7 @@ class EPVFundamentalsAPIView(APIView):
                 epv_per_share = [round((epv_bus + cash - debt)/nr_shares,1) if (epv_bus is not None and cash is not None and debt is not None and nr_shares is not None and nr_shares != 0) else None
                                  for epv_bus, cash, debt, nr_shares in zip(epv_op_business, cash, debt, nr_shares)]
 
-                #get revenue time series
+                #get time series; time series are of the format ts = [{"year" : 2015, "value": 1000},{"year" : 2016, "value": 2000}, etc.]
                 revenue_ts = get_revenue_ts(qfs_symbol=qfs_symbol)
                 op_margin_ts = get_op_margin_ts(qfs_symbol=qfs_symbol)
                 cash_ts = get_cash_ts(qfs_symbol=qfs_symbol)
@@ -1506,6 +1711,139 @@ class EPVFundamentalsAPIView(APIView):
                 cache.set(f'{qfs_symbol}_EPV_{formatted_date}', val_data, timeout=CACHE_TTL)
             
             
+            response.append({qfs_symbol: val_data})
+
+        return Response(response)
+
+class PenmanFundamentalsAPIView(APIView):
+    def post(self, request):
+        """
+        This endpoint returns the fundamentals needed for valuing a company based on Penmans valuation approach.
+        Value = b0 + (RNOA_1 - wacc)*NOA_0/(1+WACC) + (RNOA_2 - wacc)*NOA_1/((1+WACC)*(r-g) --> note that we will set g to zero
+        
+        The return structure will be:
+
+        const exampleData = [
+            { BookValue: [159, 237, 262] }, // bear, base, bull
+            { RNOA1: [0.08, 0.1, 0.12] },
+            { NOA0: [262, 16.0, 24] },
+            { RNOA2: [0.08, 0.1, 0.12] },
+            { NOA1: [356, 16.0, 49] },
+            { WACC: [0.12, 0.1, 0.08] },
+            ];
+
+        Each value in a metric array corresponds to bear, base, bull case
+        """
+
+        #tickers is of type list
+        qfs_symbols = request.data['qfs_symbols']
+        today = datetime.today()
+
+        # Format as dd-mm-yyyy
+        formatted_date = today.strftime("%d-%m-%Y")
+
+        #response list
+        response = []
+
+        for qfs_symbol in qfs_symbols:
+            #check if valuation is in cache
+            val_data = cache.get(f'{qfs_symbol}_Penman_{formatted_date}')
+
+            if val_data is None:
+                val_data = []
+                #get most recent book value
+                b0 = get_book_value(qfs_symbol=qfs_symbol)
+                b0 = [b0]*3
+
+                #compute revenue: bear case = min(past 5 years), base case = avg(past 5 years), bull case = max(past 5 years)
+                revenue_vals = get_revenue(qfs_symbol=qfs_symbol)
+                op_margins = get_op_margin(qfs_symbol=qfs_symbol)
+
+                #compute ebit
+                ebit = [rev*op_margin if (rev is not None and op_margin is not None) else None
+                         for rev, op_margin in zip(revenue_vals, op_margins)]
+                
+                #get net operating assets
+                noa = get_noa(qfs_symbol=qfs_symbol)
+
+                #we use a tax rate of 0.3
+                tax_rate = 0.3
+
+                #compute rnoa = ebit*(1-tr)/noa
+                rnoa = [ebit*(1-tax_rate)/noa if (ebit is not None and noa is not None) else None
+                        for ebit, noa in zip(ebit, noa)]
+                
+                #define wacc and tax rate
+                wacc = [0.11, 0.1, 0.09]
+                tax_rate = [tax_rate]*3
+                
+                #get number of shares
+                nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
+                nr_shares = [nr_shares]*3
+
+                #growth (default value is zero)
+                g = [0*3]
+
+                #compute equity value and equity value per share
+                equity_val = [b0 + (rnoa - wacc)*noa/(1+wacc) + (rnoa - wacc)*noa/((1+wacc)*(wacc - g)) if (b0 is not None and rnoa is not None and noa is not None and wacc is not None and g is not None) else None
+                              for b0, rnoa, wacc, noa, g in zip(b0, rnoa, wacc, noa, g)]
+                
+                equity_val_per_share = [equity_val/nr_shares if (equity_val is not None and nr_shares is not None and nr_shares != 0) else None
+                                        for equity_val, nr_shares in zip(equity_val, nr_shares)]
+
+                #time series for revenue, op margin, RNOA, NOA, book value
+                revenue_ts = get_revenue_ts(qfs_symbol=qfs_symbol)
+                op_margin_ts = get_op_margin_ts(qfs_symbol=qfs_symbol)
+                rnoa_ts = get_rnoa_ts(qfs_symbol=qfs_symbol)
+                b0_ts = get_book_value_ts(qfs_symbol=qfs_symbol)
+                noa_ts = get_noa_ts(qfs_symbol=qfs_symbol)
+                nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol=qfs_symbol)
+
+                #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
+                val_data.append({'Equity_0' : b0, 'isDerived': False, 'hasData' : True, 'ts' : b0_ts})
+                val_data.append({'Revenue_1' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : revenue_ts})
+                val_data.append({'Operating Margin_1' : op_margins, 'isDerived': False, 'hasData' : True, 'ts' : op_margin_ts})
+                val_data.append({'EBIT_1' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
+                val_data.append({'RNOA_1' : rnoa, 'isDerived': False, 'description': "RNOA_t = EBIT_t*(1-tax rate)/NOA_t-1", 'hasData' : True, 'ts' : rnoa_ts})
+                val_data.append({'NOA_0' : noa, 'isDerived': False, 'hasData' : True, 'ts' : noa_ts})
+                val_data.append({'Revenue_2' : revenue_vals, 'isDerived': False, 'hasData' : True, 'ts' : revenue_ts})
+                val_data.append({'Operating Margin_2' : op_margins, 'isDerived': False, 'hasData' : True, 'ts' : op_margin_ts})
+                val_data.append({'EBIT_2' : ebit, 'isDerived': True, 'description': "EBIT is a derived quantity. EBIT = Revenue * Operating Margin"})
+                val_data.append({'RNOA_2' : rnoa, 'isDerived': False, 'hasData' : True, 'ts' : rnoa_ts})
+                val_data.append({'NOA_1' : noa, 'isDerived': False, 'hasData' : True, 'ts' : noa_ts})
+                val_data.append({'Tax Rate' : tax_rate, 'isDerived': False})
+                val_data.append({'WACC' : wacc, 'isDerived': False})
+                val_data.append({'Nr. Shares' : nr_shares, 'isDerived': False, 'hasData' : True, 'ts' : nr_shares_ts})
+                val_data.append({'Equity Value': equity_val, 'isDerived': True, 'description': "See formula"})
+                val_data.append({'Equity Value per share': equity_val_per_share, 'isDerived': True, 'description': "See formula"})
+
+
+                #compute rnoa1: bear case = min(past 5 years), base case = avg 5 years, bull case = max 5 years
+                # rnoa = get_rnoa(qfs_symbol=qfs_symbol)
+                # noa = get_noa(qfs_symbol=qfs_symbol)
+                # nopat = get_nopat(qfs_symbol=qfs_symbol)
+
+                # revenue_vals = get_revenue(qfs_symbol=qfs_symbol)
+                # op_margins = get_op_margin(qfs_symbol=qfs_symbol)
+
+                # #compute nopat based on revenue and op margins
+                # nopat_deriv = [rev*op_margin*(1-tax_rate) if (rev is not None and op_margin is not None) else None
+                #          for rev, op_margin in zip(revenue_vals, op_margins)]
+
+
+                # #get times series
+                # rnoa_ts = get_rnoa_ts(qfs_symbol=qfs_symbol)
+
+                # #create valuation dictionary; isDerived determines if the quantity is computed or not based on other companies. hasData determines if a graph is displayed for this measure on the frontend; property ts stands for time series
+                # val_data.append({'rnoa1' : rnoa, 'isDerived': True, 'hasData' : True, 'ts' : rnoa_ts})   #, 'ts' : revenue_ts})
+                # val_data.append({'rnoa2' : rnoa, 'isDerived': True, 'hasData' : True, 'ts' : rnoa_ts})   #, 'ts' : revenue_ts})
+                # val_data.append({'noa0' : noa, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+                # val_data.append({'noa1' : noa, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+                # val_data.append({'nopat' : nopat, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+                # val_data.append({'nopat_deriv' : nopat_deriv, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+                # val_data.append({'op_margins' : op_margins, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+                # val_data.append({'revenue' : revenue_vals, 'isDerived': True, 'hasData' : True})   #, 'ts' : revenue_ts})
+
             response.append({qfs_symbol: val_data})
 
         return Response(response)

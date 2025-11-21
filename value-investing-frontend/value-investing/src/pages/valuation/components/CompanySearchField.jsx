@@ -11,6 +11,7 @@ import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import {
   initializeAssetValuations,
   initializeEPVValuations,
+  initializePenmanValuations,
 } from "../../../features/valuationSlice";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
@@ -81,17 +82,35 @@ function CompanySearchField() {
           axiosInstanceAuth
             .post("/screener/asset-val-fundamentals/", requestBody)
             .then((response) => {
-              console.log("response.data asset fundamentals: ", response.data);
               dispatch(initializeAssetValuations(response.data));
-              setLoading(false);
+              // setLoading(false);
             })
             .catch((error) => {
               showMessage(`Error computing asset val ${error}`, "error");
-              setLoading(false);
+              // setLoading(false);
 
               // setBackdropOpen(false);
               console.error(
                 "ERROR: POST /screener/asset-val-fundamentals/: ",
+                error
+              );
+            });
+
+          // make request for penman valuation
+          axiosInstanceAuth
+            .post("/screener/penman-fundamentals/", requestBody)
+            .then((response) => {
+              dispatch(initializePenmanValuations(response.data));
+              // dispatch(initializeAssetValuations(response.data));
+              setLoading(false);
+            })
+            .catch((error) => {
+              showMessage(`Error computing penman val ${error}`, "error");
+              setLoading(false);
+
+              // setBackdropOpen(false);
+              console.error(
+                "ERROR: POST /screener/penman-fundamentals/: ",
                 error
               );
             });
