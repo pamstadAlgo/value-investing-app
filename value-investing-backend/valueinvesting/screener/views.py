@@ -28,7 +28,7 @@ from django.db.models.functions import ExtractYear
 # from .helpers import add
 from django.db.models import Q
 from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg
-
+from collections import defaultdict
 
 
 
@@ -1579,6 +1579,71 @@ def get_nr_diluted_shares(qfs_symbol):
         nr_shares_dil = None
 
     return nr_shares_dil
+
+
+def get_income_financials(qfs_symbol: str, years: int = 5, metric_fields: list[str] = ["revenue", "cogs", "gross_profit", "sga", "rnd", "other_opex", "operating_income"], include_ttm: bool = True):
+    # Fetch only needed fields + period_end_date
+    qs = IncomeStatementAnnual.objects.filter(qfs_symbol__qfs_symbol=qfs_symbol).order_by('-period_end_date').values('period_end_date', *metric_fields)
+
+    if not qs.exists():
+        return {"symbol": qfs_symbol, "periods": [], "metrics": []}
+
+    # Slice latest N fiscal years
+    latest_statements = list(qs[:years])
+
+    # Optional: include TTM (assume latest entry is TTM)
+    # if include_ttm and qs.exists():
+    #     latest_statements.append(qs.first())
+
+    # Build periods: FY-5 → FY-1 → TTM
+    periods = []
+    total_periods = len(latest_statements)
+    for i, stmt in enumerate(reversed(latest_statements)):
+        # if include_ttm and i == total_periods - 1:
+        #     periods.append("TTM")
+        # else:
+        periods.append(f"FY-{years - i}")
+    
+    # Compute TTM if requested
+    ttm_values = {}
+    if include_ttm:
+        # Fetch the latest 4 quarterly statements
+        qtrs = IncomeStatementQuarter.objects.filter(qfs_symbol__qfs_symbol=qfs_symbol)\
+            .order_by('-period_end_date')[:4]\
+            .values(*metric_fields)
+
+        if qtrs.exists():
+            # Sum each metric over the last 4 quarters
+            for field in metric_fields:
+                ttm_values[field] = sum(q.get(field, 0.0) or 0.0 for q in qtrs)
+
+            periods.append("TTM")
+            latest_statements.append(ttm_values)  # append TTM as a pseudo-statement
+
+
+    # Build metrics dict
+    metrics = defaultdict(dict)
+    for period_label, stmt in zip(periods, reversed(latest_statements)):
+        for field in metric_fields:
+            metrics[field][period_label] = stmt.get(field, 0.0) or 0.0
+
+    return {
+        "symbol": qfs_symbol,
+        "periods": periods,
+        "metrics": metrics
+    }
+
+class PenmanValuationAPIView(APIView):
+    def get(self, request, qfs_symbol):
+        # return Response("ok")
+        # Get number of years from query parameter (default to 5)
+        years = int(request.query_params.get("years", 5))
+        include_ttm = request.query_params.get("ttm", "true").lower() == "true"
+
+        # Example: replace with your real data computation
+        data = get_income_financials(qfs_symbol, years)
+
+        return Response(data)
 
 class EPVFundamentalsAPIView(APIView):
     def post(self, request):

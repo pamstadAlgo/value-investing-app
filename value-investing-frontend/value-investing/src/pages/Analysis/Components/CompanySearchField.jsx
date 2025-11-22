@@ -1,15 +1,13 @@
 import React, { useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import { VariableSizeList } from "react-window";
-import Chip from "@mui/material/Chip";
-import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { useDispatch, useSelector } from "react-redux";
-import { initalizeTickerSymbols } from "../../../features/keyRatiosSlice";
-import {
-  initializeTickerSymbols,
-  setSelectedTickers,
-} from "../../../features/valuationSlice";
+import { VariableSizeList } from "react-window";
+import TextField from "@mui/material/TextField";
+import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
+import { initializeTickerSymbols } from "../../../features/valuationSlice";
+import Chip from "@mui/material/Chip";
+import { initializeTickerSymbol } from "../../../features/analysisSlice";
+import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
 const LISTBOX_PADDING = 8; // px
 
@@ -43,10 +41,34 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(
   );
 });
 
-function TickerAutoComplete({ formik }) {
-  const valuationState = useSelector((state) => state.valuation);
+function CompanySearchField() {
+  const analysisState = useSelector((state) => state.analysis);
+  const tickerSymbols = useSelector((state) => state.valuation.tickerSymbols);
+
   const dispatch = useDispatch();
   const axiosInstanceAuth = useAxiosWithAuth();
+
+  const { showMessage } = useSnackbar();
+
+  const handleChange = (event, newValue) => {
+    dispatch(initializeTickerSymbol(newValue));
+
+    if (newValue) {
+      console.log("this is new newValue: ", newValue);
+      console.log("event.target.value: ", event.target.value);
+
+      //fetch data for selected ticker symbol
+      axiosInstanceAuth
+        .get(`screener/analysis/${newValue.qfs_symbol}/`)
+        .then((response) => {
+          console.log("response.data from analysis request: ", response.data);
+        })
+        .catch((error) => {
+          showMessage(`Error fetching data: ${error}`);
+          console.error("ERROR: GET screener/analysis/: ", error);
+        });
+    }
+  };
 
   useEffect(() => {
     axiosInstanceAuth
@@ -60,56 +82,20 @@ function TickerAutoComplete({ formik }) {
       });
   }, []);
 
-  // const handleInputChange = (event, newInputValue) => {
-  //   console.log("this is new inputValue: ", newInputValue);
-  //   console.log("event.target.value: ", event.target.value);
-  // };
-
-  const handleChange = (event, newValue) => {
-    console.log("this is new newValue: ", newValue);
-    console.log("event.target.value: ", event.target.value);
-    dispatch(setSelectedTickers(newValue));
-  };
-
   return (
     <div>
       <Autocomplete
-        multiple
-        disableCloseOnSelect
-        //   options={options}
-        value={valuationState.selectedTickerSymbols}
-        options={valuationState.tickerSymbols}
+        value={analysisState.selectedTickerSymbol}
+        options={tickerSymbols}
         ListboxComponent={ListboxComponent}
         onChange={handleChange}
-        // onInputChange={handleInputChange}
         getOptionLabel={(option) => `${option.qfs_symbol} - ${option.name}`}
-        renderTags={(tagValue, getTagProps) =>
-          tagValue.map((option, index) => {
-            const { key, ...tagProps } = getTagProps({ index });
-            return (
-              <Chip
-                key={key}
-                label={`${option.qfs_symbol}`}
-                {...tagProps}
-                //   disabled={fixedOptions.includes(option)}
-              />
-            );
-          })
-        }
         renderInput={(params) => (
           <TextField
             {...params}
             size="small"
             label="Select an item"
             name="tickers"
-            helperText={
-              formik?.errors.tickers && formik?.touched.tickers
-                ? formik?.errors.tickers
-                : " "
-            }
-            error={
-              formik?.errors.tickers && formik?.touched.tickers ? true : false
-            }
           />
         )}
       />
@@ -117,4 +103,4 @@ function TickerAutoComplete({ formik }) {
   );
 }
 
-export default TickerAutoComplete;
+export default CompanySearchField;
