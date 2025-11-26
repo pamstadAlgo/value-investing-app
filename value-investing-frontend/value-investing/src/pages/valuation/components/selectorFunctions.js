@@ -1,5 +1,4 @@
 export const computeEBIT = (epvObj, qfsSymbol, caseIndex) => {
-  console.log("epvObj that we get: ", epvObj);
 
   if (epvObj) {
     //get revenue and op margin values
@@ -14,9 +13,6 @@ export const computeEBIT = (epvObj, qfsSymbol, caseIndex) => {
     );
 
     opMargins = opMargins ? opMargins["Operating Margin"] : 0;
-
-    console.log("revenues: ", revenues);
-    console.log("opMargins: ", opMargins);
 
     return revenues[caseIndex] * opMargins[caseIndex];
   }

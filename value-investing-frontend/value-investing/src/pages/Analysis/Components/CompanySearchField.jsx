@@ -6,7 +6,11 @@ import TextField from "@mui/material/TextField";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { initializeTickerSymbols } from "../../../features/valuationSlice";
 import Chip from "@mui/material/Chip";
-import { initializeTickerSymbol } from "../../../features/analysisSlice";
+import {
+  initializeCompanyData,
+  initializeTickerSymbol,
+  initializeValuationData,
+} from "../../../features/analysisSlice";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
 const LISTBOX_PADDING = 8; // px
@@ -41,7 +45,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(
   );
 });
 
-function CompanySearchField() {
+function CompanySearchField({ setBackdropLoading }) {
   const analysisState = useSelector((state) => state.analysis);
   const tickerSymbols = useSelector((state) => state.valuation.tickerSymbols);
 
@@ -54,6 +58,7 @@ function CompanySearchField() {
     dispatch(initializeTickerSymbol(newValue));
 
     if (newValue) {
+      setBackdropLoading(true);
       console.log("this is new newValue: ", newValue);
       console.log("event.target.value: ", event.target.value);
 
@@ -61,10 +66,21 @@ function CompanySearchField() {
       axiosInstanceAuth
         .get(`screener/analysis/${newValue.qfs_symbol}/`)
         .then((response) => {
+          dispatch(initializeCompanyData(response.data));
+
+          //compute also defaults for valuation
+          console.log(
+            "defaults valuation: ",
+            response?.data?.valuationDefaults
+          );
+          dispatch(initializeValuationData(response?.data?.valuationDefaults));
           console.log("response.data from analysis request: ", response.data);
+          setBackdropLoading(false);
         })
         .catch((error) => {
           showMessage(`Error fetching data: ${error}`);
+          setBackdropLoading(false);
+
           console.error("ERROR: GET screener/analysis/: ", error);
         });
     }

@@ -98,8 +98,6 @@ function SavedFilterViews() {
         value={screenerState.currentFilterView}
         label="Saved Screener Templates"
         renderValue={(selected) => {
-          console.log("selected: ", selected);
-
           //if selected is string then a new filter will be created
           if (typeof selected === "string") {
             return "Create new Filter View";

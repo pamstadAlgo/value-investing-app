@@ -27,7 +27,8 @@ from django.db.models.functions import ExtractYear
 #from .epv import compute_epv_cpp
 # from .helpers import add
 from django.db.models import Q
-from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg
+from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg,Sum
+from django.db.models.functions import Coalesce
 from collections import defaultdict
 
 
@@ -1425,6 +1426,87 @@ def get_op_margin_ts(qfs_symbol, n=10):
 
     return formatted_data
 
+def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_n_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')
+        .values('year','period_end_date', 'operating_income', 'revenue')[:years]
+    )
+
+    margins = defaultdict()
+
+    for i, stmt in enumerate(reversed(last_n_records)):
+        margins[stmt.get('year', 0)] = round(stmt['operating_income']/stmt['revenue'],precision) if stmt['revenue'] not in (None, 0) else 0
+
+
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                sum_op=Sum(Coalesce('operating_income', Value(0),output_field=FloatField())),
+            )
+        )
+
+        op_margin_ttm = (
+            round(res['sum_op'] / res['sum_rev'],precision)
+            if res['sum_rev'] else None
+        )
+
+        margins["TTM"] = op_margin_ttm
+
+
+    return margins
+
+def get_effective_tax_rates(qfs_symbol, years: int=5, include_ttm: bool = True, precision: int = 3):
+    """
+    computes the effective tax rate as income_tax/pretax_income
+    """
+    ins = (IncomeStatementAnnual.objects
+           .filter(qfs_symbol_id=qfs_symbol)
+           .annotate(year=ExtractYear('period_end_date'))
+           .order_by('-period_end_date')[:years]
+           .values('year', 'pretax_income', 'income_tax')
+    )
+
+    effective_tr = defaultdict()
+
+    #compute effective tax rate
+    for i, stmt in enumerate(reversed(ins)):
+        effective_tr[stmt.get('year', 0)] = round(stmt['income_tax']/stmt['pretax_income'],precision) if stmt['pretax_income'] not in (None, 0) else 0
+
+    #compute ttm
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_itax=Sum(Coalesce('income_tax', Value(0),output_field=FloatField())),
+                sum_income=Sum(Coalesce('pretax_income', Value(0),output_field=FloatField())),
+            )
+        )
+
+        eff_tr_ttm = (
+            round(res['sum_itax'] / res['sum_income'], precision)
+            if res['sum_income'] else None
+        )
+
+        effective_tr["TTM"] = eff_tr_ttm
+
+    return effective_tr
+
 def get_op_margin(qfs_symbol):
     """
     Extracts min, max and avg revenue values of the past 5 years
@@ -1581,28 +1663,24 @@ def get_nr_diluted_shares(qfs_symbol):
     return nr_shares_dil
 
 
-def get_income_financials(qfs_symbol: str, years: int = 5, metric_fields: list[str] = ["revenue", "cogs", "gross_profit", "sga", "rnd", "other_opex", "operating_income"], include_ttm: bool = True):
+def get_income_financials(qfs_symbol: str, years: int = 5, metric_fields: list[str] = ["revenue", "cogs", "gross_profit", "sga", "rnd", "other_opex", "operating_income", "income_tax"], include_ttm: bool = True):
     # Fetch only needed fields + period_end_date
-    qs = IncomeStatementAnnual.objects.filter(qfs_symbol__qfs_symbol=qfs_symbol).order_by('-period_end_date').values('period_end_date', *metric_fields)
+    qs = (IncomeStatementAnnual.objects
+            .filter(qfs_symbol_id=qfs_symbol)
+            .annotate(year=ExtractYear('period_end_date'))
+            .order_by('-period_end_date')[:years]
+            .values('year','period_end_date', *metric_fields)
+        )
 
     if not qs.exists():
         return {"symbol": qfs_symbol, "periods": [], "metrics": []}
 
-    # Slice latest N fiscal years
-    latest_statements = list(qs[:years])
-
-    # Optional: include TTM (assume latest entry is TTM)
-    # if include_ttm and qs.exists():
-    #     latest_statements.append(qs.first())
+    latest_statements = list(qs)
 
     # Build periods: FY-5 → FY-1 → TTM
     periods = []
-    total_periods = len(latest_statements)
     for i, stmt in enumerate(reversed(latest_statements)):
-        # if include_ttm and i == total_periods - 1:
-        #     periods.append("TTM")
-        # else:
-        periods.append(f"FY-{years - i}")
+        periods.append(stmt.get("year", 0))
     
     # Compute TTM if requested
     ttm_values = {}
@@ -1618,8 +1696,7 @@ def get_income_financials(qfs_symbol: str, years: int = 5, metric_fields: list[s
                 ttm_values[field] = sum(q.get(field, 0.0) or 0.0 for q in qtrs)
 
             periods.append("TTM")
-            latest_statements.append(ttm_values)  # append TTM as a pseudo-statement
-
+            latest_statements.insert(0,ttm_values)  # append TTM as a pseudo-statement
 
     # Build metrics dict
     metrics = defaultdict(dict)
@@ -1640,10 +1717,105 @@ class PenmanValuationAPIView(APIView):
         years = int(request.query_params.get("years", 5))
         include_ttm = request.query_params.get("ttm", "true").lower() == "true"
 
-        # Example: replace with your real data computation
+        # get different income statement items
+        revenue = get_income_financials(qfs_symbol, years, metric_fields=["revenue"])
+        cogs = get_income_financials(qfs_symbol, years, metric_fields=["cogs"])
+        gp = get_income_financials(qfs_symbol, years, metric_fields=["gross_profit"])
+        sga = get_income_financials(qfs_symbol, years, metric_fields=["sga"])
+        rnd = get_income_financials(qfs_symbol, years, metric_fields=["rnd"])
+        other_opex = get_income_financials(qfs_symbol, years, metric_fields=["other_opex"])
+        operating_income = get_income_financials(qfs_symbol, years, metric_fields=["operating_income"])
+        income_tax = get_income_financials(qfs_symbol, years, metric_fields=["income_tax"])
+        op_margins = get_op_margins(qfs_symbol, years)
+        effective_tr = get_effective_tax_rates(qfs_symbol, years)
+
+        #extract revenues to give default value for valuation (bear, base, bull)
+        revenues = [val for key, val in  revenue['metrics']["revenue"].items() if key != "TTM"]
+        base_rev = sum(revenues)/len(revenues)
+        bull_rev = max(revenues)
+        bear_rev = 0.7*base_rev
+
+        #compute op margin valuation defaults
+        op_margins_vals = [val for key, val in op_margins.items() if key != "TTM"]
+        base_op_margin = round(sum(op_margins_vals)/len(op_margins_vals),3)
+        bull_op_margin = round(max(op_margins_vals),3)
+        bear_op_margin = round(0.7*base_op_margin,3)
+
+        #compute the NOPAT as operating income - income tax
+        nopat =  {
+                year: operating_income['metrics']["operating_income"][year] + income_tax['metrics']["income_tax"][year]
+                for year in operating_income['metrics']["operating_income"]
+                }
+
+        #default values for cogs is just TTM
+        cogs_val_dflt = cogs['metrics']["cogs"]["TTM"]
+        sga_val_dflt = sga['metrics']["sga"]["TTM"]
+        rnd_val_dflt = rnd['metrics']["rnd"]["TTM"]
+        other_opex_val_dflt = other_opex['metrics']["other_opex"]["TTM"]
+
+        response = {'qfsSymbol' : qfs_symbol
+                    ,'periods' : revenue['periods']
+                    ,'metrics' : {
+                        'revenue' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': revenue['metrics']["revenue"]
+                        },
+                        'cogs' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': cogs['metrics']["cogs"]
+                        },
+                        'sga' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': sga['metrics']["sga"]
+                        },
+                        'rnd' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': rnd['metrics']["rnd"]
+                        },
+                        'other_opex' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': other_opex['metrics']["other_opex"]
+                        },
+                        'op_margins' : {
+                            'type' : 'ratio',
+                            'values' : op_margins
+                        },
+                        'operating_income' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'values': operating_income['metrics']["operating_income"]
+                        },                     
+                        'income_tax' : {
+                            'type': 'absolute',
+                            'values' : income_tax['metrics']["income_tax"]
+                        },
+                        'eff_tax_rate' : {
+                            'type': 'ratio',
+                            'values' : effective_tr
+                        },
+                        'NOPAT' : {
+                            'type' : 'absolute',
+                            'values' : nopat
+                        }
+                    }
+                    ,'valuationDefaults' : {
+                        'revenue' : [bear_rev, base_rev, bull_rev],
+                        'cogs' : [cogs_val_dflt, cogs_val_dflt, cogs_val_dflt],
+                        'sga' : [sga_val_dflt, sga_val_dflt, sga_val_dflt],
+                        'rnd' : [rnd_val_dflt, rnd_val_dflt, rnd_val_dflt],
+                        'other_opex' : [other_opex_val_dflt, other_opex_val_dflt, other_opex_val_dflt],
+                        'op_margins' : [bear_op_margin, base_op_margin, bull_op_margin],
+                    }
+                    
+                    }
+
         data = get_income_financials(qfs_symbol, years)
 
-        return Response(data)
+        #add operating margin to response data
+        # op_margins = 
+
+        # return Response(data)
+        return Response(response)
+        # return Response("ok")
 
 class EPVFundamentalsAPIView(APIView):
     def post(self, request):

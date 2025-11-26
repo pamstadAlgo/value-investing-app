@@ -1,7 +1,230 @@
-import React from "react";
+import React, { useState } from "react";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import { useDispatch, useSelector } from "react-redux";
+import ToggleButtonsScaling from "./ToggleButtonsScaling";
+import { OutlinedInput } from "@mui/material";
+import ValuationApproachSelect from "./ValuationApproachSelect";
+import Tooltip from "@mui/material/Tooltip";
+import { updateValuationData } from "../../../features/analysisSlice";
+import {
+  computeNopatBottomUp,
+  computeNopatTopDown,
+  computeOpIncomeBottomUp,
+  computeOpIncomeTopDown,
+  computeOpMarginBottomUp,
+} from "./selectorFunctions";
+import ValuationAssumptions from "./ValuationAssumptions";
+
+const valuationCases = ["Bear", "Base", "Bull"];
+const topDownEditableFields = ["revenue", "op_margins"];
+const bottomUpEditableFields = ["revenue", "cogs", "sga", "rnd", "other_opex"];
 
 function ValuationModel() {
-  return <div>ValuationModel</div>;
+  const companyData = useSelector((state) => state.analysis?.companyData);
+  const valuationApproach = useSelector(
+    (state) => state.analysis?.valuationApproach
+  );
+  const valuationData = useSelector((state) => state.analysis?.valuationData);
+  const taxRate = useSelector((state) => state.analysis?.taxRate);
+
+  const [scaling, setScaling] = useState("1000000");
+  const dispatch = useDispatch();
+
+  const handleToggleButtonChange = (e, newValue) => {
+    // null check enforces that always one value is selected
+    if (newValue !== null) {
+      setScaling(newValue);
+    }
+  };
+
+  const handleValuationChange = (e, metricName, valuationCase) => {
+    console.log("metricName: ", metricName);
+    console.log("e.target.value: ", e.target.value);
+    console.log("valuationCase: ", valuationCase);
+
+    dispatch(
+      updateValuationData({
+        newValue: e.target.value,
+        metricName: metricName,
+        caseIndex: valuationCase,
+      })
+    );
+  };
+
+  let opIncome = [0, 0, 0];
+  let nopat = [0, 0, 0];
+  let opMargins = [0, 0, 0];
+
+  //   let opIncomeBear = null;
+  //   let opIncomeBase = null;
+  //   let opIncomeBull = null;
+
+  if (valuationApproach === "topDown") {
+    opIncome[0] = computeOpIncomeTopDown(valuationData, 0);
+    opIncome[1] = computeOpIncomeTopDown(valuationData, 1);
+    opIncome[2] = computeOpIncomeTopDown(valuationData, 2);
+
+    nopat[0] = computeNopatTopDown(valuationData, taxRate, 0);
+    nopat[1] = computeNopatTopDown(valuationData, taxRate, 1);
+    nopat[2] = computeNopatTopDown(valuationData, taxRate, 2);
+  } else if (valuationApproach === "bottomUp") {
+    //bottomUp we need to compute OpIncome, OpMargin and nopat
+    opIncome[0] = computeOpIncomeBottomUp(valuationData, 0);
+    opIncome[1] = computeOpIncomeBottomUp(valuationData, 1);
+    opIncome[2] = computeOpIncomeBottomUp(valuationData, 2);
+
+    //compute op margin
+    opMargins[0] = computeOpMarginBottomUp(valuationData, 0).toFixed(3);
+    opMargins[1] = computeOpMarginBottomUp(valuationData, 1).toFixed(3);
+    opMargins[2] = computeOpMarginBottomUp(valuationData, 2).toFixed(3);
+
+    //compute NOPAT
+    nopat[0] = computeNopatBottomUp(valuationData, taxRate, 0);
+    nopat[1] = computeNopatBottomUp(valuationData, taxRate, 1);
+    nopat[2] = computeNopatBottomUp(valuationData, taxRate, 2);
+    // console.log("we are in bottomUp");
+    // opIncomeBear = computeOpIncomeBottomUp(valuationData, 0);
+    // opIncomeBase = computeOpIncomeBottomUp(valuationData, 1);
+    // opIncomeBull = computeOpIncomeBottomUp(valuationData, 2);
+  }
+
+  return (
+    <>
+      <ValuationAssumptions taxRate />
+      <div className="button-group-wrapper">
+        <ToggleButtonsScaling
+          value={scaling}
+          handleChange={handleToggleButtonChange}
+        />
+      </div>
+      <TableContainer
+        component={Paper}
+        sx={{
+          backgroundColor: "transparent",
+          boxShadow: "none",
+          borderRadius: "16px",
+          marginTop: "12px",
+        }}
+        className="custom-mui-table">
+        <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+          <TableHead className="custom-table-head">
+            <TableRow>
+              <TableCell>Line Item</TableCell>
+              {companyData?.periods?.map((period) => {
+                return <TableCell>{period}</TableCell>;
+              })}
+              {valuationCases?.map((item) => {
+                return <TableCell align="right">{item}</TableCell>;
+              })}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell className="valuation-model-title-row" colSpan={10}>
+                <div className="flex-box-wrapper-table-header-val-model">
+                  <span> NOPAT Derivation</span>
+                  <ValuationApproachSelect />
+                </div>
+              </TableCell>
+            </TableRow>
+            {Object.entries(companyData?.metrics).map(
+              ([metricName, values]) => (
+                <TableRow key={metricName}>
+                  <TableCell>{metricName}</TableCell>
+                  {companyData?.periods.map((period) => {
+                    let cellValue = values?.values[period]
+                      ? values?.values[period]
+                      : "-";
+
+                    //if value is not of type ratio we scale it
+                    if (values?.type !== "ratio" && cellValue !== "-") {
+                      cellValue = (cellValue / scaling).toFixed(0);
+                    }
+                    return (
+                      <TableCell key={period}>
+                        {/* {values?.values[period] ? values?.values[period] : "-"} */}
+                        {cellValue}
+                      </TableCell>
+                    );
+                  })}
+                  {valuationCases.map((valuationCase, index) => {
+                    let isEditable = false;
+                    if (valuationApproach === "topDown") {
+                      isEditable = topDownEditableFields.includes(metricName);
+                    } else {
+                      isEditable = bottomUpEditableFields.includes(metricName);
+                    }
+
+                    var value = valuationData[metricName]?.[index];
+
+                    switch (metricName) {
+                      case "operating_income":
+                        // if (valuationApproach === "topDown") {
+                        value = opIncome[index];
+                        // }
+
+                        break;
+                      case "NOPAT":
+                        value = nopat[index];
+                        break;
+                      case "op_margins":
+                        //if valuation approach is topDown, op margin will be inpute by user; it bottomUp it will be computed
+                        if (valuationApproach === "bottomUp") {
+                          value = opMargins[index];
+                        }
+                        break;
+                    }
+
+                    //scale the value if the value is not a ratio
+                    if (values.type !== "ratio") {
+                      value = (value / scaling).toFixed(0);
+                    }
+
+                    return (
+                      <TableCell>
+                        {/* <Tooltip
+                          placement="right-start"
+                          arrow
+                          title="Change the valuation approach in order to edit this field"
+                          // disableHoverListener={screenerState.activFilters?.length !== 0}
+                          disableHoverListener={isEditable}
+                          disableFocusListener={isEditable}
+                          disableTouchListener={isEditable}> */}
+                        <OutlinedInput
+                          disabled={!isEditable}
+                          onChange={(e) =>
+                            handleValuationChange(e, metricName, index)
+                          }
+                          // onChange={(e) => handleChange(e, category, metric)}
+                          type="number"
+                          // value={valuationData[metricName]?.[index]}
+                          value={value}
+                          size="small"
+                          className="custom-input-valuation-table"
+                        />
+                        {/* </Tooltip> */}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              )
+            )}
+            {/* add NOPAT table row */}
+
+            {/* <TableRow>
+            <TableCell>Revenue</TableCell>
+          </TableRow> */}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
+  );
 }
 
 export default ValuationModel;

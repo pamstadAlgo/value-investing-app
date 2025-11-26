@@ -567,6 +567,11 @@ font-size: 15px;
   border-radius: 0px;
 }
 
+.button-group-wrapper{
+  display: flex;
+  justify-content: flex-end;
+}
+
 .MuiButtonBase-root.MuiToggleButtonGroup-grouped.Mui-selected{
   background: var(--background-glass-card);
   box-shadow: var(--box-shadow-glass-card);
@@ -627,6 +632,20 @@ font-size: 15px;
 
 .MuiButtonBase-root.MuiListItemButton-root.custom-list-item-button:hover{
   background-color: var(--bg-color-custom-metrics-hover);
+}
+
+.MuiFormControl-root.custom-form-control-val-approach{
+  min-width: 300px;
+}
+
+
+
+.MuiInputBase-root.custom-select-val-model, .MuiFormLabel-root.custom-label-val-model{
+  font-size: 0.875rem;
+}
+
+.MuiTableCell-root.valuation-model-title-row{
+  background: #bcbaba;
 }
 
 .price-price-tag{
@@ -745,6 +764,17 @@ height: 0;
 
 .header-color-black-scale{
   color: var(--header-color)
+}
+
+.valuation-inputs-flex-wrapper{
+  display: flex;
+  gap: 20px;
+}
+
+.flex-box-wrapper-table-header-val-model{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .screener-templates-flex-wrapper{

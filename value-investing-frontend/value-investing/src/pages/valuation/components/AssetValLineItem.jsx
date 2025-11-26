@@ -27,13 +27,10 @@ function AssetValLineItem({
         <Collapse in={open} timeout="auto" unmountOnExit>
           <OutlinedInput
             onChange={(e) => handleChange(e, category, metric)}
-            // disabled={isDerived}
             type="number"
             value={value}
             size="small"
             className="custom-input-valuation-table"
-            // onBlur={(e) => handleChange(e, metricName, 1)}
-            // onChange={(e) => handleChange(e, metricName, 2)}
           />
         </Collapse>
       </TableCell>
