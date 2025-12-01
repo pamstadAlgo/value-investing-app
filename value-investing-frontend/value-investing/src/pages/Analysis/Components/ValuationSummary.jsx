@@ -9,6 +9,7 @@ function ValuationSummary({
   equityVals,
   lastClosePrice,
   nrShares,
+  qfsSymbol,
 }) {
   //compute the equity value for bear, base, bull
 
@@ -16,8 +17,10 @@ function ValuationSummary({
     <div className="glass-card" style={{ marginTop: "20px" }}>
       {" "}
       <div className="title-mid-size" style={{ marginBottom: "20px" }}>
-        Valuation Summary{" "}
-        <span className="title-last-close-price">
+        Valuation Summary {qfsSymbol}
+        <span
+          className="title-last-close-price"
+          style={{ fontSize: "14px", marginLeft: "10px" }}>
           (Last Close Price: {getCurrencySymbol(currencyCode)} {lastClosePrice})
         </span>
       </div>

@@ -629,6 +629,19 @@ font-size: 15px;
   background-color: var(--action-color) !important;
 }
 
+.table-header-title{
+  padding: 20px 16px;
+  font-weight: 800;
+}
+
+.MuiTabs-scroller>.MuiTabs-flexContainer>.MuiButtonBase-root {
+  color: rgba(153,153,153,1)
+}
+
+.custom-mui-table td.MuiTableCell-root {
+  color: white;
+}
+
 .MuiTabs-scroller>.MuiTabs-flexContainer> .Mui-selected {
 color: var(--action-color) !important;
 border-bottom: 1px solid var(--action-color) !important;
@@ -920,6 +933,11 @@ height: 0;
   max-width: 1000px;
   border-radius: 0px;
   border: 1px solid var(--action-color);
+  z-index: 1;
+}
+
+.liquidation-value-flex-wrapper {
+  display: flex;
 }
 
 .flexbox-wrapper-table-cell-analysis{

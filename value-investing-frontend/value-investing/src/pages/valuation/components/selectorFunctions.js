@@ -113,7 +113,7 @@ export const computeEpvPerShare = (epvObj, qfsSymbol, caseIndex) => {
   }
 };
 
-function sumBalanceSheetItems(arr) {
+export function sumBalanceSheetItems(arr) {
   return arr.reduce((sum, item) => {
     const num = Number(item.value);
     const multiplier = Number(item.multiplier ?? 1);

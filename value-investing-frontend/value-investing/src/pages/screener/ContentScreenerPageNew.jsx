@@ -66,24 +66,24 @@ function ContentScreenerPageNew() {
   return (
     <>
       <Layout>
-      <main className="main-content-wrapper relative-position">
-        <div className="flex-wrapper-main-content">
-          <div className="title-section" style={{ marginBottom: "3rem" }}>
-            <div className="title">Stock Screener</div>
-            <div className="sub-title" style={{ marginTop: "6px" }}>
-              Investment Idea Generation Box
+        <main className="main-content-wrapper relative-position">
+          <div className="flex-wrapper-main-content">
+            <div className="title-section" style={{ marginBottom: "3rem" }}>
+              <div className="title">Stock Screener</div>
+              <div className="sub-title" style={{ marginTop: "6px" }}>
+                Investment Idea Generation Box
+              </div>
             </div>
-          </div>
-          <div className="grid-wrapper-template-filter-custom">
-            <FiltersCard />
-            <div className="screener-templates-grid-item">
-              <ScreenerTemplates />
-              <CustomMetricsCard />
+            <div className="grid-wrapper-template-filter-custom">
+              <FiltersCard />
+              <div className="screener-templates-grid-item">
+                <ScreenerTemplates />
+                <CustomMetricsCard />
+              </div>
             </div>
+            <ScreenerResults />
           </div>
-          <ScreenerResults />
-        </div>
-      </main>
+        </main>
       </Layout>
     </>
   );

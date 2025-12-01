@@ -26,6 +26,7 @@ import MetricGraph from "./MetricGraph";
 import ValuationSummary from "./ValuationSummary";
 import { useLastClosePrice } from "../../valuation/components/AccordionTitle";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
+import LiquidationValue from "./LiquidationValue";
 
 const valuationCases = ["Bear", "Base", "Bull"];
 const topDownEditableFields = ["revenue", "op_margins"];
@@ -57,12 +58,21 @@ function ValuationModel({ qfsSymbol }) {
   );
 
   const [scaling, setScaling] = useState("1000000");
+  const [scalingBalanceSheet, setScalingBalanceSheet] = useState("1000000");
+
   const dispatch = useDispatch();
 
   const handleToggleButtonChange = (e, newValue) => {
     // null check enforces that always one value is selected
     if (newValue !== null) {
       setScaling(newValue);
+    }
+  };
+
+  const handleScalingChangeBs = (e, newValue) => {
+    // null check enforces that always one value is selected
+    if (newValue !== null) {
+      setScalingBalanceSheet(newValue);
     }
   };
 
@@ -159,6 +169,7 @@ function ValuationModel({ qfsSymbol }) {
           currencyCode={currencyCode}
           lastClosePrice={data?.lastClosePrice}
           nrShares={nrShares}
+          qfsSymbol={qfsSymbol}
         />
         <ValuationAssumptions scalingFactor={scaling} />
       </div>
@@ -177,7 +188,12 @@ function ValuationModel({ qfsSymbol }) {
           marginTop: "12px",
         }}
         className="custom-mui-table">
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+        <div className="table-header-title">Valuation Model</div>
+        <Table
+          sx={{ minWidth: 650 }}
+          size="small"
+          aria-label="simple table"
+          className="custom-table-analysis-page">
           <TableHead className="custom-table-head">
             <TableRow>
               <TableCell>Line Item</TableCell>
@@ -398,6 +414,11 @@ function ValuationModel({ qfsSymbol }) {
           </TableBody>
         </Table>
       </TableContainer>
+      <LiquidationValue
+        qfsSymbol={qfsSymbol}
+        scaling={scalingBalanceSheet}
+        handleToggleButtonChange={handleScalingChangeBs}
+      />
     </>
   );
 }

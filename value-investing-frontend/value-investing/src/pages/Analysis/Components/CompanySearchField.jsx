@@ -7,6 +7,7 @@ import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { initializeTickerSymbols } from "../../../features/valuationSlice";
 import Chip from "@mui/material/Chip";
 import {
+  initalizeBalanceSheet,
   initializeCompanyData,
   initializeTickerSymbol,
   initializeValuationData,
@@ -59,8 +60,6 @@ function CompanySearchField({ setBackdropLoading }) {
 
     if (newValue) {
       setBackdropLoading(true);
-      console.log("this is new newValue: ", newValue);
-      console.log("event.target.value: ", event.target.value);
 
       //fetch data for selected ticker symbol
       axiosInstanceAuth
@@ -74,7 +73,6 @@ function CompanySearchField({ setBackdropLoading }) {
             response?.data?.valuationDefaults
           );
           dispatch(initializeValuationData(response?.data?.valuationDefaults));
-          console.log("response.data from analysis request: ", response.data);
           setBackdropLoading(false);
         })
         .catch((error) => {
@@ -82,6 +80,25 @@ function CompanySearchField({ setBackdropLoading }) {
           setBackdropLoading(false);
 
           console.error("ERROR: GET screener/analysis/: ", error);
+        });
+
+      //fetch balance sheet data for liquidation value
+      axiosInstanceAuth
+        .post("/screener/asset-val-fundamentals/", {
+          qfs_symbols: [newValue.qfs_symbol],
+        })
+        .then((response) => {
+          console.log(response.data?.[0]?.data);
+          dispatch(initalizeBalanceSheet(response.data[0]?.data));
+          // dispatch(initializeAssetValuations(response.data));
+        })
+        .catch((error) => {
+          showMessage(`Error computing asset val ${error}`, "error");
+
+          console.error(
+            "ERROR: POST /screener/asset-val-fundamentals/: ",
+            error
+          );
         });
     }
   };

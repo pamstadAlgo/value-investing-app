@@ -11,6 +11,7 @@ const initialState = {
     other_opex: [0, 0, 0],
     op_margins: [0, 0, 0],
   },
+  balanceSheet: {},
   valuationApproach: "topDown",
   taxRate: 0.25,
   wacc: 0.1,
@@ -27,6 +28,9 @@ export const analysisSlice = createSlice({
     initializeCompanyData: (state, action) => {
       state.companyData = action.payload;
     },
+    initalizeBalanceSheet: (state, action) => {
+      state.balanceSheet = action.payload;
+    },
     setValuationApproach: (state, action) => {
       state.valuationApproach = action.payload;
     },
@@ -37,6 +41,31 @@ export const analysisSlice = createSlice({
       const { newValue, metricName, caseIndex, scaleFactor } = action.payload;
 
       state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
+    },
+    updateLiquidationValuationData: (state, action) => {
+      const { category, metric, newValue } = action.payload;
+
+      //extract correct category. Catgories are currentAssets, nonCurrentAssets, currentLiabilities, etc.
+      const items = state.balanceSheet[category];
+      if (!items) return; // Invalid category
+
+      // find the metric of interest
+      const target = items.find((entry) => entry.metric === metric);
+      if (!target) return; // Metric not found
+
+      target.value = newValue; // Immer lets you mutate directly
+    },
+    updateLiqValMultChange: (state, action) => {
+      const { category, metric, newValue } = action.payload;
+
+      const items = state.balanceSheet[category];
+      if (!items) return; // Invalid category
+
+      // find the metric of interest
+      const target = items.find((entry) => entry.metric === metric);
+      if (!target) return; // Metric not found
+
+      target.multiplier = newValue; // Immer lets you mutate directly
     },
     changeTaxRate: (state, action) => {
       state.taxRate = action.payload;
@@ -55,6 +84,8 @@ export const analysisSlice = createSlice({
 
 export const {
   changeTaxRate,
+  updateLiquidationValuationData,
+  updateLiqValMultChange,
   changeNrShares,
   changeWacc,
   changeTerminalGrowthRate,
@@ -63,6 +94,7 @@ export const {
   initializeCompanyData,
   setValuationApproach,
   updateValuationData,
+  initalizeBalanceSheet,
 } = analysisSlice.actions;
 
 export default analysisSlice.reducer;

@@ -7,6 +7,7 @@ import CompanyOverview from "./Components/CompanyOverview";
 import ValuationModel from "./Components/ValuationModel";
 import { useSelector } from "react-redux";
 import BackdropLoading from "../GlobalComponents/BackdropLoading";
+import Layout from "../GlobalComponents/Layout";
 
 function ContentAnalysisPage() {
   const analysisState = useSelector((state) => state.analysis);
@@ -15,26 +16,28 @@ function ContentAnalysisPage() {
 
   return (
     <>
-      <NavBar />
-      <main className="main-content-wrapper relative-position">
-        <div className="flex-wrapper-main-content">
-          {/* <CompanySearchField /> */}
-          <CompanySearchField setBackdropLoading={setBackDropLoading} />
+      {/* <NavBar /> */}
+      <Layout>
+        <main className="main-content-wrapper relative-position">
+          <div className="flex-wrapper-main-content">
+            {/* <CompanySearchField /> */}
+            <CompanySearchField setBackdropLoading={setBackDropLoading} />
 
-          {analysisState.selectedTickerSymbol && (
-            <>
-              {" "}
-              <AnalysisTabs tab={tab} setTab={setTab} />
-              {tab == 0 && <CompanyOverview />}
-              {tab == 1 && (
-                <ValuationModel
-                  qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </main>
+            {analysisState.selectedTickerSymbol && (
+              <>
+                {" "}
+                <AnalysisTabs tab={tab} setTab={setTab} />
+                {tab == 0 && <CompanyOverview />}
+                {tab == 1 && (
+                  <ValuationModel
+                    qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </main>
+      </Layout>
       <BackdropLoading open={backDropLoading} />
     </>
   );

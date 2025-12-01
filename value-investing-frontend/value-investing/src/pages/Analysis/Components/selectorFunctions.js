@@ -1,3 +1,5 @@
+import { sumBalanceSheetItems } from "../../valuation/components/selectorFunctions";
+
 export function computeOpIncomeTopDown(data, caseIndex) {
   var opIncome = data?.revenue[caseIndex] * data?.op_margins[caseIndex];
 
@@ -45,4 +47,20 @@ export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
 
 export function computeNetOpAssets(data, caseIndex) {
   return data.operatingAssets[caseIndex] - data.operatingLiabilities[caseIndex];
+}
+
+export function computeTotAssets(balanceSheet) {
+  const sumCurrentAssets = sumBalanceSheetItems(balanceSheet.currentAssets);
+  const sumNonCurrentAssets = sumBalanceSheetItems(
+    balanceSheet.nonCurrentAssets
+  );
+
+  return sumCurrentAssets + sumNonCurrentAssets;
+}
+
+export function computeTotLiab(balanceSheet) {
+  const sumCurrentLiab = sumBalanceSheetItems(balanceSheet.currentLiab);
+  const sumNonCurrentLiab = sumBalanceSheetItems(balanceSheet.nonCurrentLiab);
+
+  return sumCurrentLiab + sumNonCurrentLiab;
 }
