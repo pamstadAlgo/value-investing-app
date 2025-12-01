@@ -88,12 +88,6 @@ function EPVBodyTableRow({
           break;
       }
     }
-    // }
-    // setError(false);
-    // } else {
-    //   // Invalid input: show error
-    //   setError(true);
-    // }
   };
 
   const handleBlur = (e, metricName, caseIndex) => {
@@ -125,14 +119,6 @@ function EPVBodyTableRow({
     // setFocusedValue(e.target.value);
   };
 
-  //   useEffect(() => {
-  //     if (open) {
-  //       const t = setTimeout(() => {
-  //         window.dispatchEvent(new Event("resize"));
-  //       }, 1000); // small delay; adjust 0..200ms if needed
-  //       return () => clearTimeout(t);
-  //     }
-  //   }, [open]);
 
   return (
     <TableRow
@@ -164,21 +150,10 @@ function EPVBodyTableRow({
               <PollOutlinedIcon className="custom-icon-table" />{" "}
               <Popper
                 className="custom-popover-charts"
-                // id="mouse-over-popover"
-                // sx={{ pointerEvents: "none" }}
                 open={open}
                 anchorEl={anchorEl}
                 placement="right-start"
-                // anchorOrigin={{
-                //   vertical: "bottom",
-                //   horizontal: "left",
-                // }}
-                // transformOrigin={{
-                //   vertical: "top",
-                //   horizontal: "left",
-                // }}
                 onClose={handlePopoverClose}
-                //   disableRestoreFocus
               >
                 {/* <Typography sx={{ p: 1 }}>I use Popover.</Typography> */}
                 <BarChartNivo

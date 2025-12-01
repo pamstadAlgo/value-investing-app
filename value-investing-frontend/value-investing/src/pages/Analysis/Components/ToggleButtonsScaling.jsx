@@ -10,9 +10,16 @@ function ToggleButtonsScaling({ value, handleChange }) {
       exclusive
       onChange={(e, newValue) => handleChange(e, newValue)}
       aria-label="Platform"
-      style={{ marginBottom: "6px" }}>
-      <ToggleButton value="1000000">Millions</ToggleButton>
-      <ToggleButton value="1000">Thousands</ToggleButton>
+      style={{ marginBottom: "0px", marginTop: "20px" }}>
+      <ToggleButton
+        className="custom-toggle-button"
+        size="small"
+        value="1000000">
+        Millions
+      </ToggleButton>
+      <ToggleButton className="custom-toggle-button" size="small" value="1000">
+        Thousands
+      </ToggleButton>
     </ToggleButtonGroup>
   );
 }

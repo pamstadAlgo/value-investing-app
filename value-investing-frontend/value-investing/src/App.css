@@ -615,6 +615,35 @@ font-size: 15px;
   background-color: var(--bg-color-success);
 }
 
+.MuiTabs-scroller > .MuiTabs-flexContainer > button {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  min-height: 60px !important;
+}
+
+.MuiTabs-scroller>.MuiTabs-flexContainer> .Mui-selected > svg {
+  fill: var(--action-color)
+}
+
+.MuiTabs-scroller> .MuiTabs-indicator{
+  background-color: var(--action-color) !important;
+}
+
+.MuiTabs-scroller>.MuiTabs-flexContainer> .Mui-selected {
+color: var(--action-color) !important;
+border-bottom: 1px solid var(--action-color) !important;
+}
+
+.valuation-summary-card{
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid black;
+}
+
+.title-last-close-price{
+  color: var(--text-color-grey-scale)
+}
+
 .neutral{
     background-color: var(--bg-color-neutral);
 }
@@ -768,6 +797,7 @@ height: 0;
 
 .valuation-inputs-flex-wrapper{
   display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
@@ -872,6 +902,17 @@ height: 0;
   height: 300px;
 }
 
+.valuation-model-grip-wrapper{
+  display: grid;
+  grid-template-columns: 9.5fr 2.5fr;
+  gap: 16px;
+}
+
+.flex-wrapper-valuation-summary{
+  display: flex;
+  gap: 12px;
+}
+
 .MuiPopper-root.custom-popover-charts{
   width: 70vw;
   height: 300px;
@@ -879,6 +920,13 @@ height: 0;
   max-width: 1000px;
   border-radius: 0px;
   border: 1px solid var(--action-color);
+}
+
+.flexbox-wrapper-table-cell-analysis{
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: center;
 }
 
 .MuiListItemText-root.MuiListItemText-dense.list-item-text-custom{

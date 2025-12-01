@@ -15,13 +15,6 @@ const initialState = {
   taxRate: 0.25,
   wacc: 0.1,
   terminalGrowthRate: 0,
-  //   tickerSymbols: [],
-  //   selectedTickerSymbols: [],
-  //   epvData: [],
-  //   equityValuePenman: [],
-  //   epvValuations: [],
-  //   assetValuations: [],
-  //   penmanValuations: [],
 };
 
 export const analysisSlice = createSlice({
@@ -41,15 +34,18 @@ export const analysisSlice = createSlice({
       state.valuationData = action.payload;
     },
     updateValuationData: (state, action) => {
-      const { newValue, metricName, caseIndex } = action.payload;
+      const { newValue, metricName, caseIndex, scaleFactor } = action.payload;
 
-      state.valuationData[metricName][caseIndex] = newValue;
+      state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
     },
     changeTaxRate: (state, action) => {
       state.taxRate = action.payload;
     },
     changeWacc: (state, action) => {
       state.wacc = action.payload;
+    },
+    changeNrShares: (state, action) => {
+      state.companyData.nrShares = action.payload;
     },
     changeTerminalGrowthRate: (state, action) => {
       state.terminalGrowthRate = action.payload;
@@ -59,6 +55,7 @@ export const analysisSlice = createSlice({
 
 export const {
   changeTaxRate,
+  changeNrShares,
   changeWacc,
   changeTerminalGrowthRate,
   initializeValuationData,

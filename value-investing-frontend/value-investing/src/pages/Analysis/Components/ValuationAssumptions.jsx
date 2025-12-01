@@ -2,12 +2,13 @@ import React from "react";
 import TextField from "@mui/material/TextField";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  changeNrShares,
   changeTaxRate,
   changeTerminalGrowthRate,
   changeWacc,
 } from "../../../features/analysisSlice";
 
-function ValuationAssumptions() {
+function ValuationAssumptions({ scalingFactor }) {
   const analysisData = useSelector((state) => state.analysis);
 
   const dispatch = useDispatch();
@@ -41,6 +42,18 @@ function ValuationAssumptions() {
           label="Terminal Growth Rate"
           value={analysisData.terminalGrowthRate}
           onChange={(e) => dispatch(changeTerminalGrowthRate(e.target.value))}
+        />
+        <TextField
+          type="number"
+          size="small"
+          placeholder="10"
+          label={`Nr of Shares (${
+            scalingFactor === "1000000" ? "Millions" : "Thousands"
+          })`}
+          value={analysisData?.companyData.nrShares / scalingFactor}
+          onChange={(e) =>
+            dispatch(changeNrShares(e.target.value * scalingFactor))
+          }
         />
       </div>
     </div>

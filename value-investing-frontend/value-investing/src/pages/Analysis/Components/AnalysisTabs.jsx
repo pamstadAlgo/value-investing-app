@@ -15,6 +15,7 @@ function AnalysisTabs({ tab, setTab }) {
 
   return (
     <Tabs
+      style={{ marginTop: "32px" }}
       value={tab}
       onChange={handleChange}
       aria-label="icon position tabs example">

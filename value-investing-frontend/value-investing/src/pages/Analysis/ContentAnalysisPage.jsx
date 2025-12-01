@@ -26,7 +26,11 @@ function ContentAnalysisPage() {
               {" "}
               <AnalysisTabs tab={tab} setTab={setTab} />
               {tab == 0 && <CompanyOverview />}
-              {tab == 1 && <ValuationModel />}
+              {tab == 1 && (
+                <ValuationModel
+                  qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
+                />
+              )}
             </>
           )}
         </div>

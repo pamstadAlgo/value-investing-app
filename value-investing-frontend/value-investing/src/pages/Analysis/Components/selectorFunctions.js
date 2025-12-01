@@ -31,3 +31,18 @@ export function computeNopatBottomUp(data, taxRate, caseIndex) {
   var opIncome = computeOpIncomeBottomUp(data, caseIndex);
   return opIncome * (1 - taxRate);
 }
+
+export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
+  //compute residual earnings 1 = (NOPAT - r*NOA)/(1+r)
+  var re1 = (nopat[caseIndex] - wacc * noa[caseIndex]) / (1 + wacc);
+
+  // compute second term = (NOPAT - r*NOA)/((1+r)*(r-g))
+  var re2 =
+    (nopat[caseIndex] - wacc * noa[caseIndex]) / ((1 + wacc) * (wacc - g));
+
+  return b0[caseIndex] + re1 + re2;
+}
+
+export function computeNetOpAssets(data, caseIndex) {
+  return data.operatingAssets[caseIndex] - data.operatingLiabilities[caseIndex];
+}
