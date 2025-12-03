@@ -38,30 +38,6 @@ function ValuationSummary({
             />
           );
         })}
-        {/* <ValuationSummaryCard
-          currencyCode="USD"
-          colorPrice="overvalued"
-          price={1000}
-          title="Value (bear)"
-        />
-        <ValuationSummaryCard
-          currencyCode="USD"
-          colorPrice="undervalued"
-          price={2000}
-          title="Value (base)"
-        />
-        <ValuationSummaryCard
-          currencyCode="USD"
-          colorPrice="undervalued"
-          price={3000}
-          title="Value (bull)"
-        />
-        <ValuationSummaryCard
-          currencyCode="USD"
-          colorPrice="undervalued"
-          price={1000}
-          title="Value (bear)"
-        /> */}
       </div>
     </div>
   );

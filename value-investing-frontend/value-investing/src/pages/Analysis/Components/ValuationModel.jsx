@@ -184,11 +184,15 @@ function ValuationModel({ qfsSymbol }) {
         sx={{
           backgroundColor: "transparent",
           boxShadow: "none",
-          borderRadius: "16px",
+          borderRadius: "20px",
           marginTop: "12px",
         }}
         className="custom-mui-table">
-        <div className="table-header-title">Valuation Model</div>
+        <div
+          className="table-header-title"
+          style={{ borderRadius: "20px 20px 0px 0px" }}>
+          Valuation Model
+        </div>
         <Table
           sx={{ minWidth: 650 }}
           size="small"
@@ -201,7 +205,7 @@ function ValuationModel({ qfsSymbol }) {
                 return <TableCell>{period}</TableCell>;
               })}
               {valuationCases?.map((item) => {
-                return <TableCell align="right">{item}</TableCell>;
+                return <TableCell align="left">{item}</TableCell>;
               })}
             </TableRow>
           </TableHead>
@@ -304,6 +308,9 @@ function ValuationModel({ qfsSymbol }) {
                           // value={valuationData[metricName]?.[index]}
                           value={value}
                           size="small"
+                          // inputProps={{
+                          //   style: { textAlign: "left" },
+                          // }}
                           className="custom-input-valuation-table"
                         />
                         {/* </Tooltip> */}
@@ -418,6 +425,9 @@ function ValuationModel({ qfsSymbol }) {
         qfsSymbol={qfsSymbol}
         scaling={scalingBalanceSheet}
         handleToggleButtonChange={handleScalingChangeBs}
+        currencyCode={currencyCode}
+        lastClosePrice={data?.lastClosePrice}
+        nrShares={nrShares}
       />
     </>
   );

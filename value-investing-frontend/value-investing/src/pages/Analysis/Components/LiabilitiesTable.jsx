@@ -105,8 +105,8 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
       sx={{
         backgroundColor: "transparent",
         boxShadow: "none",
-        borderRadius: "16px",
-        marginTop: "12px",
+        borderRadius: "20px",
+        // marginTop: "12px",
         height: "fit-content",
       }}
       className="custom-mui-table">
@@ -128,7 +128,7 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
         </TableHead>
         <TableBody>
           <AssetValCollapsableHeader
-            label="Liabilities"
+            label="Total Liabilities"
             columnWidths={tableColumnWidths}
             handleClick={handleLiabilityClick}
             open={openLiab}

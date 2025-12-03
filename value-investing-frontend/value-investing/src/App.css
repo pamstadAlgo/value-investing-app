@@ -938,6 +938,47 @@ height: 0;
 
 .liquidation-value-flex-wrapper {
   display: flex;
+  gap: 12px;
+}
+
+.wrapper-liquidation-section{
+  border: 1px solid;
+  padding: 16px;
+}
+
+.MuiOutlinedInput-root.custom-input-valuation-table{
+  font-size: 0.875rem;
+}
+
+.custom-input-valuation-table > .MuiOutlinedInput-input{
+  padding-left: 0px;
+  text-align: left !important;
+}
+
+.custom-mui-table table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* First column gets a fixed width */
+.custom-mui-table td:first-child,
+.custom-mui-table th:first-child {
+  width: 220px;
+  /* adjust as needed */
+}
+
+/* Inputs should fill the cell */
+.custom-mui-table .custom-input-valuation-table {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.borders-table-header{
+  /* border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-radius: 20px 20px 0px 0px; */
 }
 
 .flexbox-wrapper-table-cell-analysis{

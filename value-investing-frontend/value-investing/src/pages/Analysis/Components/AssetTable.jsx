@@ -111,8 +111,8 @@ function AssetTable({ qfsSymbol, tableColumnWidths, scaling }) {
       sx={{
         backgroundColor: "transparent",
         boxShadow: "none",
-        borderRadius: "16px",
-        marginTop: "12px",
+        borderRadius: "20px",
+        // marginTop: "12px",
         height: "fit-content",
       }}
       className="custom-mui-table">
@@ -133,7 +133,7 @@ function AssetTable({ qfsSymbol, tableColumnWidths, scaling }) {
         </TableHead>
         <TableBody>
           <AssetValCollapsableHeader
-            label="Assets"
+            label="Total Assets"
             columnWidths={tableColumnWidths}
             handleClick={handleAssetClick}
             open={openAsset}
