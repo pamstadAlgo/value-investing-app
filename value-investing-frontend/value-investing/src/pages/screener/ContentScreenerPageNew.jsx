@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import Layout from "../GlobalComponents/Layout";
 import NavBar from "../GlobalComponents/NavBar";
 import ScreenerTemplates from "./components/ScreenerTemplates";
 import Screener from "./components/Screener";
@@ -64,7 +65,7 @@ function ContentScreenerPageNew() {
 
   return (
     <>
-      <NavBar />
+      <Layout>
       <main className="main-content-wrapper relative-position">
         <div className="flex-wrapper-main-content">
           <div className="title-section" style={{ marginBottom: "3rem" }}>
@@ -83,6 +84,7 @@ function ContentScreenerPageNew() {
           <ScreenerResults />
         </div>
       </main>
+      </Layout>
     </>
   );
 }
