@@ -1,20 +1,22 @@
+/* TERMINAL THEME OVERRIDES */
+
+/* 1. Editable Div (Formula Editor) */
 .editable-div {
-    padding: 16px 6px;
+  padding: 16px 6px;
   -webkit-appearance: textarea;
-  background-color: white;
-  border: 1px solid;
+  background-color: transparent; /* Was white */
+  border: 1px solid var(--border-input-fields); /* Was standard border */
   border-image: initial;
   -webkit-rtl-ordering: logical;
   -webkit-user-select: text;
   -webkit-box-orient: vertical;
   resize: auto;
   cursor: auto;
-  /* padding: 2px; */
   white-space: pre-wrap;
   word-wrap: break-word;
   margin: 0em;
-  font: -webkit-small-control;
-  color: initial;
+  font-family: var(--font-family); /* Monospace */
+  color: var(--inner-text-input-fields); /* Light Text */
   letter-spacing: normal;
   word-spacing: normal;
   line-height: normal;
@@ -25,37 +27,32 @@
   text-align: -webkit-auto;
   min-width: 300px;
   min-height: 150px;
+  border-radius: 0px; /* Sharp corners */
 }
 
-
-.non-editable{
-    background-color: var(--main-color);
-    color: white;
-    border-radius: 8px;
-    padding: 6px 8px;
-    margin-right: 2px;
-    margin-left: 2px;
-    /* pointer-events: none; */
-    cursor: not-allowed;
-    /* height: fit-content;
-    width: fit-content; */
+.non-editable {
+  background-color: var(--action-color); /* Orange background */
+  color: #000000; /* Black text for contrast */
+  border-radius: 0px; /* Sharp corners */
+  padding: 6px 8px;
+  margin-right: 2px;
+  margin-left: 2px;
+  cursor: not-allowed;
+  font-weight: 700;
 }
 
-
-
-
+/* 2. Outlined Container (Inputs) */
 .outlined-container {
   position: relative;
   display: inline-block;
   padding: 16px 0px;
-  border: 1px solid rgba(0, 0, 0, 0.87);
-  border-radius: 4px;
+  border: 1px solid var(--border-input-fields);
+  border-radius: 0px; /* Sharp corners */
   transition: border-color 0.3s ease;
 }
 
 .outlined-container:focus-within {
-  border-color: #3f51b5;
-  /* Material-UI primary color */
+  border-color: var(--action-color); /* Orange focus */
 }
 
 .outlined-label {
@@ -63,16 +60,15 @@
   top: -8px;
   left: 8px;
   font-size: 12px;
-  /* background-color: white; */
+  background-color: var(--background-glass-card); /* Match card bg to hide line */
   padding: 0 4px;
-  color: #757575;
-  /* Text color */
+  color: var(--label-color-input-fields);
   transition: color 0.3s ease;
+  font-family: var(--font-family);
 }
 
 .outlined-container:focus-within .outlined-label {
-  color: #3f51b5;
-  /* Material-UI primary color */
+  color: var(--action-color);
 }
 
 .outlined-content {
@@ -80,48 +76,41 @@
   min-width: 200px;
 }
 
-     div[contenteditable="true"]:focus {
-       caret-color: red;
-       outline: none;
-       /* Change the color of the caret */
-     }
-  
-     /* div[contenteditable="true"] {
-       font-size: 18px;
-       padding: 10px;
-       border: 1px solid #ccc;
-     } */
+div[contenteditable="true"]:focus {
+  caret-color: var(--action-color); /* Orange caret */
+  outline: none;
+}
 
-
+/* 3. Table Container (Screener) */
 .table-container {
-  /* padding: 24px; */
-  background: linear-gradient(to bottom right, #eef2ff, #ffffff, #f3f4f6);
-  /* min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; */
+  background: transparent; /* Removed gradient */
+  border: none;
 }
 
 .table-container .MuiPaper-root {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  border-radius: 16px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 0px !important;
+  box-shadow: none;
   overflow: hidden;
+  border: 1px solid var(--border-input-fields);
 }
 
 /* Header Row */
 .table-header-row {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(6px);
+  background-color: var(--table-header-actions-bg-color) !important; /* Dark Bg */
+  backdrop-filter: none;
 }
 
 .table-header-cell {
   padding: 12px 24px !important;
   font-weight: 600 !important;
-  color: #1e1e1e !important;
+  color: var(--header-color) !important; /* Orange Text */
   font-size: 14px !important;
   text-align: left !important;
+  font-family: var(--font-family) !important;
+  border-bottom: 1px solid var(--border-input-fields) !important;
+  background-color: var(--bg-color-table-header-cell) !important;
 }
 
 /* Body Rows */
@@ -130,51 +119,53 @@
 }
 
 .table-row:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 .table-row.even {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--background-glass-card-less-transparent) !important;
 }
 
 .table-row.odd {
-  background-color: transparent;
+  background-color: transparent !important;
 }
 
 .table-body-cell {
   padding: 12px 24px !important;
   font-size: 14px !important;
   white-space: nowrap;
+  font-family: var(--font-family) !important;
+  color: var(--inner-text-input-fields) !important;
+  border-bottom: 1px solid var(--border-input-fields) !important;
 }
 
 /* Custom Cell Colors */
 .symbol-cell {
   font-weight: 600;
-  color: #1e1e1e;
+  color: var(--action-color) !important;
 }
 
 .company-cell {
-  color: #4b5563;
+  color: var(--text-color-grey-scale) !important;
 }
 
 .neutral-cell {
-  color: #4b5563;
+  color: var(--text-color-grey-scale) !important;
 }
 
 .growth-cell {
-  color: #059669;
+  color: var(--success-color) !important;
   font-weight: 500;
 }
 
-
-/* glass effect card */
+/* 4. Table Card (Glass Effect Removal) */
 .table-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
-  border-radius: 1rem;
+  background: var(--background-glass-card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border-input-fields);
+  box-shadow: none;
+  border-radius: 0px;
   overflow: hidden;
   margin-top: 2rem;
 }
@@ -184,183 +175,142 @@
   overflow-x: auto;
 }
 
-/* table layout */
+/* 5. Screener Table Layout */
 .screener-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
-  /* text-sm */
 }
 
-/* header */
+/* Header */
 .screener-table thead {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(6px);
+  background: var(--table-header-actions-bg-color);
+  backdrop-filter: none;
 }
 
 .screener-table th {
   padding: 1rem 1.5rem;
   font-weight: 600;
-  color: #1f2937;
-  /* neutral-800 */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--header-color);
+  border-bottom: 1px solid var(--border-input-fields);
 }
 
-/* body rows */
+/* Body Rows */
 .screener-table tbody tr {
   transition: background-color 0.2s ease;
 }
 
 .screener-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--input-fields-hover-bg-color);
 }
 
 .screener-table tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--background-glass-card-less-transparent);
 }
 
-/* cells */
+/* Cells */
 .screener-table td {
   padding: 1rem 1.5rem;
-  color: #4b5563;
-  /* neutral-600 */
+  color: var(--inner-text-input-fields);
   white-space: nowrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--border-input-fields);
 }
 
 .screener-table td:first-child {
   font-weight: 600;
-  color: #1f2937;
-  /* neutral-800 */
+  color: var(--action-color);
 }
 
-/* positive value (green) */
+/* Positive Value */
 .screener-table td.positive {
-  color: #059669;
-  /* emerald-600 */
+  color: var(--success-color);
   font-weight: 500;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-/* second table */
-/* Page background (soft gradient + subtle blobs like original design) */
+/* 6. Page Background (Removal of blobs/gradients) */
 .page-bg {
   min-height: 100vh;
   padding: 36px;
-  background-color: #f0f2f5;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(189, 140, 255, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(255, 139, 250, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(145, 254, 240, 0.04) 0px, transparent 50%),
-    radial-gradient(at 80% 90%, rgba(255, 200, 200, 0.03) 0px, transparent 50%);
+  background-color: var(--background-color);
+  background-image: none; /* Removed radial gradients */
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  color: #374151;
-  /* neutral-700 */
+  font-family: var(--font-family);
+  color: var(--text-color-grey-scale);
 }
 
-/* outer wrapper to center the table */
+/* Wrapper */
 .glass-wrapper {
   width: 100%;
   max-width: 1100px;
 }
 
-/* Header row styling (applies to MRT head row through className) */
+/* 7. MRT Overrides (Ensuring sharp edges and dark colors) */
 .table-header-row {
-  background: rgba(255, 255, 255, 0.30) !important;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--table-header-actions-bg-color) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Head cells */
 .table-header-cell {
   padding: 16px 24px !important;
   font-weight: 600 !important;
-  color: #1f2937 !important;
-  /* neutral-800 */
+  color: var(--header-color) !important;
   font-size: 14px !important;
   text-align: left !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-bottom: 1px solid var(--border-input-fields) !important;
 }
 
-/* Table rows */
 .table-row {
   transition: background-color 0.22s ease;
 }
 
 .table-row:hover {
-  background-color: rgba(255, 255, 255, 0.20) !important;
+  background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 .table-row.even {
-  background-color: rgba(255, 255, 255, 0.10) !important;
+  background-color: var(--background-glass-card-less-transparent) !important;
 }
 
 .table-row.odd {
   background-color: transparent !important;
 }
 
-/* Cells */
 .table-body-cell {
   padding: 14px 24px !important;
   font-size: 14px !important;
   white-space: nowrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #4b5563;
-  /* neutral-600 */
+  border-bottom: 1px solid var(--border-input-fields) !important;
+  color: var(--inner-text-input-fields) !important;
 }
 
-/* First column (Symbol) stronger */
 .table-body-cell:first-child {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--action-color) !important;
 }
 
-/* specific inline cell classes from Cell renderers */
-.symbol-cell {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.company-cell,
-.neutral-cell {
-  color: #4b5563;
-}
-
-.growth-cell {
-  color: #059669;
-  font-weight: 500;
-}
-
-/* make sure MRT's pagination / toolbar backgrounds don't override */
+/* Make sure MRT's pagination / toolbar backgrounds don't override */
 .MuiToolbar-root,
 .MuiTablePagination-root {
   background: transparent !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
+  color: var(--text-color-grey-scale) !important;
+  border-top: 1px solid var(--border-input-fields);
 }
 
-/* A safety override: remove any solid background on inner paper-like containers (helps cases where older MRT/MUI adds sub-papers) */
+/* Remove solid background on inner paper-like containers */
 .mrt-table-container .MuiPaper-root,
 .mrt-table-container .MuiTableContainer-root {
   background: transparent !important;
   box-shadow: none !important;
+  border-radius: 0px !important;
 }
 
-/* Force Plus Jakarta Sans on all MUI table text */
+/* Force Font Family */
 .MuiTableCell-root,
 .MuiTableHead-root,
 .MuiTableBody-root,
@@ -372,10 +322,9 @@
   font-family: var(--font-family) !important;
 }
 
-
+/* Katex (Math Formula) Styling */
 .katex {
   font-family: var(--font-family);
   font-size: 1.1rem;
-  color: #111827;
-  /* Tailwind gray-900 */
+  color: var(--inner-text-input-fields); /* Was dark gray */
 }

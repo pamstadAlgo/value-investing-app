@@ -71,7 +71,7 @@ function ContentScreenerPageNew() {
           <div className="title-section" style={{ marginBottom: "3rem" }}>
             <div className="title">Stock Screener</div>
             <div className="sub-title" style={{ marginTop: "6px" }}>
-              Filter stocks to find your next winning investment.
+              Investment Idea Generation Box
             </div>
           </div>
           <div className="grid-wrapper-template-filter-custom">

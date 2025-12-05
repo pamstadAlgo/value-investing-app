@@ -1,151 +1,159 @@
-.content-screener-outer-wrapper{
+/* screener/styles.css */
+
+.content-screener-outer-wrapper {
     max-width: 1400px;
     width: 80%;
     margin: auto;
     border-style: dashed;
+    border-color: var(--border-input-fields);
     margin-top: 32px;
 }
 
-.flexbox-title-reset-button{
+.flexbox-title-reset-button {
     display: flex;
     margin-bottom: 16px;
     align-items: center;
 }
 
-.reset-stockscreener-filters{
+.reset-stockscreener-filters {
     height: 35px !important;
     margin-left: 16px !important;
+    border-radius: 0px !important;
 }
 
-.filters-flexbox-wrapper{
+.filters-flexbox-wrapper {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
 }
 
-.clear-button-icon-screener-select-field{
+.clear-button-icon-screener-select-field {
     margin-left: -12px !important;
     scale: 0.8 !important;
 }
 
-.table-container-filtered-stock-details{
-    /* max-width: 1400px !important; */
+.table-container-filtered-stock-details {
     max-width: 1400px !important;
     width: 80% !important;
     overflow-x: auto !important;
-    /* position: relative;
-    left: 50%; */
-    /* transform: translate(-50%, 0%); */
 }
 
-.filter-modals-wrapper{
+/* FIX: Modal Background was white, now uses terminal card background */
+.filter-modals-wrapper {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 85vw;
-    box-shadow: 24;
+    box-shadow: none;
     padding: 16px 32px;
-    border-radius: 12px;
-    background-color: white;
+    border-radius: 0px; /* Sharp corners */
+    background-color: var(--background-glass-card); /* Dark background */
+    border: 1px solid var(--border-input-fields);
     max-height: 90vh;
     overflow-y: auto;
-    /* display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
 }
 
-.custom-metric{
+.custom-metric {
     /* display: flex;
     flex-direction: column; */
 }
 
-.grid-wrapper-filters-modal{
+.grid-wrapper-filters-modal {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 150px is the minimum column size */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    /* Optional: spacing between grid items */
 }
 
 .item {
-    background-color: lightblue;
+    background-color: var(--bg-color-neutral);
     padding: 20px;
     text-align: center;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-input-fields);
 }
 
-.filter-quantities-container{
+.filter-quantities-container {
     margin-bottom: 64px;
 }
 
-.filter-quantities-formula-wrapper{
+.filter-quantities-container h3 {
+    color: var(--header-color);
+    font-family: var(--font-family);
+    text-transform: uppercase;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-input-fields);
+    padding-bottom: 8px;
+}
+
+.filter-quantities-formula-wrapper {
     max-height: 85vh;
     overflow-y: scroll;
 }
 
-.wrapper-activ-filters{
+.wrapper-activ-filters {
     margin-top: 32px;
 }
 
-.group-header-autocomplete{
+.group-header-autocomplete {
     padding: 4px 10px;
     top: -8px;
     position: sticky;
     font-family: var(--font-family);
-    /* background-color: rgba(40, 115, 255, 0.726); */
     background-color: var(--action-color);
-    color: white;
+    color: black; /* Contrast against orange */
+    font-weight: 700;
 }
 
-.activ-filter-flex-wrapper{
+.activ-filter-flex-wrapper {
     display: flex;
     margin-bottom: 16px;
     gap: 32px;
-    /* align-items: center; */
 }
 
-.flex-item-activ-filter{
+.flex-item-activ-filter {
     flex: 1;
 }
 
-.delete-button{
+.delete-button {
     flex: 0;
     margin-top: 10px;
 }
 
-.buttons-flex-wrapper{
+.buttons-flex-wrapper {
     display: flex;
     justify-content: space-between;
 }
 
-.custom-metric-title{
+.custom-metric-title {
     font-size: 30px;
     font-weight: 700;
     margin-bottom: 32px;
+    color: var(--header-color);
+    font-family: var(--font-family);
 }
 
-.metric-description-flex-wrapper{
+.metric-description-flex-wrapper {
     display: flex;
     gap: 12px;
 }
 
-.custom-metric-description{
+.custom-metric-description {
     flex: 1;
 }
 
-
+/* OUTLINED CONTAINER OVERRIDES */
 .outlined-container {
     position: relative;
     display: inline-block;
     padding: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.87);
-    border-radius: 4px;
+    border: 1px solid var(--border-input-fields);
+    border-radius: 0px;
     transition: border-color 0.3s ease;
     width: 100%;
 }
 
 .outlined-container:focus-within {
-    border-color: #3f51b5;
-    /* Material-UI primary color */
+    border-color: var(--action-color);
 }
 
 .outlined-label {
@@ -153,77 +161,76 @@
     top: -8px;
     left: 8px;
     font-size: 12px;
-    /* background-color: white; */
     padding: 0 4px;
-    color: #757575;
-    /* Text color */
+    color: var(--label-color-input-fields);
+    background-color: var(--background-glass-card); /* Hide line behind label */
     transition: color 0.3s ease;
 }
 
 .outlined-container:focus-within .outlined-label {
-    color: #3f51b5;
-    /* Material-UI primary color */
+    color: var(--action-color);
 }
 
-.custom-button{
+.custom-button {
     display: flex;
     gap: 4px;
     align-items: center;
     cursor: pointer;
 }
 
-.label-custom-button{
+.label-custom-button {
     cursor: pointer;
     font-size: 20px;
+    color: var(--text-color-grey-scale);
 }
 
-.MuiButtonBase-root.custom-fab-element{
+.MuiButtonBase-root.custom-fab-element {
     scale: 0.6;
     flex: 0 0 auto;
+    border-radius: 0px;
+    background-color: var(--action-color);
+    color: black;
 }
 
-.formula-editor-div{
+.formula-editor-div {
     margin-right: 12px;
     margin-left: 12px;
+    color: var(--inner-text-input-fields);
+    font-family: var(--font-family);
 }
 
-.formula-editor-wrapper{
-    /* flex: 1;
-    overflow-y: auto;
-    padding-top: 12px;
-    overflow-x: hidden; */
-}
-
-.flexbox-save-filter-button{
+.flexbox-save-filter-button {
     justify-content: flex-end;
     display: flex;
 }
 
-.flex-wrapper-screener-title-section{
+.flex-wrapper-screener-title-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.MuiFormControl-root.form-control-saved-filter-views{
+.MuiFormControl-root.form-control-saved-filter-views {
     min-width: 180px;
 }
 
-.flex-item-saved-filters{
+.flex-item-saved-filters {
     display: flex;
     align-items: center;
 }
 
-.paper-save-filter-view{
+.paper-save-filter-view {
     min-width: 350px;
     padding: 16px;
+    background-color: var(--background-glass-card);
+    border-radius: 0px;
 }
 
-.accordian-summary-filters > .MuiAccordionSummary-content{
-justify-content: space-between;
+.accordian-summary-filters > .MuiAccordionSummary-content {
+    justify-content: space-between;
 }
 
-.MuiButtonBase-root.MuiIconButton-root.custom-iconbutton-list{
+.MuiButtonBase-root.MuiIconButton-root.custom-iconbutton-list {
     display: none;
 }
 
@@ -231,11 +238,11 @@ justify-content: space-between;
     display: block;
 }
 
-.MuiListItemIcon-root.custom-list-icon{
+.MuiListItemIcon-root.custom-list-icon {
     min-width: 20px;
 }
 
-.MuiSvgIcon-root.icon-custom-metrics-list{
+.MuiSvgIcon-root.icon-custom-metrics-list {
     width: 20px;
     height: 20px;
     fill: var(--text-color-grey-scale);
@@ -245,11 +252,46 @@ justify-content: space-between;
     fill: var(--action-color);
 }
 
-/* .MuiSvgIcon-root.icon-custom-metrics-list:hover {
-    fill: var(--action-color);
-} */
-
 .checkbox-wrapper-div {
     display: flex;
-    /* gap: 4px; */
+}
+
+/* Target both Autocomplete and Select dropdowns */
+.MuiAutocomplete-paper,
+.MuiMenu-paper {
+    background-color: var(--background-glass-card) !important; /* Dark Terminal Background */
+    color: var(--header-color) !important; /* Orange/Terminal Text */
+    border: 1px solid var(--border-input-fields) !important; /* Sharp border */
+    border-radius: 0px !important; /* Sharp corners */
+    box-shadow: none !important; /* Remove floaty shadow for flat look */
+}
+
+/* Style the individual options */
+.MuiMenuItem-root, 
+.MuiAutocomplete-option {
+    font-family: var(--font-family) !important;
+    color: var(--text-color-grey-scale) !important; /* Muted text by default */
+}
+
+/* Hover state for options */
+.MuiMenuItem-root:hover,
+.MuiMenuItem-root.Mui-focusVisible,
+.MuiAutocomplete-option:hover, 
+.MuiAutocomplete-option[aria-selected="true"].Mui-focused {
+    background-color: var(--input-fields-hover-bg-color) !important; /* Dark grey hover */
+    color: var(--header-color) !important; /* Orange text on hover */
+}
+
+/* Selected state for options */
+.MuiMenuItem-root.Mui-selected,
+.MuiAutocomplete-option[aria-selected="true"] {
+    background-color: var(--action-color-transparent) !important; /* Orange Tint */
+    color: var(--action-color) !important; /* Orange Text */
+    font-weight: 700 !important;
+}
+
+/* Ensure selected items stay orange on hover */
+.MuiMenuItem-root.Mui-selected:hover,
+.MuiAutocomplete-option[aria-selected="true"]:hover {
+    background-color: var(--action-color-transparent) !important;
 }

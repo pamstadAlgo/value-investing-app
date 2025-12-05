@@ -1,291 +1,257 @@
+/* screener/components/screenerTableStyles.css */
+
+/* 1. Main Table Container */
 .table-container {
-    /* padding: 24px; */
-    background: linear-gradient(to bottom right, #eef2ff, #ffffff, #f3f4f6);
-    border-radius: 16px;
-    /* min-height: 100vh; */
-    /* display: flex;
-    justify-content: center;
-    align-items: flex-start; */
+    background: transparent;
+    border-radius: 0px;
+    border: 1px solid var(--border-input-fields);
+    overflow-x: auto;
 }
 
-.table-container.MuiPaper-root {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(8px);
-    border-radius: 16px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+/* FIX: Added space between .table-container and .MuiPaper-root */
+.table-container .MuiPaper-root {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none;
+    border-radius: 0px !important;
+    box-shadow: none !important;
+    border: none;
+    color: inherit !important;
 }
 
-/* Header Row */
+/* 2. Top Toolbar (The White Bar Fix) */
+/* Targets specifically the toolbar containing search/filter icons */
+.table-container .MuiToolbar-root {
+    background-color: var(--table-header-actions-bg-color) !important; /* Dark #181818 */
+    color: var(--header-color) !important; /* Orange */
+    border-bottom: 1px solid var(--border-input-fields);
+    border-radius: 0px !important;
+}
+
+/* Ensure icons inside the toolbar are light grey */
+.table-container .MuiToolbar-root .MuiIconButton-root {
+    color: var(--input-fields-icons-color) !important;
+}
+
+/* FIX: Style the Search Input Field (currently white) to be Dark */
+.table-container .MuiToolbar-root .MuiOutlinedInput-root {
+    background-color: var(--background-glass-card) !important; /* Dark Background */
+    border-radius: 0px !important;
+    color: var(--inner-text-input-fields) !important; /* Light Text */
+}
+
+/* Fix the Search Input Border */
+.table-container .MuiToolbar-root .MuiOutlinedInput-notchedOutline {
+    border-color: var(--border-input-fields) !important;
+}
+
+/* Fix the text color inside the search input */
+.table-container .MuiToolbar-root .MuiOutlinedInput-input {
+    color: var(--inner-text-input-fields) !important;
+}
+
+/* Ensure all icons (Search, Filter, Columns) in the toolbar are light grey */
+.table-container .MuiToolbar-root .MuiIconButton-root,
+.table-container .MuiToolbar-root .MuiSvgIcon-root {
+    color: var(--input-fields-icons-color) !important;
+    fill: var(--input-fields-icons-color) !important;
+}
+
+/* 3. Header Row */
 .table-header-row {
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(6px);
+    background-color: var(--table-header-actions-bg-color) !important;
+    backdrop-filter: none;
 }
 
 .table-header-cell {
     padding: 12px 24px !important;
     font-weight: 600 !important;
-    color: #1e1e1e !important;
+    color: var(--header-color) !important;
+    font-family: var(--font-family) !important;
     font-size: 14px !important;
     text-align: left !important;
     background-color: var(--bg-color-table-header-cell) !important;
+    border-bottom: 1px solid var(--border-input-fields) !important;
 }
 
-/* Body Rows */
+/* 4. Body Rows */
 .table-row {
     transition: background-color 0.25s ease;
 }
 
 .table-row:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--input-fields-hover-bg-color) !important;
 }
 
 .table-row.even {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.table-row.odd {
-    background-color: transparent;
-}
-
-.table-body-cell {
-    padding: 12px 24px !important;
-    font-size: 14px !important;
-    white-space: nowrap;
-}
-
-/* Custom Cell Colors */
-.symbol-cell {
-    font-weight: 600;
-    color: #1e1e1e;
-}
-
-.company-cell {
-    color: #4b5563;
-}
-
-.neutral-cell {
-    color: #4b5563;
-}
-
-.growth-cell {
-    color: #059669;
-    font-weight: 500;
-}
-
-
-/* glass effect card */
-.table-card {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
-    border-radius: 1rem;
-    overflow: hidden;
-    margin-top: 2rem;
-}
-
-/* scroll container */
-.table-container {
-    overflow-x: auto;
-}
-
-/* table layout */
-.screener-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 0.875rem;
-    /* text-sm */
-}
-
-/* header */
-.screener-table thead {
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(6px);
-}
-
-.screener-table th {
-    padding: 1rem 1.5rem;
-    font-weight: 600;
-    color: #1f2937;
-    /* neutral-800 */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* body rows */
-.screener-table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.screener-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.screener-table tbody tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* cells */
-.screener-table td {
-    padding: 1rem 1.5rem;
-    color: #4b5563;
-    /* neutral-600 */
-    white-space: nowrap;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.screener-table td:first-child {
-    font-weight: 600;
-    color: #1f2937;
-    /* neutral-800 */
-}
-
-/* positive value (green) */
-.screener-table td.positive {
-    color: #059669;
-    /* emerald-600 */
-    font-weight: 500;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* second table */
-/* Page background (soft gradient + subtle blobs like original design) */
-.page-bg {
-    min-height: 100vh;
-    padding: 36px;
-    background-color: #f0f2f5;
-    background-image:
-        radial-gradient(at 0% 0%, rgba(189, 140, 255, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(255, 139, 250, 0.06) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(145, 254, 240, 0.04) 0px, transparent 50%),
-        radial-gradient(at 80% 90%, rgba(255, 200, 200, 0.03) 0px, transparent 50%);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color: #374151;
-    /* neutral-700 */
-}
-
-/* outer wrapper to center the table */
-.glass-wrapper {
-    width: 100%;
-    max-width: 1100px;
-}
-
-.MuiTableCell-root[style*="dashed"] {
-    border: 2px dashed red !important;
-    background-color: rgba(255, 0, 0, 0.05) !important;
-    /* optional red tint */
-    transition: all 0.15s ease-in-out;
-}
-
-/* Header row styling (applies to MRT head row through className) */
-.table-header-row {
-    background: rgba(255, 255, 255, 0.30) !important;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-/* Head cells */
-.table-header-cell {
-    padding: 16px 24px !important;
-    font-weight: 600 !important;
-    color: #1f2937 !important;
-    /* neutral-800 */
-    font-size: 14px !important;
-    text-align: left !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
-}
-
-/* Table rows */
-.table-row {
-    transition: background-color 0.22s ease;
-}
-
-.table-row:hover {
-    background-color: rgba(255, 255, 255, 0.20) !important;
-}
-
-.table-row.even {
-    background-color: rgba(255, 255, 255, 0.10) !important;
+    background-color: var(--background-glass-card-less-transparent) !important;
 }
 
 .table-row.odd {
     background-color: transparent !important;
 }
 
-/* Cells */
 .table-body-cell {
-    padding: 14px 24px !important;
+    padding: 12px 24px !important;
     font-size: 14px !important;
     white-space: nowrap;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-    color: #4b5563;
-    /* neutral-600 */
+    border-bottom: 1px solid var(--border-input-fields) !important;
+    color: var(--inner-text-input-fields) !important;
+    font-family: var(--font-family) !important;
 }
 
-/* First column (Symbol) stronger */
-.table-body-cell:first-child {
-    font-weight: 600;
-    color: #1f2937;
-}
-
-/* specific inline cell classes from Cell renderers */
+/* 5. Custom Cell Colors */
 .symbol-cell {
     font-weight: 600;
-    color: #1f2937;
+    color: var(--action-color) !important;
 }
 
 .company-cell,
 .neutral-cell {
-    color: #4b5563;
+    color: var(--text-color-grey-scale) !important;
 }
 
 .growth-cell {
-    color: #059669;
+    color: var(--success-color) !important;
     font-weight: 500;
 }
 
-/* make sure MRT's pagination / toolbar backgrounds don't override */
-.MuiToolbar-root,
-.MuiTablePagination-root {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    box-shadow: none !important;
-}
-
-/* A safety override: remove any solid background on inner paper-like containers (helps cases where older MRT/MUI adds sub-papers) */
+/* 6. Fix for MRT internal containers */
 .mrt-table-container .MuiPaper-root,
 .mrt-table-container .MuiTableContainer-root {
     background: transparent !important;
     box-shadow: none !important;
+    border-radius: 0px !important;
 }
 
-/* Force Plus Jakarta Sans on all MUI table text */
-.MuiTableCell-root,
-.MuiTableHead-root,
-.MuiTableBody-root,
-.MuiTablePagination-root,
-.MuiToolbar-root,
-.MuiButtonBase-root,
-.MuiInputBase-input,
-.MuiTypography-root {
+/* 7. Pagination and Bottom Toolbar */
+.MuiTablePagination-root {
+    background: transparent !important;
+    color: var(--text-color-grey-scale) !important;
+    border-top: 1px solid var(--border-input-fields);
+}
+
+.MuiTablePagination-selectLabel,
+.MuiTablePagination-displayedRows {
     font-family: var(--font-family) !important;
 }
 
-.table-container > .MuiPaper-root.MuiPaper-elevation > .MuiBox-root{
-    background-color: var(--table-header-actions-bg-color);
+.MuiIconButton-root {
+    color: var(--input-fields-icons-color) !important;
+    border-radius: 0px !important;
+}
+
+/* 8. Table Card & Other overrides */
+.table-card {
+    background: var(--background-glass-card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid var(--border-input-fields);
+    box-shadow: none;
+    border-radius: 0px;
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.screener-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.screener-table thead {
+    background: var(--table-header-actions-bg-color);
+    backdrop-filter: none;
+}
+
+.screener-table th {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: var(--header-color);
+    border-bottom: 1px solid var(--border-input-fields);
+}
+
+.screener-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.screener-table tbody tr:hover {
+    background: var(--input-fields-hover-bg-color);
+}
+
+.screener-table tbody tr:nth-child(even) {
+    background: var(--background-glass-card-less-transparent);
+}
+
+.screener-table td {
+    padding: 1rem 1.5rem;
+    color: var(--inner-text-input-fields);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-input-fields);
+}
+
+.screener-table td:first-child {
+    font-weight: 600;
+    color: var(--action-color);
+}
+
+.screener-table td.positive {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.page-bg {
+    min-height: 100vh;
+    padding: 36px;
+    background-color: var(--background-color);
+    background-image: none;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: var(--font-family);
+    color: var(--text-color-grey-scale);
+}
+
+.glass-wrapper {
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* ========================================= */
+/* TABLE DROPDOWNS & MENUS (Global Override) */
+/* ========================================= */
+/* Note: These cannot be scoped to .table-container because 
+   Material UI renders menus in a Portal at the document root. */
+
+.MuiMenu-paper, 
+.MuiPopover-paper {
+    background-color: var(--table-header-actions-bg-color) !important; /* Dark Background */
+    color: var(--header-color) !important; /* Orange Text */
+    border: 1px solid var(--border-input-fields) !important; /* Sharp Border */
+    border-radius: 0px !important; /* Sharp Corners */
+    box-shadow: none !important;
+}
+
+/* Style the menu items */
+.MuiMenuItem-root {
+    font-family: var(--font-family) !important;
+    color: var(--inner-text-input-fields) !important; /* Light Grey Text */
+    font-size: 14px !important;
+}
+
+/* Hover state for menu items */
+.MuiMenuItem-root:hover {
+    background-color: var(--input-fields-hover-bg-color) !important; /* Dark Grey Hover */
+    color: var(--action-color) !important; /* Orange Text on Hover */
+}
+
+/* Selected state (if applicable) */
+.MuiMenuItem-root.Mui-selected {
+    background-color: var(--background-glass-card-less-transparent) !important;
+    color: var(--action-color) !important;
+}
+
+.MuiMenuItem-root.Mui-selected:hover {
+    background-color: var(--input-fields-hover-bg-color) !important;
 }

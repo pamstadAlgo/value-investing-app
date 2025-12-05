@@ -129,12 +129,63 @@ function DataView() {
             pageSize: 35,
           },
         }}
-        muiTableProps={{
-          sx: {
-            borderRadius: "12px",
-            backgroundColor: "transparent",
-          },
-        }}
+        // --- START OF NEW STYLING PROPS ---
+            
+            // 1. Force the Main Paper (Container) to be transparent
+            muiTablePaperProps={{
+                elevation: 0,
+                sx: {
+                    borderRadius: "0px",
+                    border: "none",
+                    backgroundColor: "transparent", 
+                }
+            }}
+
+            // 2. Force the Top Toolbar (Search/Filters) to be Dark
+            muiTopToolbarProps={{
+                sx: {
+                    backgroundColor: "var(--table-header-actions-bg-color)", // Dark #181818
+                    color: "var(--header-color)", // Orange
+                    borderBottom: "1px solid var(--border-input-fields)",
+                }
+            }}
+
+            // 3. Force the Bottom Toolbar (Pagination) to be Dark
+            muiBottomToolbarProps={{
+                sx: {
+                    backgroundColor: "transparent",
+                    color: "var(--text-color-grey-scale)",
+                    borderTop: "1px solid var(--border-input-fields)",
+                }
+            }}
+
+            // 4. Force the Table Body to be transparent
+            muiTableBodyProps={{
+                sx: {
+                    '& tr:nth-of-type(odd)': {
+                        backgroundColor: 'transparent',
+                    },
+                    '& tr:nth-of-type(even)': {
+                        backgroundColor: 'var(--background-glass-card-less-transparent)',
+                    },
+                    '& tr:hover': {
+                        backgroundColor: 'var(--input-fields-hover-bg-color)',
+                    },
+                }
+            }}
+
+            // 5. Force the Table Head to be Dark
+            muiTableHeadCellProps={{
+                sx: {
+                    backgroundColor: "var(--table-header-actions-bg-color)",
+                    color: "var(--header-color)",
+                    fontFamily: "var(--font-family)",
+                    fontWeight: "600",
+                    borderBottom: "1px solid var(--border-input-fields)",
+                }
+            }}
+            
+            // --- END OF NEW STYLING PROPS ---
         icons={{
           // ✅ This replaces the default drag handle icon:
           DragHandleIcon: SmallDragIcon,
@@ -149,9 +200,6 @@ function DataView() {
         muiTableBodyRowProps={({ row }) => ({
           className: row.index % 2 === 0 ? "table-row even" : "table-row odd",
         })}
-        muiTableHeadCellProps={{
-          className: "table-header-cell",
-        }}
         muiTableBodyCellProps={{
           className: "table-body-cell",
         }}
