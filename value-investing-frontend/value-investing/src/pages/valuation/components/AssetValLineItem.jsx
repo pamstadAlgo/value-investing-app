@@ -31,7 +31,7 @@ function AssetValLineItem({
             type="number"
             value={(value / scaling).toFixed(0)}
             size="small"
-            className="custom-input-valuation-table"
+            className="custom-input-valuation-table liquidation-value"
           />
         </Collapse>
       </TableCell>
@@ -46,7 +46,7 @@ function AssetValLineItem({
             type="number"
             // value={bull}
             size="small"
-            className="custom-input-valuation-table"
+            className="custom-input-valuation-table liquidation-value"
             // onBlur={(e) => handleChange(e, metricName, 1)}
             // onChange={(e) => handleChange(e, metricName, 2)}
           />

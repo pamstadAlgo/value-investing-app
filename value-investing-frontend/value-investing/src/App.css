@@ -58,6 +58,8 @@
   --input-fields-icons-color-bright: #EAEAEA;
   --input-fields-hover-bg-color: #181818;
 
+  --color-table-text: white;
+
 
   /* button group */
   --background-color-button-group-active: #282828;
@@ -955,6 +957,11 @@ height: 0;
   text-align: left !important;
 }
 
+.custom-input-valuation-table.liquidation-value >.MuiOutlinedInput-input {
+  padding-left: 0px;
+  text-align: right !important;
+}
+
 .custom-mui-table table {
   table-layout: fixed;
   width: 100%;
@@ -995,6 +1002,7 @@ height: 0;
 
 .wrapper-nivo-bar-chart text {
 font-family: var(--font-family) !important;
+fill: var(--color-table-text) !important;
 }
 
 .title-mid-size{

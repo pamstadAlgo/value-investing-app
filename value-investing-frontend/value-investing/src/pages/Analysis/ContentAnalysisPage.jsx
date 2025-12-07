@@ -20,7 +20,6 @@ function ContentAnalysisPage() {
       <Layout>
         <main className="main-content-wrapper relative-position">
           <div className="flex-wrapper-main-content">
-            {/* <CompanySearchField /> */}
             <CompanySearchField setBackdropLoading={setBackDropLoading} />
 
             {analysisState.selectedTickerSymbol && (
