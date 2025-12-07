@@ -122,6 +122,7 @@ function CompanySearchField({ setBackdropLoading }) {
         options={tickerSymbols}
         ListboxComponent={ListboxComponent}
         onChange={handleChange}
+        className="custom-autocomplete-analysis-page"
         getOptionLabel={(option) => `${option.qfs_symbol} - ${option.name}`}
         renderInput={(params) => (
           <TextField

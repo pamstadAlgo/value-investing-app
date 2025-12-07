@@ -379,6 +379,10 @@ input[type=number] {
   border-radius: 0px !important;
 }
 
+.MuiAutocomplete-noOptions{
+  color: var(--color-table-text) !important;
+}
+
 .MuiTooltip-tooltip.MuiTooltip-tooltipArrow.MuiTooltip-tooltipPlacementRight {
 font-family: var(--font-family);
 font-size: 13px;

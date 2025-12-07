@@ -31,6 +31,7 @@ from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper
 from django.db.models.functions import Coalesce
 from collections import defaultdict
 from typing import Literal
+import time
 
 
 
@@ -1757,6 +1758,9 @@ class PenmanValuationAPIView(APIView):
         years = int(request.query_params.get("years", 5))
         include_ttm = request.query_params.get("ttm", "true").lower() == "true"
 
+        #get unix timestamp to store last fetch time
+        last_fetch = int(time.time() * 1000) 
+
         #get currency of company
         currency = TradedCompanies.objects.filter(qfs_symbol = qfs_symbol).first().currency
         nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
@@ -1824,6 +1828,7 @@ class PenmanValuationAPIView(APIView):
         response = {'qfsSymbol' : qfs_symbol
                     ,'currency' : currency
                     ,'nrShares' : nr_shares
+                    ,'lastFetch' : last_fetch
                     ,'periods' : revenue['periods']
                     ,'metricsNopat' : {
                         'revenue' : {
@@ -2718,6 +2723,9 @@ def computeAssetVal(qfs_symbol):
                     })
             if group_metrics:
                 data[group_name] = group_metrics
+            # handle case where for example no nonCurrentLiabilities are present. We return empty list 
+            else:
+                data[group_name] = []
 
         #get number of shares
         nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
