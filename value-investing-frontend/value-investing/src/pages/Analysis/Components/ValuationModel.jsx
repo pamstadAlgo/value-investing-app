@@ -27,6 +27,7 @@ import ValuationSummary from "./ValuationSummary";
 import { useLastClosePrice } from "../../valuation/components/AccordionTitle";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import LiquidationValue from "./LiquidationValue";
+import GlassCardWrapper from "./GlassCardWrapper";
 import SaveValuationModal from "./SaveValuationModal";
 import ValuationActionToolbar from "./ValuationActionToolbar";
 
@@ -176,165 +177,68 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
         />
         <ValuationAssumptions scalingFactor={scaling} />
       </div>
-      <ValuationActionToolbar 
+      <ValuationActionToolbar
         scaling={scaling}
         onScalingChange={handleToggleButtonChange}
         onSave={() => setIsSaveModalOpen(true)}
         onToggleHistory={onToggleHistory}
         isHistoryOpen={isHistoryOpen}
       />
-      <TableContainer
-        component={Paper}
-        sx={{
-          backgroundColor: "transparent",
-          boxShadow: "none",
-          borderRadius: "20px",
-          marginTop: "12px",
-        }}
-        className="custom-mui-table">
-        <div
-          className="table-header-title"
-          style={{ borderRadius: "20px 20px 0px 0px" }}>
-          Valuation Model
-        </div>
-        <Table
-          sx={{ minWidth: 650 }}
-          size="small"
-          aria-label="simple table"
-          className="custom-table-analysis-page">
-          <TableHead className="custom-table-head">
-            <TableRow>
-              <TableCell>Line Item</TableCell>
-              {companyData?.periods?.map((period) => {
-                return <TableCell>{period}</TableCell>;
-              })}
-              {valuationCases?.map((item) => {
-                return <TableCell align="left">{item}</TableCell>;
-              })}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell
-                className="valuation-model-title-row"
-                colSpan={10}
-                style={{ padding: "10px 16px" }}>
-                <div className="flex-box-wrapper-table-header-val-model">
-                  <span> NOPAT Derivation</span>
-                  <ValuationApproachSelect />
-                </div>
-              </TableCell>
-            </TableRow>
-            {Object.entries(companyData?.metricsNopat).map(
-              ([metricName, values]) => (
-                <TableRow key={metricName}>
-                  <TableCell>
-                    <div className="flexbox-wrapper-table-cell-analysis">
-                      {metricName}
-                      {/* display graph if time series data is available */}
-                      {values.hasTs && (
-                        <MetricGraph data={values.ts} metricName={metricName} />
-                      )}
-                    </div>
-                  </TableCell>
-                  {companyData?.periods.map((period) => {
-                    let cellValue = values?.values[period]
-                      ? values?.values[period]
-                      : "-";
-
-                    //if value is not of type ratio we scale it
-                    if (values?.type !== "ratio" && cellValue !== "-") {
-                      cellValue = (cellValue / scaling).toFixed(0);
-                    }
-                    return <TableCell key={period}>{cellValue}</TableCell>;
-                  })}
-                  {valuationCases.map((valuationCase, index) => {
-                    let isEditable = false;
-                    if (valuationApproach === "topDown") {
-                      isEditable = topDownEditableFields.includes(metricName);
-                    } else {
-                      isEditable = bottomUpEditableFields.includes(metricName);
-                    }
-
-                    let scaleFactor = values.type !== "ratio" ? scaling : 1;
-
-                    var value = valuationData[metricName]?.[index];
-
-                    switch (metricName) {
-                      case "operating_income":
-                        // if (valuationApproach === "topDown") {
-                        value = opIncome[index];
-                        // }
-
-                        break;
-                      case "NOPAT":
-                        value = nopat[index];
-                        break;
-                      case "op_margins":
-                        //if valuation approach is topDown, op margin will be inpute by user; it bottomUp it will be computed
-                        if (valuationApproach === "bottomUp") {
-                          value = opMargins[index];
-                        }
-                        break;
-                    }
-
-                    if (metricName === "revenue") {
-                      console.log("this is value: ", value);
-                    }
-
-                    //scale the value if the value is not a ratio
-                    if (values.type !== "ratio") {
-                      value = (value / scaleFactor).toFixed(0);
-                    }
-
-                    return (
-                      <TableCell>
-                        {/* <Tooltip
-                          placement="right-start"
-                          arrow
-                          title="Change the valuation approach in order to edit this field"
-                          // disableHoverListener={screenerState.activFilters?.length !== 0}
-                          disableHoverListener={isEditable}
-                          disableFocusListener={isEditable}
-                          disableTouchListener={isEditable}> */}
-                        <OutlinedInput
-                          disabled={!isEditable}
-                          onChange={(e) =>
-                            handleValuationChange(
-                              e,
-                              metricName,
-                              index,
-                              scaleFactor
-                            )
-                          }
-                          // onChange={(e) => handleChange(e, category, metric)}
-                          type="number"
-                          // value={valuationData[metricName]?.[index]}
-                          value={value}
-                          size="small"
-                          // inputProps={{
-                          //   style: { textAlign: "left" },
-                          // }}
-                          className="custom-input-valuation-table"
-                        />
-                        {/* </Tooltip> */}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              )
-            )}
-            <TableRow>
-              <TableCell className="valuation-model-title-row" colSpan={10}>
-                <div className="flex-box-wrapper-table-header-val-model">
-                  <span>Invested Capital (NOA)</span>
-                  {/* <ValuationApproachSelect /> */}
-                </div>
-              </TableCell>
-            </TableRow>
-            {Object.entries(companyData?.metricsNoa).map(
-              ([metricName, values]) => {
-                return (
+      {/* <div className="button-group-wrapper">
+        <ToggleButtonsScaling
+          value={scaling}
+          handleChange={handleToggleButtonChange}
+        />
+      </div> */}
+      <GlassCardWrapper
+        title="Valuation Model"
+        currencyCode={currencyCode}
+        qfsSymbol={qfsSymbol}
+        lastClosePrice={data?.lastClosePrice}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            backgroundColor: "transparent",
+            boxShadow: "none",
+            borderRadius: "20px",
+            marginTop: "12px",
+          }}
+          className="custom-mui-table">
+          {/* <div
+            className="table-header-title"
+            style={{ borderRadius: "20px 20px 0px 0px" }}>
+            Valuation Model
+          </div> */}
+          <Table
+            sx={{ minWidth: 650 }}
+            size="small"
+            aria-label="simple table"
+            className="custom-table-analysis-page">
+            <TableHead className="custom-table-head">
+              <TableRow>
+                <TableCell>Line Item</TableCell>
+                {companyData?.periods?.map((period) => {
+                  return <TableCell>{period}</TableCell>;
+                })}
+                {valuationCases?.map((item) => {
+                  return <TableCell align="left">{item}</TableCell>;
+                })}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell
+                  className="valuation-model-title-row"
+                  colSpan={10}
+                  style={{ padding: "10px 16px" }}>
+                  <div className="flex-box-wrapper-table-header-val-model">
+                    <span> NOPAT Derivation</span>
+                    <ValuationApproachSelect />
+                  </div>
+                </TableCell>
+              </TableRow>
+              {Object.entries(companyData?.metricsNopat).map(
+                ([metricName, values]) => (
                   <TableRow key={metricName}>
                     <TableCell>
                       <div className="flexbox-wrapper-table-cell-analysis">
@@ -360,26 +264,38 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                       return <TableCell key={period}>{cellValue}</TableCell>;
                     })}
                     {valuationCases.map((valuationCase, index) => {
-                      let isEditable =
-                        editableFieldsCapitalStructure.includes(metricName);
-                      // if (valuationApproach === "topDown") {
-                      //   isEditable = topDownEditableFields.includes(metricName);
-                      // } else {
-                      //   isEditable =
-                      //     bottomUpEditableFields.includes(metricName);
-                      // }
+                      let isEditable = false;
+                      if (valuationApproach === "topDown") {
+                        isEditable = topDownEditableFields.includes(metricName);
+                      } else {
+                        isEditable =
+                          bottomUpEditableFields.includes(metricName);
+                      }
 
                       let scaleFactor = values.type !== "ratio" ? scaling : 1;
 
                       var value = valuationData[metricName]?.[index];
 
                       switch (metricName) {
-                        case "netOperatingAssets":
+                        case "operating_income":
                           // if (valuationApproach === "topDown") {
-                          value = netOpAssets[index];
+                          value = opIncome[index];
                           // }
 
                           break;
+                        case "NOPAT":
+                          value = nopat[index];
+                          break;
+                        case "op_margins":
+                          //if valuation approach is topDown, op margin will be inpute by user; it bottomUp it will be computed
+                          if (valuationApproach === "bottomUp") {
+                            value = opMargins[index];
+                          }
+                          break;
+                      }
+
+                      if (metricName === "revenue") {
+                        console.log("this is value: ", value);
                       }
 
                       //scale the value if the value is not a ratio
@@ -412,6 +328,9 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                             // value={valuationData[metricName]?.[index]}
                             value={value}
                             size="small"
+                            // inputProps={{
+                            //   style: { textAlign: "left" },
+                            // }}
                             className="custom-input-valuation-table"
                           />
                           {/* </Tooltip> */}
@@ -419,12 +338,110 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                       );
                     })}
                   </TableRow>
-                );
-              }
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                )
+              )}
+              <TableRow>
+                <TableCell className="valuation-model-title-row" colSpan={10}>
+                  <div className="flex-box-wrapper-table-header-val-model">
+                    <span>Invested Capital (NOA)</span>
+                    {/* <ValuationApproachSelect /> */}
+                  </div>
+                </TableCell>
+              </TableRow>
+              {Object.entries(companyData?.metricsNoa).map(
+                ([metricName, values]) => {
+                  return (
+                    <TableRow key={metricName}>
+                      <TableCell>
+                        <div className="flexbox-wrapper-table-cell-analysis">
+                          {metricName}
+                          {/* display graph if time series data is available */}
+                          {values.hasTs && (
+                            <MetricGraph
+                              data={values.ts}
+                              metricName={metricName}
+                            />
+                          )}
+                        </div>
+                      </TableCell>
+                      {companyData?.periods.map((period) => {
+                        let cellValue = values?.values[period]
+                          ? values?.values[period]
+                          : "-";
+
+                        //if value is not of type ratio we scale it
+                        if (values?.type !== "ratio" && cellValue !== "-") {
+                          cellValue = (cellValue / scaling).toFixed(0);
+                        }
+                        return <TableCell key={period}>{cellValue}</TableCell>;
+                      })}
+                      {valuationCases.map((valuationCase, index) => {
+                        let isEditable =
+                          editableFieldsCapitalStructure.includes(metricName);
+                        // if (valuationApproach === "topDown") {
+                        //   isEditable = topDownEditableFields.includes(metricName);
+                        // } else {
+                        //   isEditable =
+                        //     bottomUpEditableFields.includes(metricName);
+                        // }
+
+                        let scaleFactor = values.type !== "ratio" ? scaling : 1;
+
+                        var value = valuationData[metricName]?.[index];
+
+                        switch (metricName) {
+                          case "netOperatingAssets":
+                            // if (valuationApproach === "topDown") {
+                            value = netOpAssets[index];
+                            // }
+
+                            break;
+                        }
+
+                        //scale the value if the value is not a ratio
+                        if (values.type !== "ratio") {
+                          value = (value / scaleFactor).toFixed(0);
+                        }
+
+                        return (
+                          <TableCell>
+                            {/* <Tooltip
+                          placement="right-start"
+                          arrow
+                          title="Change the valuation approach in order to edit this field"
+                          // disableHoverListener={screenerState.activFilters?.length !== 0}
+                          disableHoverListener={isEditable}
+                          disableFocusListener={isEditable}
+                          disableTouchListener={isEditable}> */}
+                            <OutlinedInput
+                              disabled={!isEditable}
+                              onChange={(e) =>
+                                handleValuationChange(
+                                  e,
+                                  metricName,
+                                  index,
+                                  scaleFactor
+                                )
+                              }
+                              // onChange={(e) => handleChange(e, category, metric)}
+                              type="number"
+                              // value={valuationData[metricName]?.[index]}
+                              value={value}
+                              size="small"
+                              className="custom-input-valuation-table"
+                            />
+                            {/* </Tooltip> */}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                }
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </GlassCardWrapper>
       <LiquidationValue
         qfsSymbol={qfsSymbol}
         scaling={scalingBalanceSheet}
@@ -438,7 +455,7 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
         open={isSaveModalOpen}
         onClose={() => setIsSaveModalOpen(false)}
         qfsSymbol={qfsSymbol}
-        equityVals={equityVal} 
+        equityVals={equityVal}
       />
     </>
   );
