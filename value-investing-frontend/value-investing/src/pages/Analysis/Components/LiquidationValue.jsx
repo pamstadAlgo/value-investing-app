@@ -21,9 +21,6 @@ function LiquidationValue({
     computeNetLiqValue(state.analysis?.balanceSheet)
   );
 
-  console.log("net liq value: ", netLiqValue);
-  console.log("nrShares: ", nrShares);
-
   const valPerShare = netLiqValue / nrShares;
 
   return (
@@ -55,6 +52,10 @@ function LiquidationValue({
             colorPrice={
               valPerShare > lastClosePrice ? "undervalued" : "overvalued"
             }
+            marginOfSafety={(
+              ((valPerShare - lastClosePrice) / lastClosePrice) *
+              100
+            ).toFixed(1)}
           />
         </div>
 

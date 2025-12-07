@@ -424,6 +424,14 @@ font-size: 13px;
   gap: 52px;
 }
 
+.margin-of-safety-section{
+  margin-top: 16px;
+  padding: 8px 0px;
+  border-top: 1px solid var(--text-color-grey-scale);
+  color: var(--text-color-grey-scale);
+  font-size: 14px;
+}
+
 .price-tag-wrapper:last-child {
   margin-right: 12px;
 }
@@ -702,7 +710,7 @@ border-bottom: 1px solid var(--action-color) !important;
   padding: 4px 12px;
   border-radius: 0px;
   text-align: center;
-
+  width: fit-content;
 }
 
 .price-price-tag.neutral{
@@ -935,6 +943,19 @@ height: 0;
 .MuiPopper-root.custom-popover-charts{
   width: 70vw;
   height: 300px;
+  background: #000000;
+  max-width: 1000px;
+  border-radius: 0px;
+  border: 1px solid var(--action-color);
+  z-index: 1;
+}
+
+.MuiPopper-root.formula {
+  /* width: 70vw;
+  height: 300px; */
+  height: fit-content;
+  width: fit-content;
+  padding: 24px;
   background: #000000;
   max-width: 1000px;
   border-radius: 0px;

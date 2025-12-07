@@ -29,7 +29,7 @@ from django.db.models.functions import ExtractYear
 from django.db.models import Q
 from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg,Sum
 from django.db.models.functions import Coalesce
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import Literal
 import time
 
@@ -1249,27 +1249,15 @@ def get_nopat(qfs_symbol, n=5, tax_rate=0.3):
         nopat_stats['max_nopat']
     ]
 
-def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
+def get_rnoa_cases(qfs_symbol, n=6, tax_rate = 0.3):
     """
     Computes RNOA_t = NOPAT_t/NOA_t-1 where NOPAT_t = EBIT_t*(1-tr) and NOA_t-1 = OperatingAssets_t-1 - operatingLiabilities_t-1
     Returns bear, base, bull RNOA. Bear is min(RNOA) over the last n-1 years; base is avg(RNOA) over the last n-1 years; bull is max(RNOA) over the last n-1 years
     """
-    #compute net operating assets
-    # balances = (
-    #     BalanceSheetAnnual.objects
-    #     .filter(qfs_symbol_id=qfs_symbol)
-    #     .annotate(
-    #         noa=ExpressionWrapper(
-    #             F('operating_assets') - F('operating_liabilities'),
-    #             output_field=FloatField()
-    #         )
-    #     )
-    #     .order_by('-period_end_date')  # ascending for correct RNOA calculation
-    #     .only('period_end_date', 'operating_assets', 'operating_liabilities')  # fetch only needed fields
-    # )[:n+1]
     balances = (
         BalanceSheetAnnual.objects
         .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
         .order_by('-period_end_date')  # descending to get latest n+1 periods
         .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
     )[:n+1]
@@ -1278,6 +1266,7 @@ def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
     incomes = (
         IncomeStatementAnnual.objects
         .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
         .order_by('-period_end_date')  # ascending
         .only('period_end_date', 'operating_income')
     )[:n+1]
@@ -1428,6 +1417,76 @@ def get_op_margin_ts(qfs_symbol, n=10):
 
     return formatted_data
 
+def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3, tax_rate: float = 0.3):
+    """
+    Computes RNOA_t = NOPAT_t/NOA_t-1 where NOPAT_t = EBIT_t*(1-tr) and NOA_t-1 = OperatingAssets_t-1 - operatingLiabilities_t-1
+    Returns bear, base, bull RNOA. Bear is min(RNOA) over the last n-1 years; base is avg(RNOA) over the last n-1 years; bull is max(RNOA) over the last n-1 years
+    """
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # descending to get latest n+1 periods
+        .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
+    )[:years+1]
+
+    # Step 2: fetch last n+1 income statements (only needed fields)
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # ascending
+        .only('period_end_date', 'operating_income')
+    )[:years+1]
+
+    rnoa = defaultdict()
+    incomes = list(reversed(incomes))
+    balances = list(reversed(balances))
+
+    print('incomes: 0,', incomes)
+
+    # step 3: compute rnoa. Remember we have ordered entries in descending order, so at position 0 we have the newest value
+    for i in range(1, len(incomes)):
+        year_t = incomes[i].year
+        op_income_t = incomes[i].operating_income
+        noa_t_minus_1 = balances[i-1].net_operating_assets
+
+        # avoid invalid denominator
+        if noa_t_minus_1 in (None, 0):
+            rnoa[year_t] = 0
+            continue
+
+        rnoa_value = op_income_t * (1 - tax_rate) / noa_t_minus_1
+        rnoa[year_t] = round(rnoa_value, precision)
+
+    if include_ttm:
+        #get sum of operating income of the last four quarters
+        res_op_income = (IncomeStatementQuarter.objects
+                        .filter(qfs_symbol_id = qfs_symbol)
+                        .order_by('-period_end_date')
+                        .aggregate(
+                            sum_op=Sum(Coalesce('operating_income', Value(0),output_field=FloatField())),
+                        ))
+        
+        balance = (BalanceSheetQuarter.objects
+                   .filter(qfs_symbol_id = qfs_symbol)
+                   .order_by('-period_end_date')
+                   .only('net_operating_assets'))[3]
+        
+       #keep only the forth quarter
+        # balance = balance[-1] 
+        
+        # compute rnoa
+        rnoa_ttm = (
+            round(res_op_income['sum_op']*(1-tax_rate) / balance.net_operating_assets,precision)
+            if balance.net_operating_assets else 0
+        )
+
+        rnoa["TTM"] = rnoa_ttm
+
+    return rnoa
+ 
+
 def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
     """
     Extracts min, max and avg revenue values of the past 5 years
@@ -1469,6 +1528,8 @@ def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precisi
 
 
     return margins
+
+
 
 def get_effective_tax_rates(qfs_symbol, years: int=5, include_ttm: bool = True, precision: int = 3):
     """
@@ -1775,6 +1836,7 @@ class PenmanValuationAPIView(APIView):
         operating_income = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["operating_income"])
         income_tax = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["income_tax"])
         op_margins = get_op_margins(qfs_symbol, years)
+        rnoa = get_rnoa(qfs_symbol, years)
         effective_tr = get_effective_tax_rates(qfs_symbol, years)
 
         #get operating assets, operating liabilities, net operating assets
@@ -1782,6 +1844,17 @@ class PenmanValuationAPIView(APIView):
         op_liab = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["operating_liabilities"])
         net_op_assets = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["net_operating_assets"])
         book_value = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["total_equity"])
+
+        #get debt and number of shares
+        st_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["st_debt"])
+        lt_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["lt_debt"])
+        shares_diluted = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter,type = "balance", years=years, metric_fields=["shares_diluted"])
+
+        print('short-term debt: ', st_debt['metrics']["st_debt"])
+        print('long-term debt: ', lt_debt['metrics']["lt_debt"])
+
+        #sum the short-term and long-term debt
+        debt = dict(Counter(st_debt['metrics']["st_debt"]) + Counter(lt_debt['metrics']["lt_debt"]))
 
         #extract time series data in format [{'year': 2021, 'value' : 10000}, {'year': 2022, 'value' : 20000}, etc.]
         revenue_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='revenue')
@@ -1795,7 +1868,9 @@ class PenmanValuationAPIView(APIView):
         op_liab_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='operating_liabilities')
         net_op_assets_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='net_operating_assets')
         book_value_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='total_equity')
-
+        rnoa_ts = get_rnoa_ts(qfs_symbol)
+        debt_ts = get_debt_ts(qfs_symbol)
+        nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol)
 
         #extract revenues to give default value for valuation (bear, base, bull)
         revenues = [val for key, val in  revenue['metrics']["revenue"].items() if key != "TTM"]
@@ -1912,11 +1987,29 @@ class PenmanValuationAPIView(APIView):
                             'values' : net_op_assets['metrics']["net_operating_assets"]
                         },
                         'bookValue' : {
-                        'type' : 'absolute',
-                        'hasTs' : True,
-                        'ts' : book_value_ts,
-                        'values' : book_value['metrics']["total_equity"]
-                        }
+                            'type' : 'absolute',
+                            'hasTs' : True,
+                            'ts' : book_value_ts,
+                            'values' : book_value['metrics']["total_equity"]
+                        },
+                        'rnoa' : {
+                            'type' : 'ratio',
+                            'hasTs' : True,
+                            'ts' : rnoa_ts,
+                            'values' : rnoa
+                        },
+                        'debt' : {
+                            'type' : 'ratio',
+                            'hasTs' : True,
+                            'ts' : debt_ts,
+                            'values' : debt
+                        },
+                        'nrShares' : {
+                            'type' : 'ratio',
+                            'hasTs' : True,
+                            'ts' : nr_shares_ts,
+                            'values' : shares_diluted['metrics']["shares_diluted"]
+                        },
                     },
                     'valuationDefaults' : {
                         'revenue' : [bear_rev, base_rev, bull_rev],
