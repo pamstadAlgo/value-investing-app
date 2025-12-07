@@ -174,8 +174,9 @@ function DataView() {
                 }
             }}
 
-            // 5. Force the Table Head to be Dark
+            // 5. Force the Table Head to be Dark AND Aligned
             muiTableHeadCellProps={{
+                className: "table-header-cell", // <--- FIX: Added this class to match padding
                 sx: {
                     backgroundColor: "var(--table-header-actions-bg-color)",
                     color: "var(--header-color)",
