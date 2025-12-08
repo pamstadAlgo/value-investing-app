@@ -8,7 +8,14 @@ import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { IconButton, ListItemText, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTypedSelector } from "src/app/hooks";
-import { setSelectedModel } from "src/features/analysisSlice";
+import {
+  changeTaxRate,
+  changeTerminalGrowthRate,
+  changeWacc,
+  initializeValuationData,
+  setSelectedModel,
+} from "src/features/analysisSlice";
+import { useSnackbar } from "src/pages/GlobalComponents/SnackbarProvider";
 
 function SaveValuationModel() {
   const savedValuationModels = useTypedSelector(
@@ -19,6 +26,7 @@ function SaveValuationModel() {
   );
   const dispatch = useDispatch();
   const axiosInstanceAuth = useAxiosWithAuth();
+  const { showMessage } = useSnackbar();
 
   function handleChange(e) {
     //if value is -1 it means new Model will be created
@@ -32,7 +40,38 @@ function SaveValuationModel() {
       );
 
       if (modelIndex !== -1) {
-        dispatch(setSelectedModel(savedValuationModels[modelIndex]));
+        try {
+          dispatch(setSelectedModel(savedValuationModels[modelIndex]));
+
+          //get data of selected model
+          const data = JSON.parse(savedValuationModels[modelIndex].data);
+
+          if (data?.valuationData) {
+            dispatch(initializeValuationData(data?.valuationData));
+          }
+
+          if (data?.taxRate) {
+            dispatch(changeTaxRate(data?.taxRate));
+          }
+
+          if (data?.wacc) {
+            dispatch(changeWacc(data?.wacc));
+          }
+
+          if (data?.terminalGrowthRate) {
+            dispatch(changeTerminalGrowthRate(data?.terminalGrowthRate));
+          }
+
+          showMessage("Model successfully loaded");
+        } catch {
+          showMessage("Error loading model", "error");
+        }
+
+        //set valuation data of current model
+        console.log(
+          "valuation data of current model: ",
+          JSON.parse(savedValuationModels[modelIndex].data)
+        );
       }
 
       console.log("we load existing value and select data");
@@ -40,7 +79,9 @@ function SaveValuationModel() {
   }
 
   return (
-    <FormControl className="form-control-saved-filter-views" size="small">
+    <FormControl
+      className="form-control-saved-filter-views valuation-model"
+      size="small">
       <InputLabel id="demo-simple-select-label" className="custom-input-label">
         Saved Valuation Models
       </InputLabel>
@@ -66,11 +107,11 @@ function SaveValuationModel() {
             }
           }
           //if selected is string then a new filter will be created
-        //   if (typeof selected === "string") {
-        //     return "Create new Filter View";
-        //   }
+          //   if (typeof selected === "string") {
+          //     return "Create new Filter View";
+          //   }
 
-        //   return "test";
+          //   return "test";
           //   let selectedValue = screenerState.savedFilterViews.find(
           //     (item) => item.id === selected
           //   );
