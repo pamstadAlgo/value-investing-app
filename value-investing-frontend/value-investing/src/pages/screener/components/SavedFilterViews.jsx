@@ -18,6 +18,9 @@ import Tooltip from "@mui/material/Tooltip";
 import { ListItemText } from "@mui/material";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+
+
 function SavedFilterViews() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const dispatch = useDispatch();

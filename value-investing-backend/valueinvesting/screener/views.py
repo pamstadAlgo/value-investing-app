@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from quickfs_dj.models import BalanceSheetAnnual, BalanceSheetQuarter, IncomeStatementAnnual, IncomeStatementQuarter, TradedCompanies, CashFlowStatementAnnual, KeyRatiosAnnual, TradedCompanies, KeyRatiosQuarter, LatestIncomeStatementAnnual, LatestBalanceSheetQuarter, LatestKeyRatiosAnnual, LatestKeyRatiosQuarter, LatestCashFlowStatementAnnual, Valuation, ScreenerData
-from screener.models import CustomMetrics, FilterViews
-from .serializers import StockScreenerFiltersSerializer, CustomMetricsSerializer, FilterViewsSerializer,CharFieldFilterOptions
+from screener.models import CustomMetrics, FilterViews, ValuationModel
+from .serializers import StockScreenerFiltersSerializer, CustomMetricsSerializer, FilterViewsSerializer,CharFieldFilterOptions, ValuationModelSerizalizer
 from django.core.cache import cache
 from django.db import connection
 import yfinance as yf
@@ -2972,6 +2972,31 @@ class CustomMetricsAPIView(APIView):
     def put(self, request):
         (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)
 
+
+class ValuationModelsAPIView(APIView):
+    def put(self, request):
+        #try to extract model id from request; if it does not exist, new entry will be created
+        data = request.data
+        model_id = data.get("id", None)
+
+        if model_id:
+            try:
+                #get existing entry
+                valuation_model = ValuationModel.objects.get(id=request.data.get("id"), user_id=request.user.id)
+            
+                #serialize existing entry with new data
+                serializer = ValuationModelSerizalizer(valuation_model, data=data, partial=True)
+            except ValuationModel.DoesNotExist:
+                return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            #create a new entry
+            serializer = ValuationModelSerizalizer(data=data)
+
+        #check if data is valid
+        if serializer.is_valid():
+            serializer.save(user_id = request.user.id)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FilterViewsAPIView(APIView): 
     def get(self, request):

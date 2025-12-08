@@ -3,6 +3,7 @@ import ValuationSummaryCard from "./ValuationSummaryCard";
 import { getCurrencySymbol } from "../../valuation/components/selectorFunctions";
 import { useSelector } from "react-redux";
 import { computeNetLiqValue } from "./selectorFunctions";
+import SaveValuationModel from "./SaveValuationModel";
 
 const equityValTitles = [
   "Equity Val (bear)",
@@ -34,6 +35,7 @@ function ValuationSummary({
           style={{ fontSize: "14px", marginLeft: "10px" }}>
           (Last Close Price: {getCurrencySymbol(currencyCode)} {lastClosePrice})
         </span>
+        <SaveValuationModel />
       </div>
       <div className="flex-wrapper-valuation-summary">
         {equityVals?.map((val, index) => {

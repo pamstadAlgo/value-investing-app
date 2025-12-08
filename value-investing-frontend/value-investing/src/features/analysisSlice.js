@@ -16,6 +16,7 @@ const initialState = {
   taxRate: 0.25,
   wacc: 0.1,
   terminalGrowthRate: 0,
+  savedModels: []
 };
 
 export const analysisSlice = createSlice({
