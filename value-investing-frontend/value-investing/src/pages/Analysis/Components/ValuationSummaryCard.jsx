@@ -22,8 +22,8 @@ function ValuationSummaryCard({
         <span
           className={colorPrice}
           style={{ backgroundColor: "transparent", fontSize: "16px" }}>
-          {" "}
-          {marginOfSafety > 0 ? "+" : "-"}
+
+          {marginOfSafety > 0 ? "+" : ""}
           {marginOfSafety} %
         </span>
       </div>

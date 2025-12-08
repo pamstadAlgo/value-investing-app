@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from screener.models import CustomMetrics, FilterViews
+from screener.models import CustomMetrics, FilterViews, ValuationModel
 from .helpers import tokenize, set_table
 
 class StringListField(serializers.ListField):
@@ -81,6 +81,11 @@ class FilterViewsSerializer(serializers.ModelSerializer):
         model = FilterViews
         fields = ['id', 'view_name', 'view_description', 'view_filters']
 
+
+class ValuationModelSerizalizer(serializers.ModelSerializer):
+    class Meta:
+        model = ValuationModel
+        fields = ['id', 'qfs_symbol', 'name', 'description', 'data', 'created_at']
 
 class CharFieldFilterOptions(serializers.Serializer):
     # Use DictField to handle dynamic keys
