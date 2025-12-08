@@ -81,10 +81,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   };
 
   const handleValuationChange = (e, metricName, valuationCase, scaleFactor) => {
-    console.log("metricName: ", metricName);
-    console.log("e.target.value: ", e.target.value);
-    console.log("valuationCase: ", valuationCase);
-
     dispatch(
       updateValuationData({
         newValue: e.target.value,
@@ -128,11 +124,14 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
     nopat[0] = computeNopatBottomUp(valuationData, taxRate, 0);
     nopat[1] = computeNopatBottomUp(valuationData, taxRate, 1);
     nopat[2] = computeNopatBottomUp(valuationData, taxRate, 2);
-    // console.log("we are in bottomUp");
-    // opIncomeBear = computeOpIncomeBottomUp(valuationData, 0);
-    // opIncomeBase = computeOpIncomeBottomUp(valuationData, 1);
-    // opIncomeBull = computeOpIncomeBottomUp(valuationData, 2);
   }
+
+  console.log("nopat before function: ", nopat);
+  console.log("valuationData?.bookValue: ", valuationData?.bookValue);
+  console.log(
+    "valuationData?.netOperatingAssets: ",
+    valuationData?.netOperatingAssets
+  );
 
   //compute equity value
   equityVal[0] = computeEquityVal(
@@ -164,6 +163,9 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   netOpAssets[0] = computeNetOpAssets(valuationData, 0);
   netOpAssets[1] = computeNetOpAssets(valuationData, 1);
   netOpAssets[2] = computeNetOpAssets(valuationData, 2);
+
+  console.log("equityVal that we pass: ", equityVal);
+  console.log("nr shares: ", nrShares);
 
   return (
     <>

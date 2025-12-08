@@ -25,7 +25,7 @@ function ValuationAssumptions({ scalingFactor }) {
           placeholder="0.25"
           label="Tax Rate"
           value={analysisData.taxRate}
-          onChange={(e) => dispatch(changeTaxRate(e.target.value))}
+          onChange={(e) => dispatch(changeTaxRate(Number(e.target.value)))}
         />
         <TextField
           type="number"
@@ -33,7 +33,7 @@ function ValuationAssumptions({ scalingFactor }) {
           placeholder="0.1"
           label="Cost of Capital (WACC)"
           value={analysisData.wacc}
-          onChange={(e) => dispatch(changeWacc(e.target.value))}
+          onChange={(e) => dispatch(changeWacc(Number(e.target.value)))}
         />
         <TextField
           type="number"
@@ -41,7 +41,7 @@ function ValuationAssumptions({ scalingFactor }) {
           placeholder="0.02"
           label="Terminal Growth Rate"
           value={analysisData.terminalGrowthRate}
-          onChange={(e) => dispatch(changeTerminalGrowthRate(e.target.value))}
+          onChange={(e) => dispatch(changeTerminalGrowthRate(Number(e.target.value)))}
         />
         <TextField
           type="number"
