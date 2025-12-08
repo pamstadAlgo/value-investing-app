@@ -436,6 +436,10 @@ font-size: 13px;
   margin-right: 12px;
 }
 
+.MuiFormControl-root.valuation-model > .MuiInputBase-root{
+  max-width: 200px;
+}
+
 .login-button-text{
 font-size: 15px;
   font-family: var(--font-family);

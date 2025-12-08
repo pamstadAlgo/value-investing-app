@@ -72,7 +72,7 @@ function CompanySearchField({ setBackdropLoading }) {
           setBackdropLoading(false);
         })
         .catch((error) => {
-          showMessage(`Error fetching data: ${error}`);
+          showMessage(`Error fetching data: ${error}`, "error");
           setBackdropLoading(false);
 
           console.error("ERROR: GET screener/analysis/: ", error);

@@ -89,6 +89,18 @@ export const analysisSlice = createSlice({
     setSelectedModel: (state, action: PayloadAction<SelectedModel>) => {
       state.selectedModel = action.payload;
     },
+    updateSavedModels: (state, action: PayloadAction<ExistingModel>) => {
+      //check if model already exists
+      const modelIndex = state.savedModels.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (modelIndex === -1) {
+        state.savedModels.push(action.payload);
+      } else {
+        state.savedModels[modelIndex] = action.payload;
+      }
+    },
   },
 });
 
@@ -107,6 +119,7 @@ export const {
   initalizeBalanceSheet,
   initializeSavedModels,
   setSelectedModel,
+  updateSavedModels,
 } = analysisSlice.actions;
 
 export default analysisSlice.reducer;

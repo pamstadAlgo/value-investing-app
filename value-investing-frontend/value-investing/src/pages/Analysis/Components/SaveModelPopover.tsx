@@ -5,9 +5,14 @@ import { Formik } from "formik";
 import TextField from "@mui/material/TextField";
 import { Button } from "@mui/material";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTypedSelector } from "src/app/hooks";
 import useAxiosWithAuth from "src/axios/useAxiosWithAuth";
+import {
+  setSelectedModel,
+  updateSavedModels,
+} from "src/features/analysisSlice";
+import { useSnackbar } from "src/pages/GlobalComponents/SnackbarProvider";
 
 type AnchorElSetter = (el: HTMLElement | null) => void;
 
@@ -25,17 +30,23 @@ function SaveModelPopover({
   //get valuation state
   const valuation = useTypedSelector((state) => state.analysis);
   const axiosInstanceAuth = useAxiosWithAuth();
-
+  const selectedModel = useTypedSelector(
+    (state) => state.analysis.selectedModel
+  );
   // validation schema for form
   const validationSchema = Yup.object({
     modelName: Yup.string().required("Model Name is required"),
     modelDescription: Yup.string().required("Model Description is required"),
   });
+  const { showMessage } = useSnackbar();
 
   const initialValues = {
-    modelName: "",
-    modelDescription: "",
+    modelName: selectedModel?.isNew === true ? "" : selectedModel.name,
+    modelDescription:
+      selectedModel?.isNew === true ? "" : selectedModel.description,
   };
+
+  const dispatch = useDispatch();
 
   return (
     <Popover
@@ -69,72 +80,63 @@ function SaveModelPopover({
 
       <Formik
         initialValues={initialValues}
-        // initialValues={{
-        //   viewName: screenerState.viewName,
-        //   viewDescription: screenerState.viewDescription,
-        // }}
-        // key={screenerState.viewName + screenerState.viewDescription}
         enableReinitialize={true}
         validationSchema={validationSchema}
         onSubmit={(values, { resetForm }) => {
           console.log("we submit form, values: ", values);
 
+          const data = {
+            taxRate: valuation.taxRate,
+            wacc: valuation.wacc,
+            valuationData: valuation.valuationData,
+            terminalGrowthRate: valuation.terminalGrowthRate,
+          };
+
           // values need in payload
-          const payload = {
+          let payload: {
+            name: string;
+            description: string;
+            qfs_symbol: any;
+            data: string;
+            id?: number;
+          } = {
             name: values.modelName,
             description: values.modelDescription,
             qfs_symbol: valuation.selectedTickerSymbol.qfs_symbol,
-            data: JSON.stringify(valuation.valuationData),
+            // data: JSON.stringify(valuation.valuationData),
+            data: JSON.stringify(data),
           };
 
+          let modelId =
+            selectedModel?.isNew === true ? undefined : selectedModel.id;
+
+          //if model is not new we will also add id to payload
+          if (modelId) {
+            payload = { ...payload, id: modelId };
+          }
           axiosInstanceAuth
             .put("/screener/valuation-model/", payload)
-            .then((response) =>
-              console.log("response valuation model", response.data)
-            )
-            .catch((error) => console.log("error valuation-model: ", error));
-          //   const payload = {
-          //     view_name: values.viewName,
-          //     view_description: values.viewDescription,
-          //     view_filters: JSON.stringify(screenerState.selectedFilters),
-          //   };
-
-          //   dispatch(setViewName(values.viewName));
-          //   dispatch(setViewDescription(values.viewDescription));
-
-          //   //check if currentFilterView has id or not; if yes then filter already exists and should get updated; otherwise new filter will be created
-          //   if (
-          //     typeof screenerState.currentFilterView !== "string"
-          //     //   !(screenerState.currentFilterView instanceof String)
-          //   ) {
-          //     //add id
-          //     payload["id"] = screenerState.currentFilterView;
-          //   }
-
-          //   axiosInstanceAuth
-          //     .put("/screener/filter-view/", payload)
-          //     .then((response) => {
-          //       //update currentFilterView
-          //       dispatch(setCurrentFilterView(response.data.id));
-
-          //       //update saveFilterViews; if id is already present we update; otherwise we push new item
-          //       let filterView = screenerState.savedFilterViews.find(
-          //         (item) => item.id === response.data.id
-          //       );
-
-          //       if (!filterView) {
-          //         dispatch(addSaveFilterView(response.data));
-          //         showMessage("Template was successfully saved", "success");
-          //         // resetForm();
-          //       } else {
-          //         dispatch(updateSavedFilterViews(response.data));
-          //         showMessage("Template was successfully updated", "success");
-          //       }
-          //     })
-          //     .catch((error) => {
-          //       showMessage(`Error saving the template: ${error}`, "error");
-          //       console.error("ERROR: POST screener/filter-view");
-          //     });
+            .then((response) => {
+              console.log("response valuation model", response.data);
+              dispatch(updateSavedModels(response.data));
+              dispatch(setSelectedModel(response.data));
+              //close modal
+              setAnchorEl(null);
+              showMessage(
+                `Model successfully ${
+                  selectedModel?.isNew === true ? "saved" : "updated"
+                }`
+              );
+            })
+            .catch((error) => {
+              showMessage(
+                `Error ${
+                  selectedModel?.isNew === true ? "saving" : "updating"
+                } model`,
+                "error"
+              );
+              console.error("error valuation-model: ", error);
+            });
         }}>
         {(formik) => (
           <form onSubmit={formik.handleSubmit}>
@@ -198,7 +200,7 @@ function SaveModelPopover({
                 type="submit"
                 variant="contained"
                 startIcon={<SaveOutlinedIcon className="button-icon" />}>
-                Save Model
+                {selectedModel?.isNew === true ? "Save Model" : "Update Model"}
               </Button>
             </div>
             {/* <Persist name="save-screener-template-form" /> */}
