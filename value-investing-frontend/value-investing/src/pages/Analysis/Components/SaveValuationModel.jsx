@@ -7,13 +7,37 @@ import { useDispatch, useSelector } from "react-redux";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { IconButton, ListItemText, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useTypedSelector } from "src/app/hooks";
+import { setSelectedModel } from "src/features/analysisSlice";
 
 function SaveValuationModel() {
-  const savedValuationModels = useSelector(
+  const savedValuationModels = useTypedSelector(
     (state) => state.analysis?.savedModels
+  );
+  const selectedModel = useTypedSelector(
+    (state) => state.analysis.selectedModel
   );
   const dispatch = useDispatch();
   const axiosInstanceAuth = useAxiosWithAuth();
+
+  function handleChange(e) {
+    //if value is -1 it means new Model will be created
+    if (e.target.value === -1) {
+      console.log("we create a new model");
+      dispatch(setSelectedModel({ isNew: true }));
+    } else {
+      // find selected model by index
+      const modelIndex = savedValuationModels.findIndex(
+        (item) => item.id === e.target.value
+      );
+
+      if (modelIndex !== -1) {
+        dispatch(setSelectedModel(savedValuationModels[modelIndex]));
+      }
+
+      console.log("we load existing value and select data");
+    }
+  }
 
   return (
     <FormControl className="form-control-saved-filter-views" size="small">
@@ -24,29 +48,45 @@ function SaveValuationModel() {
         labelId="demo-simple-select-label"
         id="demo-simple-select"
         className="custom-select"
-        // value={screenerState.currentFilterView}
+        value={selectedModel?.isNew || !selectedModel ? -1 : selectedModel?.id}
         label="Saved Screener Templates"
         renderValue={(selected) => {
-          //if selected is string then a new filter will be created
-          if (typeof selected === "string") {
-            return "Create new Filter View";
+          console.log("this is selected: ", selected);
+
+          if (selected === -1) {
+            return "Create new valuation Model";
+          } else {
+            const modelIndex = savedValuationModels.findIndex(
+              (item) => item.id === selected
+            );
+
+            if (modelIndex !== -1) {
+              let valModel = savedValuationModels[modelIndex];
+              return `${valModel.created_at} ${valModel.name}`;
+            }
           }
+          //if selected is string then a new filter will be created
+        //   if (typeof selected === "string") {
+        //     return "Create new Filter View";
+        //   }
+
+        //   return "test";
           //   let selectedValue = screenerState.savedFilterViews.find(
           //     (item) => item.id === selected
           //   );
           //   console.log("selectedValue we return: ", selectedValue);
           //   return selectedValue?.view_name;
         }}
-        //   onChange={handleChange}
-      >
+        onChange={handleChange}>
         {savedValuationModels?.length === 0 && (
           <MenuItem disabled>No Saved Valuation Models</MenuItem>
         )}
         {savedValuationModels?.map((item) => {
           return (
             <MenuItem key={item.id} value={item.id}>
-              <ListItemText primary={item.view_name} />
-              <Tooltip title="Delete Template" arrow>
+              {/* <ListItemText primary={`${item.created_at} ${item.name} `} /> */}
+              <div>{`${item.created_at} ${item.name}`}</div>
+              <Tooltip title="Delete Model" arrow>
                 <IconButton
                   aria-label="delete"
                   //   onClick={(e) => handleDeleteFilterView(e, item.id)}
@@ -58,7 +98,7 @@ function SaveValuationModel() {
           );
         })}
         {savedValuationModels?.length > 0 && (
-          <MenuItem style={{ fontStyle: "italic" }} value="newModel">
+          <MenuItem style={{ fontStyle: "italic" }} value={-1}>
             Create new valuation Model
           </MenuItem>
         )}

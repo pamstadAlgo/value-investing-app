@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                        /* modern output, adjust if needed */
+    "lib": ["DOM", "ES2020", "DOM.Iterable"],
+    "allowJs": true,                           /* allow .js and .jsx files while migrating */
+    "checkJs": false,                          /* set true to check .js files (optional) */
+    "jsx": "react-jsx",                        /* "react-jsx" for React 17+ (automatic runtime) */
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,                   /* required by many build tools */
+    "noEmit": true,                             /* don't produce js files — just typecheck */
+    "skipLibCheck": true,                       /* speed: skip type checking of libs */
+    "incremental": true,                        /* faster subsequent checks */
+    "strict": false,                            /* start false, enable gradually */
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "baseUrl": ".",                             /* for absolute imports if used */
+    "paths": {}                                 /* fill if you use path aliases */
+  },
+  "include": ["src"],                           /* adjust if your sources live elsewhere */
+  "exclude": ["node_modules", "dist", "build"]
+}

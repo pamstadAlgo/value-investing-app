@@ -9,8 +9,10 @@ import Chip from "@mui/material/Chip";
 import {
   initalizeBalanceSheet,
   initializeCompanyData,
+  initializeSavedModels,
   initializeTickerSymbol,
   initializeValuationData,
+  setSelectedModel,
 } from "../../../features/analysisSlice";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
 
@@ -66,12 +68,6 @@ function CompanySearchField({ setBackdropLoading }) {
         .get(`screener/analysis/${newValue.qfs_symbol}/`)
         .then((response) => {
           dispatch(initializeCompanyData(response.data));
-
-          //compute also defaults for valuation
-          console.log(
-            "defaults valuation: ",
-            response?.data?.valuationDefaults
-          );
           dispatch(initializeValuationData(response?.data?.valuationDefaults));
           setBackdropLoading(false);
         })
@@ -88,18 +84,33 @@ function CompanySearchField({ setBackdropLoading }) {
           qfs_symbols: [newValue.qfs_symbol],
         })
         .then((response) => {
-          console.log(response.data?.[0]?.data);
           dispatch(initalizeBalanceSheet(response.data[0]?.data));
-          // dispatch(initializeAssetValuations(response.data));
         })
         .catch((error) => {
           showMessage(`Error computing asset val ${error}`, "error");
-
           console.error(
             "ERROR: POST /screener/asset-val-fundamentals/: ",
             error
           );
         });
+
+      // fetch saved valuation models
+      axiosInstanceAuth
+        .get("/screener/valuation-model/", {
+          params: {
+            qfsSymbol: newValue.qfs_symbol,
+          },
+        })
+        .then((response) => {
+          console.log("response.data: ", response.data);
+          dispatch(initializeSavedModels(response.data));
+
+          // initalize selected model as a new one
+          dispatch(setSelectedModel({ isNew: true }));
+        })
+        .catch((error) =>
+          console.error("error fetch /screener/valuation-model/: ", error)
+        );
     }
   };
 
