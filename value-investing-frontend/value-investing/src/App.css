@@ -704,6 +704,11 @@ border-bottom: 1px solid var(--action-color) !important;
   background: #bcbaba;
 }
 
+.MuiPopover-root.save-val-model-popover > .MuiPaper-root.MuiPaper-elevation{
+  min-width: 600px;
+
+}
+
 .price-price-tag{
   font-size: 1.1rem;
   font-weight: 700;

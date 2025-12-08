@@ -87,6 +87,18 @@ class ValuationModelSerizalizer(serializers.ModelSerializer):
         model = ValuationModel
         fields = ['id', 'qfs_symbol', 'name', 'description', 'data', 'created_at']
 
+    def to_representation(self, instance):
+        """
+        Transform created at string to dd.mm.YYYY format
+        """
+        rep = super().to_representation(instance)
+        created_at = instance.created_at
+
+        if created_at:
+            rep['created_at'] = created_at.strftime("%d.%m.%Y")
+
+        return rep
+
 class CharFieldFilterOptions(serializers.Serializer):
     # Use DictField to handle dynamic keys
     field_options = serializers.DictField(child=serializers.ListField(child=serializers.CharField()))

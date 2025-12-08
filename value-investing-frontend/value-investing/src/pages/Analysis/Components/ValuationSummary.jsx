@@ -4,6 +4,7 @@ import { getCurrencySymbol } from "../../valuation/components/selectorFunctions"
 import { useSelector } from "react-redux";
 import { computeNetLiqValue } from "./selectorFunctions";
 import SaveValuationModel from "./SaveValuationModel";
+import SaveModel from "./SaveModel.tsx";
 
 const equityValTitles = [
   "Equity Val (bear)",
@@ -28,14 +29,26 @@ function ValuationSummary({
   return (
     <div className="glass-card" style={{ marginTop: "20px" }}>
       {" "}
-      <div className="title-mid-size" style={{ marginBottom: "20px" }}>
-        Valuation Summary {qfsSymbol}
-        <span
-          className="title-last-close-price"
-          style={{ fontSize: "14px", marginLeft: "10px" }}>
-          (Last Close Price: {getCurrencySymbol(currencyCode)} {lastClosePrice})
-        </span>
-        <SaveValuationModel />
+      <div
+        className="title-mid-size"
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          justifyContent: "space-between",
+        }}>
+        <div>
+          Valuation Summary {qfsSymbol}
+          <span
+            className="title-last-close-price"
+            style={{ fontSize: "14px", marginLeft: "10px" }}>
+            (Last Close Price: {getCurrencySymbol(currencyCode)}{" "}
+            {lastClosePrice})
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <SaveValuationModel />
+          <SaveModel />
+        </div>
       </div>
       <div className="flex-wrapper-valuation-summary">
         {equityVals?.map((val, index) => {

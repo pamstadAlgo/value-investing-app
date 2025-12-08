@@ -2974,6 +2974,21 @@ class CustomMetricsAPIView(APIView):
 
 
 class ValuationModelsAPIView(APIView):
+    def get(self, request):
+        #get qfsSymbol from queryParameters
+        qfs_symbol = request.GET.get('qfsSymbol')
+
+        print('qfs_symbol: ', qfs_symbol)
+        print('user id: ', request.user.id)
+
+        #filter the ValuationModels based on qfs symbol and user
+        val_models = ValuationModel.objects.filter(qfs_symbol_id = qfs_symbol, user_id = request.user.id)
+
+        serializer = ValuationModelSerizalizer(val_models, many=True)
+
+        return Response(serializer.data)
+
+
     def put(self, request):
         #try to extract model id from request; if it does not exist, new entry will be created
         data = request.data
