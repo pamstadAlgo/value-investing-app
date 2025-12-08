@@ -66,12 +66,6 @@ function SaveValuationModel() {
         } catch {
           showMessage("Error loading model", "error");
         }
-
-        //set valuation data of current model
-        console.log(
-          "valuation data of current model: ",
-          JSON.parse(savedValuationModels[modelIndex].data)
-        );
       }
 
       console.log("we load existing value and select data");
@@ -106,17 +100,6 @@ function SaveValuationModel() {
               return `${valModel.created_at} ${valModel.name}`;
             }
           }
-          //if selected is string then a new filter will be created
-          //   if (typeof selected === "string") {
-          //     return "Create new Filter View";
-          //   }
-
-          //   return "test";
-          //   let selectedValue = screenerState.savedFilterViews.find(
-          //     (item) => item.id === selected
-          //   );
-          //   console.log("selectedValue we return: ", selectedValue);
-          //   return selectedValue?.view_name;
         }}
         onChange={handleChange}>
         {savedValuationModels?.length === 0 && (
@@ -124,7 +107,10 @@ function SaveValuationModel() {
         )}
         {savedValuationModels?.map((item) => {
           return (
-            <MenuItem key={item.id} value={item.id}>
+            <MenuItem
+              key={item.id}
+              value={item.id}
+              style={{ display: "flex", justifyContent: "space-between" }}>
               {/* <ListItemText primary={`${item.created_at} ${item.name} `} /> */}
               <div>{`${item.created_at} ${item.name}`}</div>
               <Tooltip title="Delete Model" arrow>
