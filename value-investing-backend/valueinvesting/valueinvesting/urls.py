@@ -29,6 +29,7 @@ api_urlpatterns = [
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/google/', views.GoogleLogin.as_view(), name='google_login'),
     path("watchlist/", include('watchlist.urls')),
+    path('history/', include('valuation_history.urls')),
 ]
 
 urlpatterns = [

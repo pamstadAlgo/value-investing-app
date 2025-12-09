@@ -21,12 +21,7 @@ import {
   DialogContent,
   TextField,
   DialogActions,
-  IconButton,
-  Paper,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import ShareIcon from "@mui/icons-material/Share";
 
 const TextActionBtn = React.memo(({ label, onClick, color = "var(--text-color-grey-scale)" }) => (
   <Button

@@ -2,7 +2,7 @@ import React, { useMemo, useCallback, useState } from "react";
 import { MaterialReactTable } from "material-react-table";
 import { Box, Button, Tooltip, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom"; 
-import { useDispatch, useSelector } from "react-redux"; 
+import { useDispatch } from "react-redux"; 
 import BackdropLoading from "../../GlobalComponents/BackdropLoading";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";

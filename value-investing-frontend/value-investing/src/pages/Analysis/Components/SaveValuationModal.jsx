@@ -10,22 +10,26 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Box
+  Box,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { saveValuationToWatchlist, fetchWatchlists } from "../../../features/watchlistSlice";
+// Import from BOTH slices now
+import { addStockToWatchlist, fetchWatchlists } from "../../../features/watchlistSlice";
+import { saveValuationSnapshot } from "../../../features/valuationHistorySlice";
 
 const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
   const dispatch = useDispatch();
   
-  // 1. Grab the full analysis state
+  // Selectors
   const analysisState = useSelector((state) => state.analysis);
   const { watchlists, status } = useSelector((state) => state.watchlist);
+  const { saveStatus } = useSelector((state) => state.valuationHistory);
   
   const [selectedListId, setSelectedListId] = useState("");
   const [selectedCase, setSelectedCase] = useState(1);
   const [customTarget, setCustomTarget] = useState("");
-  const [notes, setNotes] = useState("");
+  const [thesis, setThesis] = useState("");
+  const [tag, setTag] = useState("Base Case");
 
   useEffect(() => {
     if (open && status === 'idle') {
@@ -46,48 +50,57 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
     }
   }, [selectedCase, equityVals]);
 
-  const handleSave = () => {
-    if (!selectedListId) return alert("Please select a watchlist");
+  const handleSave = async () => {
+    if (!customTarget) return alert("Please enter a price target");
 
-    // 2. Construct the snapshot object from Redux state
+    // 1. Construct the snapshot
     const valuationInputsSnapshot = {
         valuationData: analysisState.valuationData,
         valuationApproach: analysisState.valuationApproach,
         taxRate: analysisState.taxRate,
         wacc: analysisState.wacc,
         terminalGrowthRate: analysisState.terminalGrowthRate,
-        // We can add other fields if needed, like balanceSheet modifications
     };
     
-    dispatch(saveValuationToWatchlist({
-      watchlistId: selectedListId,
-      ticker: qfsSymbol,
-      price_target: parseFloat(customTarget),
-      notes: notes,
-      valuation_date: new Date().toISOString().split('T')[0],
-      valuation_inputs: valuationInputsSnapshot // <-- Send it!
-    }))
-    .unwrap()
-    .then(() => {
-      alert("Valuation and inputs saved!");
-      onClose();
-    })
-    .catch((err) => alert(`Error: ${err.message}`));
+    try {
+        // 2. Save to History (The new slice)
+        await dispatch(saveValuationSnapshot({
+            qfs_symbol: qfsSymbol,
+            price_target: parseFloat(customTarget),
+            thesis: thesis,
+            tags: tag,
+            current_price_at_submission: analysisState.companyData?.price || 0,
+            model_inputs: valuationInputsSnapshot
+        })).unwrap();
+
+        // 3. Optional: Add to Watchlist (The old slice)
+        if (selectedListId) {
+            dispatch(addStockToWatchlist({ watchlistId: selectedListId, ticker: qfsSymbol }));
+        }
+
+        alert("Valuation saved to history!");
+        onClose();
+        
+    } catch (err) {
+        alert(`Error saving valuation: ${JSON.stringify(err)}`);
+    }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ fontFamily: 'var(--font-family)', fontWeight: 'bold' }}>
-        SAVE VALUATION: <span style={{color: 'var(--action-color)'}}>{qfsSymbol}</span>
+        SAVE ANALYSIS: <span style={{color: 'var(--action-color)'}}>{qfsSymbol}</span>
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+          
           <FormControl fullWidth variant="standard">
-            <InputLabel>Select Watchlist</InputLabel>
+            <InputLabel>Add to Watchlist (Optional)</InputLabel>
             <Select
               value={selectedListId}
               onChange={(e) => setSelectedListId(e.target.value)}
             >
+              <MenuItem value=""><em>None</em></MenuItem>
               {watchlists.map((list) => (
                 <MenuItem key={list.id} value={list.id}>{list.title}</MenuItem>
               ))}
@@ -96,7 +109,7 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
 
           <Box sx={{ display: 'flex', gap: 2 }}>
              <FormControl fullWidth variant="standard">
-              <InputLabel>Valuation Case</InputLabel>
+              <InputLabel>Select Case</InputLabel>
               <Select
                 value={selectedCase}
                 onChange={(e) => setSelectedCase(e.target.value)}
@@ -118,20 +131,34 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
           </Box>
 
           <TextField
-            label="Underwriting Assumptions / Notes"
+            label="Investment Thesis / Notes"
             multiline
             rows={4}
             variant="outlined"
             fullWidth
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={thesis}
+            onChange={(e) => setThesis(e.target.value)}
           />
+          
+          <TextField
+            label="Tag (e.g. Q3 Earnings)"
+            variant="standard"
+            fullWidth
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+          />
+
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} sx={{ color: 'gray' }}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" sx={{ bgcolor: 'var(--action-color)', fontWeight: 'bold' }}>
-          Save
+        <Button 
+          onClick={handleSave} 
+          variant="contained" 
+          disabled={saveStatus === 'loading'}
+          sx={{ bgcolor: 'var(--action-color)', fontWeight: 'bold' }}
+        >
+          {saveStatus === 'loading' ? 'Saving...' : 'Save Snapshot'}
         </Button>
       </DialogActions>
     </Dialog>
