@@ -2978,9 +2978,6 @@ class ValuationModelsAPIView(APIView):
         #get qfsSymbol from queryParameters
         qfs_symbol = request.GET.get('qfsSymbol')
 
-        print('qfs_symbol: ', qfs_symbol)
-        print('user id: ', request.user.id)
-
         #filter the ValuationModels based on qfs symbol and user
         val_models = ValuationModel.objects.filter(qfs_symbol_id = qfs_symbol, user_id = request.user.id)
 
@@ -3012,6 +3009,27 @@ class ValuationModelsAPIView(APIView):
             serializer.save(user_id = request.user.id)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """
+        Delete valuation model
+        """
+        try:
+            # Step 1: Get the object by its primary key
+            val_model = ValuationModel.objects.get(pk=request.data.get("id"))
+            
+            # Step 2: Delete the object
+            val_model.delete()  
+
+            #get all remaining objects and return
+            val_models = ValuationModel.objects.filter(user_id=request.user.id, qfs_symbol_id = request.data.get('qfsSymbol'))
+            # Serialize the queryset
+            serializer = ValuationModelSerizalizer(val_models, many=True)
+            # Return the serialized data
+            return Response(serializer.data)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 class FilterViewsAPIView(APIView): 
     def get(self, request):
@@ -3070,15 +3088,10 @@ class FilterViewsAPIView(APIView):
             serializer = FilterViewsSerializer(user_filter_views, many=True)
             # Return the serialized data
             return Response(serializer.data)
-        # except FilterViews.DoesNotExist:
-            # print(f"Object with pk={pk} does not exist.")
-
 
         except Exception as e:
             print(f"An error occurred: {e}")
-        # def put(self, request):
-    #     (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)
-
+   
 
 def get_char_fields(model, fields_to_exclude=[]):
     charFields =  [field.name  for field in model._meta.get_fields() if field.is_relation is False and field.get_internal_type() in ("CharField") and field.name not in fields_to_exclude]

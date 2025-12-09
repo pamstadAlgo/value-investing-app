@@ -12,18 +12,21 @@ import {
   changeTaxRate,
   changeTerminalGrowthRate,
   changeWacc,
+  initializeSavedModels,
   initializeValuationData,
   setSelectedModel,
 } from "src/features/analysisSlice";
 import { useSnackbar } from "src/pages/GlobalComponents/SnackbarProvider";
+import { loadValuationModel } from "./helpers";
 
-function SaveValuationModel() {
+function SaveValuationModel({ qfsSymbol }) {
   const savedValuationModels = useTypedSelector(
     (state) => state.analysis?.savedModels
   );
   const selectedModel = useTypedSelector(
     (state) => state.analysis.selectedModel
   );
+
   const dispatch = useDispatch();
   const axiosInstanceAuth = useAxiosWithAuth();
   const { showMessage } = useSnackbar();
@@ -31,7 +34,6 @@ function SaveValuationModel() {
   function handleChange(e) {
     //if value is -1 it means new Model will be created
     if (e.target.value === -1) {
-      console.log("we create a new model");
       dispatch(setSelectedModel({ isNew: true }));
     } else {
       // find selected model by index
@@ -46,21 +48,23 @@ function SaveValuationModel() {
           //get data of selected model
           const data = JSON.parse(savedValuationModels[modelIndex].data);
 
-          if (data?.valuationData) {
-            dispatch(initializeValuationData(data?.valuationData));
-          }
+          loadValuationModel(data, dispatch);
 
-          if (data?.taxRate) {
-            dispatch(changeTaxRate(data?.taxRate));
-          }
+          //   if (data?.valuationData) {
+          //     dispatch(initializeValuationData(data?.valuationData));
+          //   }
 
-          if (data?.wacc) {
-            dispatch(changeWacc(data?.wacc));
-          }
+          //   if (data?.taxRate) {
+          //     dispatch(changeTaxRate(data?.taxRate));
+          //   }
 
-          if (data?.terminalGrowthRate) {
-            dispatch(changeTerminalGrowthRate(data?.terminalGrowthRate));
-          }
+          //   if (data?.wacc) {
+          //     dispatch(changeWacc(data?.wacc));
+          //   }
+
+          //   if (data?.terminalGrowthRate) {
+          //     dispatch(changeTerminalGrowthRate(data?.terminalGrowthRate));
+          //   }
 
           showMessage("Model successfully loaded");
         } catch {
@@ -70,6 +74,39 @@ function SaveValuationModel() {
 
       console.log("we load existing value and select data");
     }
+  }
+
+  function handleDelete(e, itemId) {
+    e.stopPropagation();
+    //send request to delete requested valuation model
+    axiosInstanceAuth
+      .delete("/screener/valuation-model/", {
+        data: { id: itemId, qfsSymbol: qfsSymbol },
+      })
+      .then((response) => {
+        // set saved valuation model
+        dispatch(initializeSavedModels(response.data));
+
+        //check if selected model must be reset
+        if (response.data?.length === 0) {
+          dispatch(setSelectedModel({ isNew: true }));
+        } else {
+          //get the first model
+          let firstModel = response.data[0];
+          //just set the first one and load data
+          dispatch(setSelectedModel(firstModel));
+
+          //get data of the first model
+          const data = JSON.parse(firstModel.data);
+
+          loadValuationModel(data, dispatch);
+        }
+
+        showMessage("Model successfully deleted");
+      })
+      .catch((error) => {
+        showMessage(`Error deleting valuation model ${error}`, "error");
+      });
   }
 
   return (
@@ -116,8 +153,7 @@ function SaveValuationModel() {
               <Tooltip title="Delete Model" arrow>
                 <IconButton
                   aria-label="delete"
-                  //   onClick={(e) => handleDeleteFilterView(e, item.id)}
-                >
+                  onClick={(e) => handleDelete(e, item.id)}>
                   <DeleteIcon className="button-icon-action" />
                 </IconButton>
               </Tooltip>

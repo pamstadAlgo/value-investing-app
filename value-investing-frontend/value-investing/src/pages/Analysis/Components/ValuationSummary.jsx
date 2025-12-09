@@ -46,7 +46,7 @@ function ValuationSummary({
           </span>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
-          <SaveValuationModel />
+          <SaveValuationModel qfsSymbol={qfsSymbol} />
           <SaveModel />
         </div>
       </div>

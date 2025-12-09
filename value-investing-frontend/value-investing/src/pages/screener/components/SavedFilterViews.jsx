@@ -28,14 +28,9 @@ function SavedFilterViews() {
 
   const handleChange = (e) => {
     dispatch(setCurrentFilterView(e.target.value));
-    console.log("filter view we set: ", e.target.value);
     if (
-      // typeof e.target.value === "string" ||
-      // e.target.value instanceof String ||
       e.target.value === "newView"
     ) {
-      console.log("we reinitialize selected filters");
-      // dispatch(initializeActivFilters([]));
       dispatch(initializeSelectedFilters([]));
       dispatch(setViewName(""));
       dispatch(setViewDescription(""));
@@ -55,7 +50,6 @@ function SavedFilterViews() {
   };
 
   const handleDeleteFilterView = (e, id) => {
-    console.log("we clicked button, e.target.value: ", id);
     e.stopPropagation();
 
     axiosInstanceAuth
