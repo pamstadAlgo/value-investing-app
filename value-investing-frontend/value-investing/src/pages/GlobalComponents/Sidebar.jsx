@@ -83,6 +83,11 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
           onClick={() => navigate("/analysis")}>
           Analysis
         </div>
+        <div
+          style={getNavItemStyle("/watchlist")}
+          onClick={() => navigate("/watchlist")}>
+          Watchlists
+        </div>
         {/* <div
           style={getNavItemStyle("/testing")}
           onClick={() => navigate("/testing")}>

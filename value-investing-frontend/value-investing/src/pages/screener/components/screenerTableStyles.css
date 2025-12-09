@@ -33,24 +33,21 @@
     color: var(--input-fields-icons-color) !important;
 }
 
-/* FIX: Style the Search Input Field (currently white) to be Dark */
+/* Search Input Field Styles */
 .table-container .MuiToolbar-root .MuiOutlinedInput-root {
     background-color: var(--background-glass-card) !important; /* Dark Background */
     border-radius: 0px !important;
     color: var(--inner-text-input-fields) !important; /* Light Text */
 }
 
-/* Fix the Search Input Border */
 .table-container .MuiToolbar-root .MuiOutlinedInput-notchedOutline {
     border-color: var(--border-input-fields) !important;
 }
 
-/* Fix the text color inside the search input */
 .table-container .MuiToolbar-root .MuiOutlinedInput-input {
     color: var(--inner-text-input-fields) !important;
 }
 
-/* Ensure all icons (Search, Filter, Columns) in the toolbar are light grey */
 .table-container .MuiToolbar-root .MuiIconButton-root,
 .table-container .MuiToolbar-root .MuiSvgIcon-root {
     color: var(--input-fields-icons-color) !important;

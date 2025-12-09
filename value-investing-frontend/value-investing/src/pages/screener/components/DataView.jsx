@@ -11,7 +11,8 @@ import ColumnAddModal from "./ColumnAddModal";
 import { setDataViewTickers } from "../../../features/stockScreenerSlice";
 import "./screenerTableStyles.css";
 import PanToolOutlinedIcon from "@mui/icons-material/PanToolOutlined";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen"; // <-- your custom icon
+import MenuOpenIcon from "@mui/icons-material/MenuOpen"; 
+import StarMenu from "../../GlobalComponents/StarMenu"; // <-- Import StarMenu
 
 function DataView() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -27,6 +28,7 @@ function DataView() {
       }}
     />
   );
+  
   //define columns
   const columns = useMemo(() => {
     //get the first element of the data to extract column identifiers + accessorKey
@@ -34,18 +36,19 @@ function DataView() {
       //extract properties of object
       // const properties = Object.keys(screenerState?.queryResult[0]);
       const queryObject = screenerState?.queryResult[0];
-      let columns = [];
+      let generatedColumns = [];
 
+      // Create the dynamic columns from data
       for (const [key, value] of Object.entries(queryObject)) {
         if (typeof value === "number") {
-          columns.push({
+          generatedColumns.push({
             accessorKey: key,
             header: key,
             // size: 150,
             Cell: ({ cell }) => cell.getValue()?.toFixed(2),
           });
         } else {
-          columns.push({
+          generatedColumns.push({
             accessorKey: key,
             header: key,
             // size: 150,
@@ -53,18 +56,39 @@ function DataView() {
         }
       }
 
-      return columns;
+      // Prepend the Watchlist/StarMenu column
+      return [
+        {
+          id: 'watchlist', // Unique ID for the column
+          header: '', // Empty header for the icon column
+          size: 60,   // Small width
+          enableSorting: false,
+          enableColumnFilter: false,
+          enableColumnActions: false,
+          Cell: ({ row }) => (
+            <div 
+              style={{ display: 'flex', justifyContent: 'center' }}
+              onClick={(e) => e.stopPropagation()} // Prevent row click events
+            >
+              <StarMenu ticker={row.original.qfs_symbol_id} />
+            </div>
+          ),
+        },
+        ...generatedColumns
+      ];
     }
     return [];
   }, [screenerState.queryResult]);
 
   const extractDataViewTickers = useMemo(() => {
-    dispatch(
-      setDataViewTickers(
-        screenerState.queryResult.map((item) => item.qfs_symbol_id)
-      )
-    );
-  }, [screenerState.queryResult]);
+    if (screenerState.queryResult) {
+        dispatch(
+        setDataViewTickers(
+            screenerState.queryResult.map((item) => item.qfs_symbol_id)
+        )
+        );
+    }
+  }, [screenerState.queryResult, dispatch]);
 
   const handleColumnAdd = () => {
     //we need to open modal
@@ -78,9 +102,11 @@ function DataView() {
     setIsModalOpen(false);
   };
 
+  // Note: 'table' instance defined here was unused in the return below 
+  // (replaced by direct component props), but kept logic consistent if you switch back.
   const table = useMaterialReactTable({
     columns,
-    data: screenerState.queryResult,
+    data: screenerState.queryResult || [],
     initialState: {
       density: "compact",
       columnVisibility: { id: false },
@@ -108,14 +134,15 @@ function DataView() {
     },
   });
 
-  console.log("columns we pass: ", columns);
+  {/* console.log("columns we pass: ", columns); */}
 
   return (
     <div className="table-container">
       {/* <MaterialReactTable table={table} /> */}
       <MaterialReactTable
         columns={columns}
-        data={screenerState.queryResult}
+        data={screenerState.queryResult || []} // Handle potential null/undefined
+        layoutMode="grid"
         enableColumnOrdering
         enableColumnResizing
         enableSorting
@@ -176,6 +203,7 @@ function DataView() {
 
             // 5. Force the Table Head to be Dark
             muiTableHeadCellProps={{
+              className: "table-header-cell",
                 sx: {
                     backgroundColor: "var(--table-header-actions-bg-color)",
                     color: "var(--header-color)",

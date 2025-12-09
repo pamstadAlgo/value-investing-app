@@ -1343,3 +1343,56 @@ fill: var(--color-table-text) !important;
 .MuiDrawer-root.navigation-drawer > .MuiPaper-root{
   width: var(--drawer-width);
 }
+
+/* --- GLOBAL TERMINAL OVERRIDES FOR MODALS & POPOVERS --- */
+
+/* 1. Force all Dialogs, Popovers, and Menus to be Dark & Sharp */
+.MuiDialog-paper, 
+.MuiPopover-paper, 
+.MuiMenu-paper {
+  background-color: var(--background-glass-card) !important;
+  color: var(--header-color) !important;
+  border: 1px solid var(--border-input-fields) !important;
+  border-radius: 0px !important;
+  box-shadow: none !important; /* Remove generic drop shadow */
+}
+
+/* 2. Fix Input Labels */
+.MuiInputLabel-root {
+  color: var(--label-color-input-fields) !important;
+  font-family: var(--font-family) !important;
+}
+.MuiInputLabel-root.Mui-focused {
+  color: var(--action-color) !important;
+}
+
+/* 3. Fix Input Text Colors */
+.MuiInputBase-input {
+  color: var(--inner-text-input-fields) !important;
+  font-family: var(--font-family) !important;
+}
+
+/* 4. Fix Standard Input Underlines (used in Modals) */
+.MuiInput-underline:before {
+  border-bottom: 1px solid var(--border-input-fields) !important;
+}
+.MuiInput-underline:hover:not(.Mui-disabled):before {
+  border-bottom: 1px solid var(--action-color) !important;
+}
+.MuiInput-underline:after {
+  border-bottom: 2px solid var(--action-color) !important;
+}
+
+/* 5. Fix Checkboxes (make them Orange) */
+.MuiCheckbox-root {
+  color: var(--text-color-grey-scale) !important;
+}
+.MuiCheckbox-root.Mui-checked {
+  color: var(--action-color) !important;
+}
+
+/* 6. Fix Dialog Actions Background */
+.MuiDialogActions-root {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px 24px !important;
+}

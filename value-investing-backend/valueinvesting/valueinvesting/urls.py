@@ -28,6 +28,7 @@ api_urlpatterns = [
     path("quickfs/", include('quickfs_dj.urls')),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/google/', views.GoogleLogin.as_view(), name='google_login'),
+    path("watchlist/", include('watchlist.urls')),
 ]
 
 urlpatterns = [

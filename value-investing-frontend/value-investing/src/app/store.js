@@ -10,6 +10,7 @@ import localforage from "localforage";
 import hardSet from "redux-persist/lib/stateReconciler/hardSet";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import analysisReducer from "../features/analysisSlice"
+import watchlistReducer from "../features/watchlistSlice";
 
 const persistConfig = {
   key: "root",
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   valuation: valuationReducer,
   microcap: microcapReducer,
   analysis: analysisReducer,
+  watchlist: watchlistReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
