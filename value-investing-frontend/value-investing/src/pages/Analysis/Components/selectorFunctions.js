@@ -39,36 +39,13 @@ export function computeNopatBottomUp(data, taxRate, caseIndex) {
 }
 
 export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
-  if (caseIndex === 1) {
-    // console.log("compute equity val b0: ", b0);
-    // console.log("compute equity val nopat: ", nopat);
-    // console.log("compute equity val wacc: ", wacc);
-    // console.log("compute equity val noa: ", noa);
-    // console.log("compute equity val g: ", g);
 
-    console.log("compute equity val b0: ", b0[caseIndex]);
-    console.log("compute equity val nopat: ", nopat[caseIndex]);
-    console.log("compute equity val wacc: ", wacc);
-    console.log("compute equity val noa: ", noa[caseIndex]);
-    console.log("compute equity val g: ", g);
-
-    console.log("typeof g: ", typeof g);
-
-    // console.log("type of g: ", typeof g);
-  }
   //compute residual earnings 1 = (NOPAT - r*NOA)/(1+r)
   var re1 = (nopat[caseIndex] - wacc * noa[caseIndex]) / (1 + wacc);
 
   // compute second term = (NOPAT - r*NOA)/((1+r)*(r-g))
   var re2 =
     (nopat[caseIndex] - wacc * noa[caseIndex]) / ((1 + wacc) * (wacc - g));
-
-  if (caseIndex === 1) {
-    console.log("re1: ", re1);
-    console.log("re2: ", re2);
-
-    console.log("value that we return: ", b0[caseIndex] + re1 + re2);
-  }
 
   return b0[caseIndex] + re1 + re2;
 }
