@@ -1,8 +1,17 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { MaterialReactTable } from "material-react-table";
-import { Box, Button, Tooltip } from "@mui/material";
+import { Box, Button, Tooltip, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom"; 
 import { useDispatch, useSelector } from "react-redux"; 
+import BackdropLoading from "../../GlobalComponents/BackdropLoading";
+import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
+import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
+import {
+  initializeTickerSymbol,
+  initializeCompanyData,
+  initializeValuationData,
+  initalizeBalanceSheet,
+} from "../../../features/analysisSlice";
 
 // --- STATIC CONFIGS ---
 
@@ -91,6 +100,77 @@ const calculateMOS = (price, target) => {
 const WatchlistTable = ({ data, onRemove }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const axiosInstanceAuth = useAxiosWithAuth();
+  const { showMessage } = useSnackbar();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTickerData, setSelectedTickerData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedTickerData(null);
+  };
+
+  const handleNavigateToAnalysis = (targetTab) => {
+    handleCloseMenu();
+    
+    if (selectedTickerData) {
+      setIsLoading(true);
+
+      // Normalize symbol (Watchlist items usually have qfs_symbol, but fallback to ticker if needed)
+      const symbol = selectedTickerData.qfs_symbol || selectedTickerData.ticker;
+      
+      const normalizedTickerData = {
+          ...selectedTickerData,
+          qfs_symbol: symbol
+      };
+
+      dispatch(initializeTickerSymbol(normalizedTickerData));
+
+      // 1. Fetch Analysis Data
+      const fetchAnalysis = axiosInstanceAuth
+        .get(`screener/analysis/${symbol}/`)
+        .then((response) => {
+          dispatch(initializeCompanyData(response.data));
+          dispatch(initializeValuationData(response?.data?.valuationDefaults));
+        })
+        .catch((error) => {
+            if (error.response && error.response.status === 401) {
+                showMessage("Session expired. Please log in again.", "error");
+                navigate("/"); 
+                return;
+            }
+            showMessage(`Error fetching data: ${error.message || error}`);
+            console.error("ERROR: GET screener/analysis/: ", error);
+            throw error; 
+        });
+
+      // 2. Fetch Balance Sheet Data
+      const fetchBalanceSheet = axiosInstanceAuth
+        .post("/screener/asset-val-fundamentals/", {
+          qfs_symbols: [symbol],
+        })
+        .then((response) => {
+          dispatch(initalizeBalanceSheet(response.data[0]?.data));
+        })
+        .catch((error) => {
+           if (error.response && error.response.status === 401) return;
+           showMessage(`Error computing asset val ${error}`, "error");
+           console.error("ERROR: POST /screener/asset-val-fundamentals/: ", error);
+        });
+
+      Promise.all([fetchAnalysis, fetchBalanceSheet])
+        .then(() => {
+          setIsLoading(false);
+          navigate("/analysis", { state: { initialTab: targetTab } });
+        })
+        .catch(() => {
+            setIsLoading(false);
+        });
+    }
+  };
 
   const columns = useMemo(
     () => [
@@ -98,8 +178,24 @@ const WatchlistTable = ({ data, onRemove }) => {
         accessorKey: "name",
         header: "COMPANY NAME",
         size: 180,
-        Cell: ({ cell }) => (
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px', display: 'block' }}>
+        Cell: ({ cell, row }) => (
+          <span 
+            style={{ 
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis', 
+                maxWidth: '180px', 
+                display: 'block',
+                cursor: 'pointer', 
+                color: 'var(--header-color)', 
+                textDecoration: 'underline'
+            }}
+            onClick={(event) => {
+                event.stopPropagation();
+                setAnchorEl(event.currentTarget);
+                setSelectedTickerData(row.original); 
+            }}
+          >
             {cell.getValue()}
           </span>
         ),
@@ -208,6 +304,7 @@ const WatchlistTable = ({ data, onRemove }) => {
   );
 
   return (
+    <>
     <MaterialReactTable
       columns={columns}
       data={data}
@@ -226,7 +323,30 @@ const WatchlistTable = ({ data, onRemove }) => {
       renderEmptyRowsFallback={renderEmptyRowsFallback}
       renderRowActions={renderRowActions}
     />
+
+    {/* --- ANALYSIS NAVIGATION MENU --- */}
+    <Menu
+        anchorEl={anchorEl}
+        open={isMenuOpen}
+        onClose={handleCloseMenu}
+        PaperProps={{
+            style: {
+                backgroundColor: 'var(--background-glass-card, #1e1e1e)', 
+                color: 'var(--text-color, #fff)',
+                border: '1px solid var(--border-color, #333)'
+            }
+        }}
+      >
+        <MenuItem onClick={() => handleNavigateToAnalysis(0)}>
+            Go to Company Overview
+        </MenuItem>
+        <MenuItem onClick={() => handleNavigateToAnalysis(1)}>
+            Go to Valuation
+        </MenuItem>
+      </Menu>
+
+      <BackdropLoading open={isLoading} />
+    </>
   );
 };
-
 export default React.memo(WatchlistTable);
