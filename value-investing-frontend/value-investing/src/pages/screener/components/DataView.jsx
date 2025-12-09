@@ -13,11 +13,105 @@ import "./screenerTableStyles.css";
 import PanToolOutlinedIcon from "@mui/icons-material/PanToolOutlined";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen"; 
 import StarMenu from "../../GlobalComponents/StarMenu"; // <-- Import StarMenu
+import { useNavigate } from "react-router-dom";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import BackdropLoading from "../../GlobalComponents/BackdropLoading";
+import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
+import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
+import {
+  initializeTickerSymbol,
+  initializeCompanyData,
+  initializeValuationData,
+  initalizeBalanceSheet,
+} from "../../../features/analysisSlice";
 
 function DataView() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
+
+  // --- NEW STATE & NAVIGATION LOGIC ---
+  const navigate = useNavigate();
+  const axiosInstanceAuth = useAxiosWithAuth();
+  const { showMessage } = useSnackbar();
+  
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedTickerData, setSelectedTickerData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedTickerData(null);
+  };
+
+  const handleNavigateToAnalysis = (targetTab) => {
+    handleCloseMenu();
+    
+    if (selectedTickerData) {
+      setIsLoading(true);
+
+      // FIX: Handle both qfs_symbol_id (from Screener) and qfs_symbol (Analysis convention)
+      const symbol = selectedTickerData.qfs_symbol || selectedTickerData.qfs_symbol_id;
+      
+      // Create a normalized object to ensure Analysis page has the correct 'qfs_symbol' property
+      const normalizedTickerData = {
+          ...selectedTickerData,
+          qfs_symbol: symbol
+      };
+
+      // Initialize symbol in Redux
+      dispatch(initializeTickerSymbol(normalizedTickerData));
+
+      // 1. Fetch Analysis Data (Uses axiosInstanceAuth for token)
+      const fetchAnalysis = axiosInstanceAuth
+        .get(`screener/analysis/${symbol}/`)
+        .then((response) => {
+          dispatch(initializeCompanyData(response.data));
+          dispatch(initializeValuationData(response?.data?.valuationDefaults));
+        })
+        .catch((error) => {
+            if (error.response && error.response.status === 401) {
+                showMessage("Session expired. Please log in again.", "error");
+                navigate("/"); // Redirect to Login
+                return;
+            }
+            // Show error to user
+            showMessage(`Error fetching data: ${error.message || error}`);
+            console.error("ERROR: GET screener/analysis/: ", error);
+            throw error; 
+        });
+
+      // 2. Fetch Balance Sheet Data (Uses axiosInstanceAuth for token)
+      const fetchBalanceSheet = axiosInstanceAuth
+        .post("/screener/asset-val-fundamentals/", {
+          qfs_symbols: [symbol],
+        })
+        .then((response) => {
+          dispatch(initalizeBalanceSheet(response.data[0]?.data));
+        })
+        .catch((error) => {
+           if (error.response && error.response.status === 401) {
+             return; 
+           }
+           showMessage(`Error computing asset val ${error}`, "error");
+           console.error("ERROR: POST /screener/asset-val-fundamentals/: ", error);
+        });
+
+      // Wait for requests to finish
+      Promise.all([fetchAnalysis, fetchBalanceSheet])
+        .then(() => {
+          setIsLoading(false);
+          // Navigate only after successful fetch
+          navigate("/analysis", { state: { initialTab: targetTab } });
+        })
+        .catch(() => {
+            setIsLoading(false);
+        });
+    }
+  };
+  // ------------------------------------
 
   const SmallDragIcon = (props) => (
     <PanToolOutlinedIcon
@@ -40,6 +134,9 @@ function DataView() {
 
       // Create the dynamic columns from data
       for (const [key, value] of Object.entries(queryObject)) {
+        // Define which columns are clickable
+        const isClickable = key === 'qfs_symbol' || key === 'name' || key === 'company';
+
         if (typeof value === "number") {
           generatedColumns.push({
             accessorKey: key,
@@ -52,6 +149,27 @@ function DataView() {
             accessorKey: key,
             header: key,
             // size: 150,
+            Cell: ({ row, cell }) => {
+                if (isClickable) {
+                    return (
+                        <span 
+                            style={{ 
+                                cursor: 'pointer', 
+                                color: 'var(--header-color)', 
+                                textDecoration: 'underline' 
+                            }}
+                            onClick={(event) => {
+                                event.stopPropagation(); // Prevent default row click behavior
+                                setAnchorEl(event.currentTarget);
+                                setSelectedTickerData(row.original); 
+                            }}
+                        >
+                            {cell.getValue()}
+                        </span>
+                    )
+                }
+                return cell.getValue();
+            }
           });
         }
       }
@@ -238,6 +356,29 @@ function DataView() {
         }}
       />
       <ColumnAddModal isOpen={isModalOpen} handleClose={handleClose} />
+      
+      {/* --- ANALYSIS NAVIGATION MENU --- */}
+      <Menu
+        anchorEl={anchorEl}
+        open={isMenuOpen}
+        onClose={handleCloseMenu}
+        PaperProps={{
+            style: {
+                backgroundColor: 'var(--background-glass-card, #1e1e1e)', 
+                color: 'var(--text-color, #fff)',
+                border: '1px solid var(--border-color, #333)'
+            }
+        }}
+      >
+        <MenuItem onClick={() => handleNavigateToAnalysis(0)}>
+            Go to Company Overview
+        </MenuItem>
+        <MenuItem onClick={() => handleNavigateToAnalysis(1)}>
+            Go to Valuation
+        </MenuItem>
+      </Menu>
+
+      <BackdropLoading open={isLoading} />
     </div>
   );
 }

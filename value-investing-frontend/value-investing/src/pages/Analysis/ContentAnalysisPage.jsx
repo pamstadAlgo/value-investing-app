@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import NavBar from "../GlobalComponents/NavBar";
 import TickerAutoComplete from "../valuation/components/TickerAutoComplete";
 import CompanySearchField from "./Components/CompanySearchField";
@@ -12,7 +13,14 @@ import Layout from "../GlobalComponents/Layout";
 function ContentAnalysisPage() {
   const analysisState = useSelector((state) => state.analysis);
   const [backDropLoading, setBackDropLoading] = useState(false);
+  const location = useLocation();
   const [tab, setTab] = useState(0);
+
+  useEffect(() => {
+    if (location.state?.initialTab !== undefined) {
+      setTab(location.state.initialTab);
+    }
+  }, [location.state]);
 
   return (
     <>
