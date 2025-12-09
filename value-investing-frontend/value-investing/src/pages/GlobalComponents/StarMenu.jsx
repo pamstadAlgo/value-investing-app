@@ -12,8 +12,6 @@ import {
   Typography,
   Divider,
   Button,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -24,18 +22,18 @@ import {
   removeStockFromWatchlist,
   createWatchlist,
 } from "../../features/watchlistSlice";
+import { useSnackbar } from "./SnackbarProvider"; // Import the global hook
 
 const StarMenu = ({ ticker }) => {
   const dispatch = useDispatch();
   const { watchlists, status } = useSelector((state) => state.watchlist);
+  const { showMessage } = useSnackbar(); // Access global showMessage function
   
   const [anchorEl, setAnchorEl] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastSeverity, setToastSeverity] = useState("success");
+  // Removed local state for toast/snackbar since we use the global one now
 
   useEffect(() => {
     if (status === "idle") {
@@ -63,9 +61,8 @@ const StarMenu = ({ ticker }) => {
   };
 
   const showFeedback = (message, severity = "success") => {
-    setToastMessage(message);
-    setToastSeverity(severity);
-    setToastOpen(true);
+    // Delegate to global SnackbarProvider
+    showMessage(message, severity);
   };
 
   const handleToggle = (watchlist, event) => {
@@ -76,12 +73,12 @@ const StarMenu = ({ ticker }) => {
     if (isInList) {
       dispatch(removeStockFromWatchlist({ watchlistId: watchlist.id, ticker }))
         .unwrap()
-        .then(() => showFeedback(`Removed from ${watchlist.title}`))
+        .then(() => showFeedback(`Removed from ${watchlist.title}`, "success"))
         .catch(() => showFeedback("Failed to remove stock", "error"));
     } else {
       dispatch(addStockToWatchlist({ watchlistId: watchlist.id, ticker }))
         .unwrap()
-        .then(() => showFeedback(`Added to ${watchlist.title}`))
+        .then(() => showFeedback(`Added to ${watchlist.title}`, "success"))
         .catch(() => showFeedback("Failed to add stock", "error"));
     }
   };
@@ -93,7 +90,7 @@ const StarMenu = ({ ticker }) => {
         .unwrap()
         .then((newList) => {
           dispatch(addStockToWatchlist({ watchlistId: newList.id, ticker }))
-            .then(() => showFeedback(`Created list and added stock`));
+            .then(() => showFeedback(`Created list and added stock`, "success"));
           setNewTitle("");
           setIsCreating(false);
         })
@@ -119,8 +116,6 @@ const StarMenu = ({ ticker }) => {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         onClick={(e) => e.stopPropagation()}
-        // The PaperProps are now handled globally in App.css, 
-        // but we ensure the background is transparent here to let the global style take over
         PaperProps={{
             sx: { backgroundImage: 'none' } 
         }}
@@ -159,7 +154,6 @@ const StarMenu = ({ ticker }) => {
                       tabIndex={-1}
                       disableRipple
                       size="small"
-                      // Color is also handled in App.css now, but explicit sx ensures specific overrides
                       sx={{
                         color: "var(--text-color-grey-scale)",
                         '&.Mui-checked': { color: "var(--action-color)" },
@@ -179,7 +173,6 @@ const StarMenu = ({ ticker }) => {
           
           {isCreating ? (
             <ListItem sx={{ display: "flex", gap: 1, flexDirection: 'column', alignItems: 'stretch', p: 2 }}>
-               {/* STYLED TERMINAL INPUT */}
                <input 
                  autoFocus
                  style={{ 
@@ -228,22 +221,8 @@ const StarMenu = ({ ticker }) => {
           )}
         </List>
       </Popover>
-
-      <Snackbar
-        open={toastOpen}
-        autoHideDuration={3000}
-        onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-            onClose={() => setToastOpen(false)} 
-            severity={toastSeverity} 
-            sx={{ width: '100%', borderRadius: 0, fontFamily: 'var(--font-family)' }}
-            variant="filled" // Makes the alert background solid
-        >
-          {toastMessage}
-        </Alert>
-      </Snackbar>
+      
+      {/* Removed local Snackbar component */}
     </>
   );
 };

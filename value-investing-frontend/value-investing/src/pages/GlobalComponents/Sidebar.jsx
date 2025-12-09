@@ -2,35 +2,23 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
 
 const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // 1. Helper for Navigation Item Styles (Uses App.css variables)
-  const getNavItemStyle = (path) => {
-    const isActive = currentPath === path;
-    return {
-      display: "flex",
-      alignItems: "center",
-      padding: "12px 24px",
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      borderLeft: isActive
-        ? "3px solid var(--action-color)"
-        : "3px solid transparent",
-      backgroundColor: isActive
-        ? "var(--action-color-more-transparent)"
-        : "transparent",
-      color: isActive ? "var(--action-color)" : "var(--text-color-grey-scale)",
-      fontWeight: isActive ? 600 : 500,
-      fontFamily: "var(--font-family)", // Enforce App font
-      textTransform: "uppercase",
-      letterSpacing: "0.05em",
-      fontSize: "0.875rem",
-    };
-  };
+  const menuItems = [
+    { text: "Screener", path: "/screener" },
+    { text: "Valuation", path: "/valuation" },
+    { text: "Analysis", path: "/analysis" },
+    { text: "Watchlists", path: "/watchlist" },
+    // { text: "Testing", path: "/testing" },
+  ];
 
   const drawerContent = (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -67,33 +55,49 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
       </div>
 
       {/* Navigation Links */}
-      <nav style={{ flex: 1, padding: "24px 0" }}>
-        <div
-          style={getNavItemStyle("/screener")}
-          onClick={() => navigate("/screener")}>
-          Screener
-        </div>
-        <div
-          style={getNavItemStyle("/valuation")}
-          onClick={() => navigate("/valuation")}>
-          Valuation
-        </div>
-        <div
-          style={getNavItemStyle("/analysis")}
-          onClick={() => navigate("/analysis")}>
-          Analysis
-        </div>
-        <div
-          style={getNavItemStyle("/watchlist")}
-          onClick={() => navigate("/watchlist")}>
-          Watchlists
-        </div>
-        {/* <div
-          style={getNavItemStyle("/testing")}
-          onClick={() => navigate("/testing")}>
-          Testing
-        </div> */}
-      </nav>
+      <List sx={{ flex: 1, padding: "24px 0" }}>
+        {menuItems.map((item) => {
+          const isActive = currentPath === item.path;
+          return (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  navigate(item.path);
+                  if (mobileOpen) handleDrawerToggle(); // Close drawer on mobile click
+                }}
+                sx={{
+                  padding: "12px 24px",
+                  transition: "all 0.2s ease",
+                  borderLeft: isActive
+                    ? "3px solid var(--action-color)"
+                    : "3px solid transparent",
+                  backgroundColor: isActive
+                    ? "var(--action-color-more-transparent)"
+                    : "transparent",
+                  color: isActive ? "var(--action-color)" : "var(--text-color-grey-scale)",
+                  "&:hover": {
+                    backgroundColor: "var(--input-fields-hover-bg-color)",
+                    color: "var(--action-color)",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    style: {
+                      fontWeight: isActive ? 600 : 500,
+                      fontFamily: "var(--font-family)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      fontSize: "0.875rem",
+                    }
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
 
       {/* Footer / Logout */}
       <div
@@ -101,14 +105,36 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
           padding: "16px",
           borderTop: "1px solid rgba(255, 255, 255, 0.12)",
         }}>
-        <div
-          style={{
-            ...getNavItemStyle("logout"),
-            borderLeft: "3px solid transparent",
-          }}
-          onClick={() => navigate("/")}>
-          Sign Out
-        </div>
+        <List disablePadding>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => navigate("/")}
+              sx={{
+                padding: "12px 24px",
+                transition: "all 0.2s ease",
+                borderLeft: "3px solid transparent",
+                color: "var(--text-color-grey-scale)",
+                "&:hover": {
+                  backgroundColor: "var(--input-fields-hover-bg-color)",
+                  color: "var(--action-color)",
+                },
+              }}
+            >
+              <ListItemText
+                primary="Sign Out"
+                primaryTypographyProps={{
+                  style: {
+                    fontWeight: 500,
+                    fontFamily: "var(--font-family)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontSize: "0.875rem",
+                  }
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </div>
     </div>
   );
