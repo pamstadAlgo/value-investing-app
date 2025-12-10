@@ -45,7 +45,7 @@ function ValuationSummary({
             {lastClosePrice})
           </span>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", overflow: "visible" }}>
           <SaveValuationModel qfsSymbol={qfsSymbol} />
           <SaveModel />
         </div>

@@ -1999,13 +1999,13 @@ class PenmanValuationAPIView(APIView):
                             'values' : rnoa
                         },
                         'debt' : {
-                            'type' : 'ratio',
+                            'type' : 'absolute',
                             'hasTs' : True,
                             'ts' : debt_ts,
                             'values' : debt
                         },
                         'nrShares' : {
-                            'type' : 'ratio',
+                            'type' : 'absolute',
                             'hasTs' : True,
                             'ts' : nr_shares_ts,
                             'values' : shares_diluted['metrics']["shares_diluted"]

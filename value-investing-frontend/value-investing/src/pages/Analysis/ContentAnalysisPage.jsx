@@ -28,7 +28,9 @@ function ContentAnalysisPage() {
     <>
       <Layout>
         <main className="main-content-wrapper relative-position">
-          <div className="flex-wrapper-main-content">
+          <div
+            className="flex-wrapper-main-content"
+            style={{ overflowX: "auto" }}>
             <CompanySearchField setBackdropLoading={setBackDropLoading} />
 
             {analysisState.selectedTickerSymbol && (

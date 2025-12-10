@@ -444,6 +444,11 @@ input[type=number] {
   position: relative;
 }
 
+/* .valuation-model{
+  overflow-x: auto;
+  padding-top: 12px;
+} */
+
 .MuiButtonBase-root.MuiFab-root.custom-fab-filtering{
   position: absolute;
   bottom: 16px;
@@ -1032,6 +1037,7 @@ height: 0;
 .flex-wrapper-valuation-summary{
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .MuiPopper-root.custom-popover-charts{
