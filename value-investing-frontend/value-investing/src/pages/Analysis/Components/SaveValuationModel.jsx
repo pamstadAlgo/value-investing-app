@@ -113,7 +113,10 @@ function SaveValuationModel({ qfsSymbol }) {
     <FormControl
       className="form-control-saved-filter-views valuation-model"
       size="small">
-      <InputLabel id="demo-simple-select-label" className="custom-input-label">
+      <InputLabel
+        shrink
+        id="demo-simple-select-label"
+        className="custom-input-label">
         Saved Valuation Models
       </InputLabel>
       <Select
