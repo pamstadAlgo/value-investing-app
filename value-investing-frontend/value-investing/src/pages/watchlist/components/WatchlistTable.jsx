@@ -162,7 +162,7 @@ const WatchlistTable = ({ data, onRemove }) => {
       {
         accessorKey: "name",
         header: "Company",
-        size: 150, 
+        size: 220, // Increased size to prevent immediate truncation
         enableSorting: true,
         Cell: ({ cell, row }) => (
           <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
@@ -171,7 +171,7 @@ const WatchlistTable = ({ data, onRemove }) => {
                     whiteSpace: 'nowrap', 
                     overflow: 'hidden', 
                     textOverflow: 'ellipsis', 
-                    maxWidth: '140px', 
+                    maxWidth: '100%', // Allow it to fill the column width
                     cursor: 'pointer', 
                     color: 'var(--header-color)', 
                     fontWeight: 600,
@@ -216,7 +216,9 @@ const WatchlistTable = ({ data, onRemove }) => {
       {
         accessorKey: "market_cap",
         header: "Mkt Cap",
-        size: 80,
+        size: 100,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
         Cell: ({ cell }) => (
             <span style={{ fontFamily: "monospace", color: 'var(--text-color-grey-scale)' }}>
                 {formatMarketCap(cell.getValue())}
@@ -226,33 +228,39 @@ const WatchlistTable = ({ data, onRemove }) => {
       {
         accessorKey: "last_close_price",
         header: "Price",
-        size: 70,
+        size: 90,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
         Cell: ({ cell }) => (
           <span style={{ fontFamily: "monospace", fontSize: "0.90rem" }}>
-            {cell.getValue() ? cell.getValue().toFixed(2) : "-"}
+            {cell.getValue() ? cell.getValue().toFixed(2) : <span style={{ opacity: 0.3 }}>-</span>}
           </span>
         ),
       },
       {
         accessorKey: "price_target",
         header: "Target",
-        size: 70,
+        size: 90,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
         Cell: ({ cell }) => (
           <span style={{ fontFamily: "monospace", fontWeight: 600, color: cell.getValue() ? 'var(--header-color)' : 'gray' }}>
-            {cell.getValue() ? cell.getValue().toFixed(2) : "-"}
+            {cell.getValue() ? cell.getValue().toFixed(2) : <span style={{ opacity: 0.3 }}>-</span>}
           </span>
         ),
       },
       {
         id: "margin_of_safety", 
         header: "MoS %", 
-        size: 80,
+        size: 100,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
         Cell: ({ row }) => {
           const price = row.original.last_close_price;
           const target = row.original.price_target;
           const mos = calculateMOS(price, target);
           
-          if (mos === null) return <span style={{color:'gray'}}>-</span>;
+          if (mos === null) return <span style={{ color:'gray', opacity: 0.3 }}>-</span>;
           
           const color = mos > 0 ? "var(--success-color)" : "var(--error-red)";
           const sign = mos > 0 ? "+" : "";
@@ -340,19 +348,24 @@ const WatchlistTable = ({ data, onRemove }) => {
 
   const renderRowActions = useCallback(
     ({ row }) => (
-      <Button
-        onClick={() => onRemove(row.original.qfs_symbol || row.original.ticker)}
-        size="small"
-        sx={{
-          minWidth: 0,
-          color: "var(--text-color-grey-scale)",
-          opacity: 0.5,
-          padding: 0,
-          "&:hover": { color: "var(--error-red)", opacity: 1, bgcolor: "transparent" },
-        }}
-      >
-        [X]
-      </Button>
+      <Tooltip title="Remove from watchlist" slotProps={TooltipProps}>
+        <Button
+            onClick={() => onRemove(row.original.qfs_symbol || row.original.ticker)}
+            size="small"
+            sx={{
+            minWidth: '24px',
+            height: '24px',
+            color: "var(--text-color-grey-scale)",
+            opacity: 0.3,
+            padding: 0,
+            fontSize: '1.2rem',
+            lineHeight: 1,
+            "&:hover": { color: "var(--error-red)", opacity: 1, bgcolor: "rgba(244, 67, 54, 0.1)" },
+            }}
+        >
+            &times;
+        </Button>
+      </Tooltip>
     ),
     [onRemove]
   );
@@ -375,7 +388,34 @@ const WatchlistTable = ({ data, onRemove }) => {
       muiTablePaperProps={PAPER_PROPS}
       muiTableHeadCellProps={HEADER_CELL_PROPS}
       muiTableBodyCellProps={BODY_CELL_PROPS}
-      
+
+      // Fixes the "White on White" menu issue by forcing dark mode paper styles on column menus
+      muiColumnActionsButtonProps={{
+        sx: {
+            color: 'var(--text-color-grey-scale)', 
+        }
+      }}
+      muiTableHeadCellColumnActionsButtonProps={{
+          sx: {
+              '& .MuiIconButton-root': { color: 'var(--text-color-grey-scale)' } 
+          }
+      }}
+      renderColumnActionsMenuItems={({ closeMenu, internalColumnMenuItems }) => {
+        return internalColumnMenuItems.map((item) => (
+           React.cloneElement(item, {
+              sx: {
+                 color: 'var(--text-color) !important',
+                 bgcolor: 'var(--background-glass-card) !important',
+                 '&:hover': { bgcolor: 'rgba(255,255,255,0.1) !important' }
+              },
+              onClick: (e) => {
+                 item.props.onClick(e);
+                 closeMenu();
+              }
+           })
+        ));
+      }}
+
       muiTopToolbarProps={{ sx: { display: 'none' } }}
       muiBottomToolbarProps={{ 
           sx: { 
@@ -390,7 +430,7 @@ const WatchlistTable = ({ data, onRemove }) => {
         sx: {
             backgroundColor: row.index % 2 === 0 ? "rgba(255, 255, 255, 0.02)" : "transparent",
             '&:hover': { backgroundColor: "rgba(255, 255, 255, 0.05) !important" },
-            height: '40px',
+            height: '50px',
             minHeight: '40px'
         }
       })}
