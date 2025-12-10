@@ -27,6 +27,8 @@ import ValuationSummary from "./ValuationSummary";
 import { useLastClosePrice } from "../../valuation/components/AccordionTitle";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import LiquidationValue from "./LiquidationValue";
+import SaveValuationModal from "./SaveValuationModal";
+import ValuationActionToolbar from "./ValuationActionToolbar";
 
 const valuationCases = ["Bear", "Base", "Bull"];
 const topDownEditableFields = ["revenue", "op_margins"];
@@ -37,7 +39,7 @@ const editableFieldsCapitalStructure = [
   "bookValue",
 ];
 
-function ValuationModel({ qfsSymbol }) {
+function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   const companyData = useSelector((state) => state.analysis?.companyData);
   const valuationApproach = useSelector(
     (state) => state.analysis?.valuationApproach
@@ -59,6 +61,7 @@ function ValuationModel({ qfsSymbol }) {
 
   const [scaling, setScaling] = useState("1000000");
   const [scalingBalanceSheet, setScalingBalanceSheet] = useState("1000000");
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -173,12 +176,13 @@ function ValuationModel({ qfsSymbol }) {
         />
         <ValuationAssumptions scalingFactor={scaling} />
       </div>
-      <div className="button-group-wrapper">
-        <ToggleButtonsScaling
-          value={scaling}
-          handleChange={handleToggleButtonChange}
-        />
-      </div>
+      <ValuationActionToolbar 
+        scaling={scaling}
+        onScalingChange={handleToggleButtonChange}
+        onSave={() => setIsSaveModalOpen(true)}
+        onToggleHistory={onToggleHistory}
+        isHistoryOpen={isHistoryOpen}
+      />
       <TableContainer
         component={Paper}
         sx={{
@@ -428,6 +432,13 @@ function ValuationModel({ qfsSymbol }) {
         currencyCode={currencyCode}
         lastClosePrice={data?.lastClosePrice}
         nrShares={nrShares}
+      />
+
+      <SaveValuationModal
+        open={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        qfsSymbol={qfsSymbol}
+        equityVals={equityVal} 
       />
     </>
   );

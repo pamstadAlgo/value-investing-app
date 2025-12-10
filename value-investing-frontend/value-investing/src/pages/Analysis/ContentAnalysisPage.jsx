@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import NavBar from "../GlobalComponents/NavBar";
-import TickerAutoComplete from "../valuation/components/TickerAutoComplete";
+import { useSelector } from "react-redux";
+import { Box } from "@mui/material";
+
+import Layout from "../GlobalComponents/Layout";
+import BackdropLoading from "../GlobalComponents/BackdropLoading";
 import CompanySearchField from "./Components/CompanySearchField";
 import AnalysisTabs from "./Components/AnalysisTabs";
 import CompanyOverview from "./Components/CompanyOverview";
 import ValuationModel from "./Components/ValuationModel";
-import { useSelector } from "react-redux";
-import BackdropLoading from "../GlobalComponents/BackdropLoading";
-import Layout from "../GlobalComponents/Layout";
+import AnalysisHistorySidebar from "./Components/AnalysisHistorySidebar";
 
 function ContentAnalysisPage() {
   const analysisState = useSelector((state) => state.analysis);
   const [backDropLoading, setBackDropLoading] = useState(false);
   const location = useLocation();
   const [tab, setTab] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (location.state?.initialTab !== undefined) {
@@ -24,23 +26,37 @@ function ContentAnalysisPage() {
 
   return (
     <>
-      {/* <NavBar /> */}
       <Layout>
         <main className="main-content-wrapper relative-position">
           <div className="flex-wrapper-main-content">
             <CompanySearchField setBackdropLoading={setBackDropLoading} />
 
             {analysisState.selectedTickerSymbol && (
-              <>
-                {" "}
-                <AnalysisTabs tab={tab} setTab={setTab} />
-                {tab == 0 && <CompanyOverview />}
-                {tab == 1 && (
-                  <ValuationModel
+              <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
+                
+                {/* === MAIN CONTENT === */}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <AnalysisTabs tab={tab} setTab={setTab} />
+
+                  {tab === 0 && <CompanyOverview />}
+
+                  {tab === 1 && (
+                    <ValuationModel
+                      qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
+                      onToggleHistory={() => setShowHistory((prev) => !prev)}
+                      isHistoryOpen={showHistory}
+                    />
+                  )}
+                </Box>
+
+                {/* === HISTORY SIDEBAR === */}
+                <AnalysisHistorySidebar 
+                    isOpen={showHistory} 
                     qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
-                  />
-                )}
-              </>
+                    onClose={() => setShowHistory(false)}
+                />
+
+              </Box>
             )}
           </div>
         </main>

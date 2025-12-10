@@ -13,18 +13,21 @@ import {
   Box,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-// Import from BOTH slices now
+// Import from BOTH slices
 import { addStockToWatchlist, fetchWatchlists } from "../../../features/watchlistSlice";
 import { saveValuationSnapshot } from "../../../features/valuationHistorySlice";
 
 const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
   const dispatch = useDispatch();
   
-  // Selectors
+  // 1. Grab the full analysis state
   const analysisState = useSelector((state) => state.analysis);
   const { watchlists, status } = useSelector((state) => state.watchlist);
   const { saveStatus } = useSelector((state) => state.valuationHistory);
   
+  // Get number of shares to calculate per-share value
+  const nrShares = analysisState.companyData?.nrShares || 1;
+
   const [selectedListId, setSelectedListId] = useState("");
   const [selectedCase, setSelectedCase] = useState(1);
   const [customTarget, setCustomTarget] = useState("");
@@ -43,27 +46,33 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
     }
   }, [watchlists, selectedListId]);
 
+  // FIX: Calculate Per Share Value (Total Equity / Shares Outstanding)
   useEffect(() => {
-    if (equityVals && equityVals.length === 3) {
-       const val = equityVals[selectedCase];
-       if (val) setCustomTarget(val.toFixed(2));
+    if (equityVals && equityVals.length === 3 && nrShares > 0) {
+       const totalEquityValue = equityVals[selectedCase];
+       const perShareValue = totalEquityValue / nrShares;
+       
+       if (perShareValue) {
+           setCustomTarget(perShareValue.toFixed(2));
+       }
     }
-  }, [selectedCase, equityVals]);
+  }, [selectedCase, equityVals, nrShares]);
 
   const handleSave = async () => {
     if (!customTarget) return alert("Please enter a price target");
 
-    // 1. Construct the snapshot
+    // 2. Construct the snapshot object (The "How")
     const valuationInputsSnapshot = {
         valuationData: analysisState.valuationData,
         valuationApproach: analysisState.valuationApproach,
         taxRate: analysisState.taxRate,
         wacc: analysisState.wacc,
         terminalGrowthRate: analysisState.terminalGrowthRate,
+        // Add other state variables here if needed
     };
     
     try {
-        // 2. Save to History (The new slice)
+        // A. Save the Valuation Snapshot (Historical Record)
         await dispatch(saveValuationSnapshot({
             qfs_symbol: qfsSymbol,
             price_target: parseFloat(customTarget),
@@ -73,10 +82,13 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
             model_inputs: valuationInputsSnapshot
         })).unwrap();
 
-        // 3. Optional: Add to Watchlist (The old slice)
+        // B. Add to Watchlist (Optional: just ensures it's tracked)
         if (selectedListId) {
-            dispatch(addStockToWatchlist({ watchlistId: selectedListId, ticker: qfsSymbol }));
+            await dispatch(addStockToWatchlist({ watchlistId: selectedListId, ticker: qfsSymbol })).unwrap();
         }
+
+        // 4. Refresh watchlists to update the table
+        dispatch(fetchWatchlists());
 
         alert("Valuation saved to history!");
         onClose();
@@ -95,12 +107,12 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
           
           <FormControl fullWidth variant="standard">
-            <InputLabel>Add to Watchlist (Optional)</InputLabel>
+            <InputLabel>Add/Update in Watchlist</InputLabel>
             <Select
               value={selectedListId}
               onChange={(e) => setSelectedListId(e.target.value)}
             >
-              <MenuItem value=""><em>None</em></MenuItem>
+              <MenuItem value=""><em>None (Just History)</em></MenuItem>
               {watchlists.map((list) => (
                 <MenuItem key={list.id} value={list.id}>{list.title}</MenuItem>
               ))}
@@ -114,9 +126,10 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
                 value={selectedCase}
                 onChange={(e) => setSelectedCase(e.target.value)}
               >
-                <MenuItem value={0}>Bear {equityVals?.[0] ? `(${equityVals[0].toFixed(2)})` : ''}</MenuItem>
-                <MenuItem value={1}>Base {equityVals?.[1] ? `(${equityVals[1].toFixed(2)})` : ''}</MenuItem>
-                <MenuItem value={2}>Bull {equityVals?.[2] ? `(${equityVals[2].toFixed(2)})` : ''}</MenuItem>
+                {/* Display per-share values in dropdown too */}
+                <MenuItem value={0}>Bear {equityVals?.[0] ? `(${(equityVals[0]/nrShares).toFixed(2)})` : ''}</MenuItem>
+                <MenuItem value={1}>Base {equityVals?.[1] ? `(${(equityVals[1]/nrShares).toFixed(2)})` : ''}</MenuItem>
+                <MenuItem value={2}>Bull {equityVals?.[2] ? `(${(equityVals[2]/nrShares).toFixed(2)})` : ''}</MenuItem>
               </Select>
             </FormControl>
 
@@ -136,6 +149,7 @@ const SaveValuationModal = ({ open, onClose, qfsSymbol, equityVals }) => {
             rows={4}
             variant="outlined"
             fullWidth
+            placeholder="Why is this the right valuation?"
             value={thesis}
             onChange={(e) => setThesis(e.target.value)}
           />

@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from .models import Watchlist, WatchlistItem
-# Import from the new app to link data dynamically
-from valuation_history.models import ValuationSnapshot 
 
 class WatchlistItemSerializer(serializers.ModelSerializer):
     # Company info
@@ -10,23 +8,30 @@ class WatchlistItemSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='company.name', read_only=True)
     last_close_price = serializers.FloatField(source='company.last_close_price', read_only=True)
     company_id = serializers.IntegerField(source='company.id', read_only=True)
+    
+    # New Fields for "Pro" View
+    industry = serializers.CharField(source='company.industry', read_only=True)
+    currency = serializers.CharField(source='company.currency', read_only=True)
+    market_cap = serializers.SerializerMethodField()
 
     # Dynamic fields from ValuationHistory
     price_target = serializers.SerializerMethodField()
     valuation_date = serializers.SerializerMethodField()
     notes = serializers.SerializerMethodField()
+    analyst_name = serializers.SerializerMethodField()
     valuation_inputs = serializers.SerializerMethodField()
 
     class Meta:
         model = WatchlistItem
         fields = [
             'id', 'company_id', 'ticker', 'qfs_symbol', 'name', 
-            'last_close_price', 'added_at',
-            'price_target', 'valuation_date', 'notes', 'valuation_inputs'
+            'last_close_price', 'industry', 'currency', 'market_cap', 'added_at',
+            'price_target', 'valuation_date', 'notes', 'analyst_name', 'valuation_inputs'
         ]
 
     def get_latest_valuation(self, obj):
-        # Fetch the latest snapshot for this user and stock from the new app
+        # Lazy import to prevent circular dependency errors
+        from valuation_history.models import ValuationSnapshot
         return ValuationSnapshot.objects.filter(
             user=obj.watchlist.owner, 
             qfs_symbol=obj.company.qfs_symbol
@@ -43,10 +48,21 @@ class WatchlistItemSerializer(serializers.ModelSerializer):
     def get_notes(self, obj):
         val = self.get_latest_valuation(obj)
         return val.thesis if val else None
+    
+    def get_analyst_name(self, obj):
+        val = self.get_latest_valuation(obj)
+        return val.analyst_name if val else None
 
     def get_valuation_inputs(self, obj):
         val = self.get_latest_valuation(obj)
         return val.model_inputs if val else None
+    
+    def get_market_cap(self, obj):
+        # Lazy import to prevent circular dependency errors
+        from quickfs_dj.models import ScreenerData
+        # Fetch the latest quarterly market cap
+        data = ScreenerData.objects.filter(qfs_symbol=obj.company.qfs_symbol).values('market_cap_q').first()
+        return data['market_cap_q'] if data else None
 
 class WatchlistSerializer(serializers.ModelSerializer):
     items = WatchlistItemSerializer(many=True, read_only=True)
