@@ -35,12 +35,6 @@ const StarMenu = ({ ticker }) => {
   
   // Removed local state for toast/snackbar since we use the global one now
 
-  useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchWatchlists());
-    }
-  }, [status, dispatch]);
-
   const isStockInList = (list) => {
     return list.items?.some((item) => 
       item.qfs_symbol === ticker || item.ticker === ticker

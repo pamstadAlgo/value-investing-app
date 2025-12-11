@@ -15,6 +15,7 @@ import FiltersCard from "./components/FiltersCard";
 import CustomMetricsCard from "./components/CustomMetricsCard";
 import ScreenerResults from "./components/ScreenerResults";
 import FinancialScatterPlot from "./components/FinancialScatterPlot";
+import { fetchWatchlists } from "src/features/watchlistSlice";
 
 function ContentScreenerPageNew() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -64,6 +65,10 @@ function ContentScreenerPageNew() {
       });
   }, []);
 
+  useEffect(() => {
+    dispatch(fetchWatchlists());
+  }, []);
+
   return (
     <>
       <Layout>
@@ -82,7 +87,7 @@ function ContentScreenerPageNew() {
                 <CustomMetricsCard />
               </div>
             </div>
-            <FinancialScatterPlot />
+            {/* <FinancialScatterPlot /> */}
             <ScreenerResults />
           </div>
         </main>
