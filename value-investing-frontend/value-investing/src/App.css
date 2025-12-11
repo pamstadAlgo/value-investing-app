@@ -36,6 +36,7 @@
 
   /* TERMINAL ACTION - Orange */
   --action-color: #FFA500;
+  --action-color-transparent-less: rgba(255, 165, 0, 0.5);
   --action-color-transparent: rgba(255, 165, 0, 0.3);
   --action-color-more-transparent: rgba(255, 165, 0, 0.15);
   --chip-applied-filter-bg-color: #181818;

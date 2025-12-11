@@ -32,7 +32,7 @@ function ContentLoginPage() {
           <CompanyLogo />
           <h2 className="header-color-black-scale ">StockVal</h2>
         </div>
-        <div className="login-card glass-card">
+        <div className="login-card glass-card" style={{ zIndex: 2 }}>
           <div className="login-page-title">Welcome Back</div>
           <div className="login-sub-title">
             Login to access the application.

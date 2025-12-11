@@ -35,7 +35,7 @@ function BackgroundChart() {
         "http://www.w3.org/2000/svg",
         "rect"
       );
-      body.setAttribute("fill", "rgb(79 70 229)");
+      body.setAttribute("fill", "var(--action-color)");
       body.setAttribute("height", close - open);
       body.setAttribute("rx", "5");
       body.setAttribute("width", candleWidth);
@@ -57,13 +57,13 @@ function BackgroundChart() {
         viewBox="0 0 1440 700"
         xmlns="http://www.w3.org/2000/svg">
         <g
-          stroke="rgb(79 70 229)"
+          stroke="var(--action-color)"
           strokeWidth="4"
           transform="translate(0, 700) scale(1, -1)">
           <g transform="translate(60, 0)" ref={candleContainerRef}>
             <line x1="0" x2="0" y1="80" y2="280"></line>
             <rect
-              fill="rgb(79 70 229)"
+              fill="var(--action-color)"
               height="170"
               rx="5"
               style={{ transform: "scaleY(1.3)", transformOrigin: "bottom" }}
