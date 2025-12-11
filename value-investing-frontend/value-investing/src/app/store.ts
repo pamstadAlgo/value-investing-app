@@ -11,7 +11,6 @@ import stockScreenerReducer from "../features/stockScreenerSlice";
 import valuationReducer from "../features/valuationSlice";
 import microcapReducer from "../features/microcapSlice";
 import hardSet from "redux-persist/lib/stateReconciler/hardSet";
-import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import analysisReducer from "../features/analysisSlice";
 import { PersistPartial } from "redux-persist/es/persistReducer";
 import watchlistReducer from "../features/watchlistSlice";
