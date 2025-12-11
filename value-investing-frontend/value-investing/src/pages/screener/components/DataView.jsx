@@ -25,6 +25,7 @@ import {
   initializeValuationData,
   initalizeBalanceSheet,
 } from "../../../features/analysisSlice";
+import { setHighlightedTicker } from "../../../features/stockScreenerSlice";
 
 function DataView() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -343,16 +344,21 @@ function DataView() {
         muiTableHeadRowProps={{
           className: "table-header-row",
         }}
-        muiTableBodyRowProps={({ row }) => ({
-          className: row.index % 2 === 0 ? "table-row even" : "table-row odd",
-        })}
-        muiTableBodyCellProps={{
-          className: "table-body-cell",
-        }}
-        muiPaginationProps={{
-          shape: "rounded",
-          variant: "outlined",
-          color: "primary",
+        muiTableBodyRowProps={({ row }) => {
+          const isHighlighted = row.original.qfs_symbol_id === screenerState.highlightedTicker;
+          return {
+            className: row.index % 2 === 0 ? "table-row even" : "table-row odd",
+            sx: {
+              backgroundColor: isHighlighted ? 'rgba(255, 152, 0, 0.15) !important' : undefined,
+              border: isHighlighted ? '1px solid var(--action-color) !important' : undefined,
+              transition: 'all 0.2s ease',
+              // Optional: Scroll to view logic can be added here using refs if needed
+            },
+            onClick: () => {
+                 // Optional: Allow clicking row to highlight it in chart too
+                 dispatch(setHighlightedTicker(row.original.qfs_symbol_id));
+            }
+          };
         }}
       />
       <ColumnAddModal isOpen={isModalOpen} handleClose={handleClose} />

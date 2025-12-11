@@ -14,6 +14,7 @@ import {
 import FiltersCard from "./components/FiltersCard";
 import CustomMetricsCard from "./components/CustomMetricsCard";
 import ScreenerResults from "./components/ScreenerResults";
+import FinancialScatterPlot from "./components/FinancialScatterPlot";
 
 function ContentScreenerPageNew() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -81,6 +82,7 @@ function ContentScreenerPageNew() {
                 <CustomMetricsCard />
               </div>
             </div>
+            <FinancialScatterPlot />
             <ScreenerResults />
           </div>
         </main>
