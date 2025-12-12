@@ -30,12 +30,16 @@ function ContentAnalysisPage() {
         <main className="main-content-wrapper relative-position">
           <div
             className="flex-wrapper-main-content"
-            style={{ overflowX: "auto" }}>
+            style={{ overflowX: "auto", paddingTop: "16px" }}>
             <CompanySearchField setBackdropLoading={setBackDropLoading} />
 
             {analysisState.selectedTickerSymbol && (
-              <Box sx={{ display: "flex", width: "100%", alignItems: "flex-start" }}>
-                
+              <Box
+                sx={{
+                  display: "flex",
+                  width: "100%",
+                  alignItems: "flex-start",
+                }}>
                 {/* === MAIN CONTENT === */}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <AnalysisTabs tab={tab} setTab={setTab} />
@@ -44,7 +48,9 @@ function ContentAnalysisPage() {
 
                   {tab === 1 && (
                     <ValuationModel
-                      qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
+                      qfsSymbol={
+                        analysisState?.selectedTickerSymbol?.qfs_symbol
+                      }
                       onToggleHistory={() => setShowHistory((prev) => !prev)}
                       isHistoryOpen={showHistory}
                     />
@@ -52,12 +58,11 @@ function ContentAnalysisPage() {
                 </Box>
 
                 {/* === HISTORY SIDEBAR === */}
-                <AnalysisHistorySidebar 
-                    isOpen={showHistory} 
-                    qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
-                    onClose={() => setShowHistory(false)}
+                <AnalysisHistorySidebar
+                  isOpen={showHistory}
+                  qfsSymbol={analysisState?.selectedTickerSymbol?.qfs_symbol}
+                  onClose={() => setShowHistory(false)}
                 />
-
               </Box>
             )}
           </div>

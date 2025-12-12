@@ -363,6 +363,10 @@ background-color: var(--background-color-mui-backdrop);
   color: var(--label-color-input-fields)
 }
 
+.MuiDrawer-root.custom-drawer-val-history > .MuiPaper-root {
+  background-color: var(--background-glass-card);
+}
+
 .custom-fieldset legend {
   padding: 0 4px;
   font-size: 0.9em;
