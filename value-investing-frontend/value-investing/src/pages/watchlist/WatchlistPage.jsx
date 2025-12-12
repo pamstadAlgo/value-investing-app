@@ -14,12 +14,14 @@ import { Box } from "@mui/material";
 import WatchlistSidebar from "./components/WatchlistSidebar";
 import WatchlistContent from "./components/WatchlistContent";
 import WatchlistDialogs from "./components/WatchlistDialogs";
+import { useSnackbar } from "../GlobalComponents/SnackbarProvider";
 
 const WatchlistPage = () => {
   const dispatch = useDispatch();
   const { watchlists, status } = useSelector((state) => state.watchlist);
 
   const [activeListId, setActiveListId] = useState(null);
+  const { showMessage } = useSnackbar();
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -45,40 +47,59 @@ const WatchlistPage = () => {
   );
 
   // --- Handlers ---
-  const handleCreate = useCallback((title) => {
-    dispatch(createWatchlist({ title }))
-      .unwrap()
-      .then((newList) => {
-        setActiveListId(newList.id);
-        setIsCreateOpen(false);
-      })
-      .catch((err) => alert(err.message));
-  }, [dispatch]);
-
-  const handleShare = useCallback((email) => {
-    if (activeListId) {
-      dispatch(shareWatchlist({ watchlistId: activeListId, email }))
+  const handleCreate = useCallback(
+    (title) => {
+      dispatch(createWatchlist({ title }))
         .unwrap()
-        .then(() => {
-          alert(`Successfully shared with ${email}`);
-          setIsShareOpen(false);
+        .then((newList) => {
+          setActiveListId(newList.id);
+          setIsCreateOpen(false);
         })
-        .catch((err) => alert(`Failed to share: ${err.message || "User not found"}`));
-    }
-  }, [activeListId, dispatch]);
+        .catch((err) => alert(err.message));
+    },
+    [dispatch]
+  );
+
+  const handleShare = useCallback(
+    (email) => {
+      if (activeListId) {
+        dispatch(shareWatchlist({ watchlistId: activeListId, email }))
+          .unwrap()
+          .then(() => {
+            showMessage(`Successfully shared with ${email}`);
+            setIsShareOpen(false);
+          })
+          .catch((err) => {
+            showMessage(
+              `Failed to share: ${err.message || "User not found"}`,
+              "error"
+            );
+          });
+      }
+    },
+    [activeListId, dispatch]
+  );
 
   const handleDeleteList = useCallback(() => {
-    if (activeListId && window.confirm("Are you sure you want to delete this watchlist?")) {
+    if (
+      activeListId &&
+      window.confirm("Are you sure you want to delete this watchlist?")
+    ) {
       dispatch(deleteWatchlist(activeListId));
       setActiveListId(null);
     }
   }, [activeListId, dispatch]);
 
-  const handleRemoveStock = useCallback((ticker) => {
-    if (activeListId) {
-      dispatch(removeStockFromWatchlist({ watchlistId: activeListId, ticker }));
-    }
-  }, [activeListId, dispatch]);
+  const handleRemoveStock = useCallback(
+    (ticker) => {
+      if (activeListId) {
+        dispatch(
+          removeStockFromWatchlist({ watchlistId: activeListId, ticker })
+        );
+      }
+    },
+    [activeListId, dispatch]
+  );
 
   return (
     <Layout>
@@ -89,8 +110,7 @@ const WatchlistPage = () => {
           border: "1px solid var(--border-input-fields)",
           bgcolor: "var(--background-glass-card)",
           boxSizing: "border-box",
-        }}
-      >
+        }}>
         {/* SIDEBAR */}
         <WatchlistSidebar
           watchlists={watchlists}
