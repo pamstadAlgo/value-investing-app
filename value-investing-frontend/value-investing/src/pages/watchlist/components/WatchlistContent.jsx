@@ -1,31 +1,30 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import WatchlistTable from "./WatchlistTable"; // Your existing table component
-
-const TextActionBtn = ({ label, onClick, color = "var(--text-color-grey-scale)" }) => (
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+const TextActionBtn = ({
+  label,
+  onClick,
+  icon,
+  color = "var(--text-color-grey-scale)",
+}) => (
   <Button
+    size="small"
     onClick={onClick}
-    disableRipple
-    sx={{
-      minWidth: 0,
-      padding: "0 8px",
-      color: color,
-      fontFamily: "var(--font-family)",
-      fontSize: "0.85rem",
-      fontWeight: 600,
-      textTransform: "none",
-      "&:hover": {
-        color: "var(--action-color)",
-        backgroundColor: "transparent",
-        textDecoration: "underline",
-      },
-    }}
-  >
-    [{label}]
+    variant="contained"
+    className="contained-custom-button fit-content-button"
+    startIcon={icon}>
+    {label}
   </Button>
 );
 
-const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveStock }) => {
+const WatchlistContent = ({
+  activeList,
+  onShareClick,
+  onDeleteClick,
+  onRemoveStock,
+}) => {
   if (!activeList) {
     return (
       <Box
@@ -34,8 +33,7 @@ const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveSto
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Typography sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           [ NO LIST SELECTED ]
         </Typography>
@@ -44,7 +42,13 @@ const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveSto
   }
 
   return (
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <Box
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}>
       {/* HEADER */}
       <Box
         sx={{
@@ -56,25 +60,28 @@ const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveSto
           borderBottom: "1px solid var(--border-input-fields)",
           bgcolor: "var(--background-color-nav-bar)",
           boxSizing: "border-box",
-        }}
-      >
+        }}>
         <Typography
           sx={{
             fontFamily: "var(--font-family)",
             fontWeight: 700,
             color: "var(--action-color)",
             textTransform: "uppercase",
-          }}
-        >
+          }}>
           {activeList.title}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 1 }}>
-          <TextActionBtn label="SHARE" onClick={onShareClick} />
+          <TextActionBtn
+            label="SHARE"
+            onClick={onShareClick}
+            icon={<ShareOutlinedIcon className="button-icon" />}
+          />
           <TextActionBtn
             label="DELETE LIST"
             onClick={onDeleteClick}
             color="var(--error-red)"
+            icon={<DeleteOutlineOutlinedIcon className="button-icon" />}
           />
         </Box>
       </Box>
@@ -97,18 +104,15 @@ const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveSto
           px: 2,
           gap: 4,
           bgcolor: "#000",
-        }}
-      >
+        }}>
         <Typography
           variant="caption"
-          sx={{ fontFamily: "var(--font-family)", color: "gray" }}
-        >
+          sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           STATUS: <span style={{ color: "var(--success-color)" }}>READY</span>
         </Typography>
         <Typography
           variant="caption"
-          sx={{ fontFamily: "var(--font-family)", color: "gray" }}
-        >
+          sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           ITEMS:{" "}
           <span style={{ color: "var(--header-color)" }}>
             {activeList.items?.length || 0}
@@ -116,8 +120,7 @@ const WatchlistContent = ({ activeList, onShareClick, onDeleteClick, onRemoveSto
         </Typography>
         <Typography
           variant="caption"
-          sx={{ fontFamily: "var(--font-family)", color: "gray" }}
-        >
+          sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           OWNER:{" "}
           <span style={{ color: "var(--header-color)" }}>
             {activeList.owner_name?.toUpperCase() || "ME"}
