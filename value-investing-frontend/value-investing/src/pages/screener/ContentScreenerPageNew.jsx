@@ -87,7 +87,7 @@ function ContentScreenerPageNew() {
                 <CustomMetricsCard />
               </div>
             </div>
-            {/* <FinancialScatterPlot /> */}
+              <FinancialScatterPlot />
             <ScreenerResults />
           </div>
         </main>
