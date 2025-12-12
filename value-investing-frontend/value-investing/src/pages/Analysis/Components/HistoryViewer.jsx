@@ -32,12 +32,12 @@ const HistoryViewer = ({ qfsSymbol, onClose }) => {
   // Select from new slice
   const { history, status } = useSelector((state) => state.valuationHistory);
 
-  useEffect(() => {
-    if (qfsSymbol) {
-      dispatch(clearHistory());
-      dispatch(fetchValuationHistory({ ticker: qfsSymbol }));
-    }
-  }, [qfsSymbol, dispatch]);
+  // useEffect(() => {
+  //   if (qfsSymbol) {
+  //     dispatch(clearHistory());
+  //     dispatch(fetchValuationHistory({ ticker: qfsSymbol }));
+  //   }
+  // }, [qfsSymbol, dispatch]);
 
   const loadHistoricalData = (valuation) => {
     const inputs = valuation.model_inputs;

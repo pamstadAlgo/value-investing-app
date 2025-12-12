@@ -15,6 +15,8 @@ import {
   setSelectedModel,
 } from "../../../features/analysisSlice";
 import { useSnackbar } from "../../GlobalComponents/SnackbarProvider";
+import { clearHistory } from "src/features/watchlistSlice";
+import { fetchValuationHistory } from "src/features/valuationHistorySlice";
 
 const LISTBOX_PADDING = 8; // px
 
@@ -93,6 +95,10 @@ function CompanySearchField({ setBackdropLoading }) {
             error
           );
         });
+
+      //fetch valuation history
+      dispatch(clearHistory());
+      dispatch(fetchValuationHistory({ ticker: newValue.qfs_symbol }));
 
       // fetch saved valuation models
       axiosInstanceAuth
