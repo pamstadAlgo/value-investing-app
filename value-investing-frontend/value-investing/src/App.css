@@ -992,7 +992,7 @@ height: 0;
 }
 
 .filters-criteria-grid-item{
-  height: fit-content;
+  /* height: fit-content; */
 }
 
 .applied-filters-flexbox-wrapper{
