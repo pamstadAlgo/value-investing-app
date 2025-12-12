@@ -94,31 +94,11 @@ function FiltersCard() {
       "newValue transformed: ",
       `(${newValue.map((item) => `'${item}'`).join(", ")})`
     );
-
-    // dispatch(
-    //   updateActiveFilter({
-    //     newValue: {
-    //       id: filter.id,
-    //       qty: `(${newValue.map((item) => `'${item}'`).join(", ")})`,
-    //     },
-    //     oldValue: {
-    //       id: filter.id,
-    //       qty: `(${oldValue.map((item) => `'${item}'`).join(", ")})`,
-    //     },
-    //   })
-    // );
   };
 
   const handleNumberChange = (values, formik) => {
     const { formattedValue, value, floatValue } = values;
-    // setQty(floatValue);
-
-    //update activFilter state; note that filter is passed in order to find the correct filter in the array to update
-    //dispatch(updateQtyActiveFilter({ qty: floatValue, filter: filter }));
     formik.setFieldValue("qty", floatValue);
-    // console.log("Formatted Value:", formattedValue); // E.g., 600'000'000
-    // console.log("Raw String Value:", value); // E.g., 600000000
-    // console.log("Float Value:", floatValue); // E.g., 600000000 as a n  };
   };
 
   return (
@@ -138,10 +118,6 @@ function FiltersCard() {
           enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={(values, { resetForm }) => {
-            console.log(
-              "we submit formik values filter criteria: We would add to active filters ",
-              values
-            );
             //flatten the values object
             var filter = {
               ...values.filter,
