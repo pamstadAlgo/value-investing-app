@@ -1850,9 +1850,6 @@ class PenmanValuationAPIView(APIView):
         lt_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["lt_debt"])
         shares_diluted = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter,type = "balance", years=years, metric_fields=["shares_diluted"])
 
-        print('short-term debt: ', st_debt['metrics']["st_debt"])
-        print('long-term debt: ', lt_debt['metrics']["lt_debt"])
-
         #sum the short-term and long-term debt
         debt = dict(Counter(st_debt['metrics']["st_debt"]) + Counter(lt_debt['metrics']["lt_debt"]))
 
@@ -1908,104 +1905,122 @@ class PenmanValuationAPIView(APIView):
                     ,'metricsNopat' : {
                         'revenue' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Revenue',
                             'hasTs' : True, #defines if metric has times series attached
                             'ts' : revenue_ts,
                             'values': revenue['metrics']["revenue"]
                         },
                         'cogs' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'COGS',
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
                         },
                         'gross_profit' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Gross Profit',
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
                         },
                         'sga' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'SG&A',
                             'hasTs' : True,
                             'ts' : sga_ts,
                             'values': sga['metrics']["sga"]
                         },
                         'rnd' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'R&D',
                             'hasTs' : True,
                             'ts' : rnd_ts,
                             'values': rnd['metrics']["rnd"]
                         },
                         'other_opex' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Other Opex',
                             'hasTs' : True,
                             'ts' : other_opex_ts,
                             'values': other_opex['metrics']["other_opex"]
                         },
                         'op_margins' : {
                             'type' : 'ratio',
+                            'label' : 'Op. Margins',
                             'hasTs' : True,
                             'ts' : op_margin_ts,
                             'values' : op_margins
                         },
                         'operating_income' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Op. Income',
                             'hasTs' : True,
                             'ts' : op_income_ts,
                             'values': operating_income['metrics']["operating_income"]
                         },                     
                         'income_tax' : {
                             'type': 'absolute',
+                            'label' : 'Tax',
                             'values' : income_tax['metrics']["income_tax"]
                         },
                         'eff_tax_rate' : {
                             'type': 'ratio',
+                            'label' : 'Effective Tax Rate',
                             'values' : effective_tr
                         },
                         'NOPAT' : {
                             'type' : 'absolute',
+                            'label' : 'NOPAT',
                             'values' : nopat
                         }
                     },
                     'metricsNoa' : {
                         'operatingAssets' : {
                             'type' : 'absolute',
+                            'label' : 'Op. Assets',
                             'hasTs' : True,
                             'ts' : op_assets_ts,
                             'values' : op_assets['metrics']["operating_assets"]
                         },
                         'operatingLiabilities' : {
                             'type' : 'absolute',
+                            'label' : 'Op. Liabilities',
                             'hasTs' : True,
                             'ts' : op_liab_ts,
                             'values' : op_liab['metrics']["operating_liabilities"]
                         },
                         'netOperatingAssets' : {
                             'type' : 'absolute',
+                            'label' : 'NOA',
                             'hasTs' : True,
                             'ts' : net_op_assets_ts,
                             'values' : net_op_assets['metrics']["net_operating_assets"]
                         },
                         'bookValue' : {
                             'type' : 'absolute',
+                            'label' : 'Book Value',
                             'hasTs' : True,
                             'ts' : book_value_ts,
                             'values' : book_value['metrics']["total_equity"]
                         },
                         'rnoa' : {
                             'type' : 'ratio',
+                            'label' : 'RNOA',
                             'hasTs' : True,
                             'ts' : rnoa_ts,
                             'values' : rnoa
                         },
                         'debt' : {
                             'type' : 'absolute',
+                            'label' : 'Total Debt',
                             'hasTs' : True,
                             'ts' : debt_ts,
                             'values' : debt
                         },
                         'nrShares' : {
                             'type' : 'absolute',
+                            'label' : 'Nr. Shares (diluted)',
                             'hasTs' : True,
                             'ts' : nr_shares_ts,
                             'values' : shares_diluted['metrics']["shares_diluted"]

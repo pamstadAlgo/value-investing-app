@@ -244,12 +244,14 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                   <TableRow key={metricName}>
                     <TableCell>
                       <div className="flexbox-wrapper-table-cell-analysis">
-                        {metricName}
+                        {values.label ? values.label : metricName}
                         {/* display graph if time series data is available */}
                         {values.hasTs && (
                           <MetricGraph
                             data={values.ts}
-                            metricName={metricName}
+                            metricName={
+                              values.label ? values.label : metricName
+                            }
                           />
                         )}
                       </div>
@@ -356,12 +358,15 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                     <TableRow key={metricName}>
                       <TableCell>
                         <div className="flexbox-wrapper-table-cell-analysis">
-                          {metricName}
+                          {values.label ? values.label : metricName}
+
                           {/* display graph if time series data is available */}
                           {values.hasTs && (
                             <MetricGraph
                               data={values.ts}
-                              metricName={metricName}
+                              metricName={
+                                values.label ? values.label : metricName
+                              }
                             />
                           )}
                         </div>
