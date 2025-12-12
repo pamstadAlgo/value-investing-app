@@ -762,7 +762,7 @@ border-bottom: 1px solid var(--action-color) !important;
 
 .valuation-summary-card{
   padding: 16px;
-  border-radius: 20px;
+  border-radius: var(--var-border-radius);
   border: 1px solid black;
 }
 
