@@ -479,6 +479,7 @@ const FinancialScatterPlot = () => {
             <Scatter
               name="Companies"
               data={sortedChartData}
+              isAnimationActive={false}
               onClick={handleNodeClick} // Handles bubble clicks
               style={{ cursor: "pointer" }}>
               {sortedChartData.map((entry, index) => {
