@@ -154,17 +154,6 @@ function FiltersCard() {
             setFieldType("");
             setValue(null);
             // here we need to more filter, qty, comparison and add to active filters
-
-            // //post filter quantities to endpoint
-            // axiosInstanceAuth
-            //   .post("/screener/filter-query/", screenerState.activFilters)
-            //   .then((response) => {
-            //     console.log("response of filter query: ", response.data);
-            //     dispatch(setQueryResult(response.data?.queryResult));
-            //   })
-            //   .catch((error) => {
-            //     console.error("ERROR: POST /screener/filter-query/: ", error);
-            //   });
           }}>
           {(formik) => (
             <form onSubmit={formik.handleSubmit}>
@@ -172,6 +161,12 @@ function FiltersCard() {
                 {/* add fields for validation */}
                 <div className="flex-item-filter-field">
                   <Autocomplete
+                    slotProps={{
+                      popper: {
+                        className: "autocomplete-filter-metric",
+                      },
+                    }}
+                    // className="autocomplete-filter-metric"
                     clearOnEscape
                     value={value}
                     onChange={(e, newValue) =>
@@ -201,7 +196,6 @@ function FiltersCard() {
                       />
                     )}
                     renderGroup={(params) => {
-                      console.log("params: ", params);
                       return (
                         <li key={params.key}>
                           <div className="group-header-autocomplete">

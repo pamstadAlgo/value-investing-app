@@ -271,7 +271,7 @@
 .MuiMenuItem-root, 
 .MuiAutocomplete-option {
     font-family: var(--font-family) !important;
-    color: var(--text-color-grey-scale) !important; /* Muted text by default */
+    color: var(--text-color-mui-autocomplete-dp) !important; /* Muted text by default */
 }
 
 /* Hover state for options */

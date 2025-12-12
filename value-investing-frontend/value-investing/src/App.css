@@ -33,6 +33,8 @@
 
   /* TERMINAL TEXT */
   --text-color-grey-scale: #999999; /* Terminal Muted */
+  --text-color-mui-autocomplete-dp: white;
+
 
   /* TERMINAL ACTION - Orange */
   --action-color: #FFA500;
@@ -120,7 +122,8 @@
 
 /* defines the grey scale text color */
   --text-color-grey-scale: rgb(107 114 128);
-
+  --text-color-mui-autocomplete-dp: rgb(107,114,128);
+  
   /* defines the action color; this includes buttons and logo */
     --action-color: rgb(79 70 229);
     --action-color-transparent: rgba(79, 70, 229, 0.3);
@@ -361,6 +364,10 @@ background-color: var(--background-color-mui-backdrop);
 .legend-formula-editor{
   font-size: 13px;
   color: var(--label-color-input-fields)
+}
+
+.MuiPopper-root.MuiAutocomplete-popper.autocomplete-filter-metric{
+  min-width: 400px;
 }
 
 .MuiDrawer-root.custom-drawer-val-history > .MuiPaper-root {
