@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import NavBar from "./NavBar";
 import Sidebar from "./Sidebar";
 
 const Layout = ({ children }) => {
@@ -36,8 +35,7 @@ const Layout = ({ children }) => {
           display: "flex",
           flexDirection: "column",
         }}>
-        <NavBar handleDrawerToggle={handleDrawerToggle} />
-
+        
         {/* Page Content */}
         <Box sx={{ p: 3, flexGrow: 1 }}>{children}</Box>
       </Box>
