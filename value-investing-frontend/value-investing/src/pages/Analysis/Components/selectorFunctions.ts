@@ -1,4 +1,5 @@
 // import { type } from "@testing-library/user-event/dist/type";
+import { ValuationCases, ValuationData } from "src/features/analysisTypes";
 import {
   computeTotalLiabilities,
   sumBalanceSheetItems,
@@ -21,6 +22,14 @@ export function computeOpIncomeBottomUp(data, caseIndex) {
   return opIncome;
 }
 
+export function computeGrossProfit(
+  data: ValuationData,
+  caseIndex: ValuationCases
+): number {
+  var grossProfit = data?.revenue[caseIndex] - data?.cogs[caseIndex];
+  return grossProfit;
+}
+
 export function computeOpMarginBottomUp(data, caseIndex) {
   var opIncome = computeOpIncomeBottomUp(data, caseIndex);
   return opIncome / data?.revenue[caseIndex];
@@ -39,7 +48,6 @@ export function computeNopatBottomUp(data, taxRate, caseIndex) {
 }
 
 export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
-
   //compute residual earnings 1 = (NOPAT - r*NOA)/(1+r)
   var re1 = (nopat[caseIndex] - wacc * noa[caseIndex]) / (1 + wacc);
 
@@ -73,9 +81,6 @@ export function computeTotLiab(balanceSheet) {
 export function computeNetLiqValue(balanceSheet) {
   const totalAssets = computeTotAssets(balanceSheet);
   const totalLiabilities = computeTotLiab(balanceSheet);
-
-  console.log("total assets: ", totalAssets);
-  console.log("totalLiabilities: ", totalLiabilities);
 
   return totalAssets - totalLiabilities;
 }

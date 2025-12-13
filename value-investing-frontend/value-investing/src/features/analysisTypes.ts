@@ -21,6 +21,8 @@ type ValuationAssumptions = {
   terminalGrowthRate: number;
 };
 
+export type ValuationCases = 0 | 1 | 2;
+
 // mergee the two types
 export type ValuationModelData = {
   valuationData: ValuationData;

@@ -126,8 +126,6 @@ function SaveValuationModel({ qfsSymbol }) {
         value={selectedModel?.isNew || !selectedModel ? -1 : selectedModel?.id}
         label="Saved Screener Templates"
         renderValue={(selected) => {
-          console.log("this is selected: ", selected);
-
           if (selected === -1) {
             return "Create new valuation Model";
           } else {

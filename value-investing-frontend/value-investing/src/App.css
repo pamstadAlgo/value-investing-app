@@ -83,7 +83,7 @@
   --bg-color-custom-metrics-hover: #181818;
   --valuation-table-cell-font-color: #EAEAEA;
 
-  --disabled-valuation-fields-color: #444444;
+  --disabled-valuation-fields-color: #9b9b9b;
 
   --table-cell-color-valuation: white;
 }
@@ -123,7 +123,7 @@
 /* defines the grey scale text color */
   --text-color-grey-scale: rgb(107 114 128);
   --text-color-mui-autocomplete-dp: rgb(107,114,128);
-  
+
   /* defines the action color; this includes buttons and logo */
     --action-color: rgb(79 70 229);
     --action-color-transparent: rgba(79, 70, 229, 0.3);

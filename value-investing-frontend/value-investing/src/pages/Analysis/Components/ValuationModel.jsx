@@ -14,6 +14,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { updateValuationData } from "../../../features/analysisSlice";
 import {
   computeEquityVal,
+  computeGrossProfit,
   computeNetOpAssets,
   computeNopatBottomUp,
   computeNopatTopDown,
@@ -96,10 +97,8 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   let opMargins = [0, 0, 0];
   let equityVal = [0, 0, 0];
   let netOpAssets = [0, 0, 0];
+  let grossProfit = [0, 0, 0];
 
-  //   let opIncomeBear = null;
-  //   let opIncomeBase = null;
-  //   let opIncomeBull = null;
 
   if (valuationApproach === "topDown") {
     opIncome[0] = computeOpIncomeTopDown(valuationData, 0);
@@ -126,12 +125,10 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
     nopat[2] = computeNopatBottomUp(valuationData, taxRate, 2);
   }
 
-  console.log("nopat before function: ", nopat);
-  console.log("valuationData?.bookValue: ", valuationData?.bookValue);
-  console.log(
-    "valuationData?.netOperatingAssets: ",
-    valuationData?.netOperatingAssets
-  );
+  // compute gross profit
+  grossProfit[0] = computeGrossProfit(valuationData, 0);
+  grossProfit[1] = computeGrossProfit(valuationData, 1);
+  grossProfit[2] = computeGrossProfit(valuationData, 2);
 
   //compute equity value
   equityVal[0] = computeEquityVal(
@@ -163,9 +160,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   netOpAssets[0] = computeNetOpAssets(valuationData, 0);
   netOpAssets[1] = computeNetOpAssets(valuationData, 1);
   netOpAssets[2] = computeNetOpAssets(valuationData, 2);
-
-  console.log("equityVal that we pass: ", equityVal);
-  console.log("nr shares: ", nrShares);
 
   return (
     <>
@@ -296,12 +290,13 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                             value = opMargins[index];
                           }
                           break;
+                        case "gross_profit":
+                          value = grossProfit[index];
+                          break;
+                        case "eff_tax_rate":
+                          value = taxRate;
+                          break;
                       }
-
-                      if (metricName === "revenue") {
-                        console.log("this is value: ", value);
-                      }
-
                       //scale the value if the value is not a ratio
                       if (values.type !== "ratio") {
                         value = (value / scaleFactor).toFixed(0);

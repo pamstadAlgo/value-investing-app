@@ -72,7 +72,7 @@ export const analysisSlice = createSlice({
       target.multiplier = newValue; // Immer lets you mutate directly
     },
     changeTaxRate: (state, action) => {
-      state.taxRate = Number(action.payload);
+      state.taxRate = action.payload;
     },
     changeWacc: (state, action) => {
       state.wacc = action.payload;
@@ -81,7 +81,7 @@ export const analysisSlice = createSlice({
       (state.companyData as any).nrShares = action.payload;
     },
     changeTerminalGrowthRate: (state, action) => {
-      state.terminalGrowthRate = Number(action.payload);
+      state.terminalGrowthRate = action.payload;
     },
     initializeSavedModels: (state, action: PayloadAction<ExistingModel[]>) => {
       state.savedModels = action.payload;
