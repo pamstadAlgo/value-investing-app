@@ -39,6 +39,7 @@
 
   /* TERMINAL ACTION - Orange */
   --action-color: #FFA500;
+  --action-color-monaco-editor-hover: #ffa600c8;
   --action-color-transparent-less: rgba(255, 165, 0, 0.5);
   --action-color-transparent: rgba(255, 165, 0, 0.3);
   --action-color-more-transparent: rgba(255, 165, 0, 0.15);
@@ -90,6 +91,9 @@
 
   --screener-table-menu-background-color: var(--background-color);
   --screener-table-cell-content-color: var(--inner-text-input-fields);
+
+  --monaco-suggest-editor-bg-color: var(--background-color);
+  --monaco-suggest-line-item-color: var(--inner-text-input-fields);
 }
 
 /* Force Dark Theme Logic by default for Terminal */
@@ -133,8 +137,10 @@
   
   /* defines the action color; this includes buttons and logo */
     --action-color: rgb(79 70 229);
+    --action-color-monaco-editor-hover: rgba(78, 70, 229, 0.867);
     --action-color-transparent: rgba(79, 70, 229, 0.3);
     --action-color-more-transparent: rgba(79, 70, 229, 0.15);
+    --action-color-transparent-less: var(--action-color-transparent);
     --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
   
     --color-floating-hint-editor: #838282;
@@ -166,7 +172,9 @@
     --font-weight-title-mid-size: 600;
     --line-height-title-mid-size: 1.75rem;
     --border-color-button-group: rgba(0, 0, 0, 0.12);
-  
+
+    --monaco-suggest-editor-bg-color: #fff;
+  --monaco-suggest-line-item-color: var(--inner-text-input-fields);
   
     /* screener results table */
     --table-header-actions-bg-color: white;
@@ -248,6 +256,10 @@ body, html{
   pointer-events: none;
   z-index: 0;
  }
+
+.custom-list-transparent.MuiList-root.MuiList-padding {
+  background-color: transparent !important;
+}
 
  .background-chart svg {
   position: absolute;
@@ -642,8 +654,21 @@ font-size: 15px;
 
 /* Highlighted suggestion */
 .monaco-editor .monaco-list-row.focused {
-  background: var(--action-color-more-transparent) !important;
+  background: var(--action-color) !important;
   color: var(--header-color) !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row>.contents:hover{
+  background: var(--action-color-monaco-editor-hover);
+
+}
+
+.monaco-scrollable-element > .monaco-list-rows{
+  background: var(--monaco-suggest-editor-bg-color)
+}
+
+.monaco-icon-label{
+  color: var(--monaco-suggest-line-item-color) !important;
 }
 
 .monaco-editor .suggest-icon.codicon.codicon-symbol-variable::before {
@@ -651,9 +676,16 @@ font-size: 15px;
   display: inline-block;
   width: 14px;
   height: 14px;
-  background-image: url('https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/variable.svg');  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+
+  -webkit-mask: url('https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/variable.svg') no-repeat center;
+  mask: url('https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/variable.svg') no-repeat center;
+
+  background-color: var(--monaco-suggest-line-item-color);
+  /* this controls the color */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
 }
 
 .accordion-title-flexbox-wrapper{

@@ -9,8 +9,6 @@ const Layout = ({ children }) => {
     setMobileOpen(!mobileOpen);
   };
 
-  console.log("children recevied in layout: ", children);
-
   return (
     // Outer Container
     <Box

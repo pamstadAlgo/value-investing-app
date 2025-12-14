@@ -17,13 +17,13 @@ import IconButton from "@mui/material/IconButton";
 function CustomMetricsList({ customMetrics, handleMetricDelete }) {
   return (
     <List
+      className="custom-list-transparent"
       dense
       sx={{
         width: "100%",
         maxWidth: 360,
         maxHeight: "170px",
         overflow: "scroll",
-        bgcolor: "transparent",
         overflowX: "hidden",
         overflowY: "auto",
       }}>
@@ -50,7 +50,9 @@ function CustomMetricsList({ customMetrics, handleMetricDelete }) {
               </div>
             }
             disablePadding>
-            <ListItemButton className="custom-list-item-button" style={{ gap: "10px", paddingLeft: "8px" }}>
+            <ListItemButton
+              className="custom-list-item-button"
+              style={{ gap: "10px", paddingLeft: "8px" }}>
               <ListItemIcon className="custom-list-icon">
                 <CalculateOutlinedIcon />
               </ListItemIcon>
