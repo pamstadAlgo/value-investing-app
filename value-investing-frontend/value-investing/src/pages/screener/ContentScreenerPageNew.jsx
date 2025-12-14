@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import Layout from "../GlobalComponents/Layout";
-import NavBar from "../GlobalComponents/NavBar";
 import ScreenerTemplates from "./components/ScreenerTemplates";
 import Screener from "./components/Screener";
 import useAxiosWithAuth from "../../axios/useAxiosWithAuth";
