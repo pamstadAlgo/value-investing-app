@@ -1,5 +1,6 @@
 from collections import deque
 from quickfs_dj.models import BalanceSheetAnnual, IncomeStatementAnnual, CashFlowStatementAnnual, KeyRatiosAnnual
+from django.db.models.functions import ExtractYear
 
 # def tokenize(expression):
 #     """
@@ -318,3 +319,100 @@ def transform_expression(expression, tables = []):
 
     result = evaluate_postfix(postfix)
     return result
+
+
+def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10, scaling = 1):
+    """
+    Function that returns time series for requested metric in the following format: [{'year': 2021, 'value' : 10000}, {'year': 2022, 'value' : 20000}, etc.]
+    
+    para scaling:
+        - can be used to scale y values; useful for percentage values like op marings, rnoa etc.
+    """
+    last_records = (model.objects
+                    .filter(qfs_symbol_id = qfs_symbol)
+                    .annotate(year=ExtractYear('period_end_date'))
+                    .order_by('-period_end_date')[:years]
+                    .values('year', metric)
+            )
+    
+    #we will sort data from oldest to newest (2019, 2020, 2021)
+    ts = [
+        {'year': str(record['year']), 'value': record[metric]*scaling}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return ts
+
+
+def get_op_margin_ts(qfs_symbol, n=10, scaling = 1):
+    """
+    Returns operating margins as a time series of the following format:
+    [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
+    """
+
+    # Query the most recent N records for this symbol
+    last_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')[:n]
+        .values('year', 'operating_income', 'revenue')
+    )
+
+    # Compute operating margin = operating_income / revenue
+    formatted_data = []
+    for record in last_records:
+        revenue = record.get('revenue')
+        op_income = record.get('operating_income')
+
+        if revenue not in (None, 0):
+            margin = op_income / revenue
+            formatted_data.append({
+                'year': str(record['year']),
+                'value': round(margin*scaling, 1)  # round to 1 decimals
+            })
+
+    # Sort by year ascending
+    formatted_data.sort(key=lambda x: x['year'])
+
+    return formatted_data
+
+
+def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaling=1):
+     # Step 1: fetch last n+1 balances with net_operating_assets
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'net_operating_assets')
+    )[:n+1]
+
+
+    # Step 2: fetch corresponding income statements
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'operating_income')
+    )[:n+1]
+
+    incomes = sorted(incomes, key=lambda i: i.period_end_date)  # oldest -> newest
+    balances = sorted(balances, key=lambda b: b.period_end_date)  # oldest -> newest
+
+    # Step 3: compute RNOA using NOA from previous period
+    rnoa_series = []
+    for i in range(1, len(balances)):
+        income_t = incomes[i]
+        noa_prev = balances[i-1].net_operating_assets
+
+        if noa_prev == 0:
+            continue  # avoid division by zero
+
+        rnoa = income_t.operating_income * (1 - tax_rate) / noa_prev
+        year = income_t.period_end_date.year
+        rnoa_series.append({'year': str(year), 'value': rnoa*scaling})
+
+    # Step 4: keep only last n values
+    rnoa_series = rnoa_series[-n:]
+
+    return rnoa_series

@@ -27,3 +27,19 @@ export function loadValuationModel(
     dispatch(changeTerminalGrowthRate(data?.terminalGrowthRate));
   }
 }
+
+export function getScaleFactor(
+  valueType: "absolute" | "perc" | "no-scaling",
+  currentScaling: number
+) {
+  switch (valueType) {
+    case "absolute":
+      return currentScaling;
+    case "perc":
+      return 0.01; //we divide by scale factor (so divide by 0.01 is the same as multiply by 100)
+    case "no-scaling":
+      return 1;
+    default:
+      return 1;
+  }
+}

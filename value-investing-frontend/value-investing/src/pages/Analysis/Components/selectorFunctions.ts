@@ -58,6 +58,10 @@ export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
   return b0[caseIndex] + re1 + re2;
 }
 
+export function computeRnoa(nopat, noa, caseIndex) {
+  return nopat[caseIndex] / noa[caseIndex];
+}
+
 export function computeNetOpAssets(data, caseIndex) {
   return data.operatingAssets[caseIndex] - data.operatingLiabilities[caseIndex];
 }

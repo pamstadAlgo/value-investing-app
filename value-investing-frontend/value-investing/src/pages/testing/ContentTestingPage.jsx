@@ -16,6 +16,7 @@ import TestPenmanFormula from "./TestPenmanFormula";
 import TestPenmanSecond from "./TestPenmanSecond";
 import TestPenmanThird from "./TestPenmanThird";
 import Layout from "../GlobalComponents/Layout";
+import OneDecimalNumberInput from "./OneDecimalNumberInput";
 
 function ContentTestingPage() {
   const data = [
@@ -289,18 +290,20 @@ function ContentTestingPage() {
   return (
     <>
       <Layout>
+        <OneDecimalNumberInput />
         {/* <EditorTestingFinal />
       <fieldset class="custom-fieldset">
         <legend>Label</legend>
         <div>Content inside</div>
       </fieldset>
+      
 
       <ExampleTable />
       <PlainTable />
       <ExampleTableSecond /> */}
-        <TestPenmanFormula />
+        {/* <TestPenmanFormula />
         <TestPenmanSecond />
-        <TestPenmanThird />
+        <TestPenmanThird /> */}
       </Layout>
     </>
   );

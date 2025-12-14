@@ -21,6 +21,7 @@ import {
   computeOpIncomeBottomUp,
   computeOpIncomeTopDown,
   computeOpMarginBottomUp,
+  computeRnoa,
 } from "./selectorFunctions";
 import ValuationAssumptions from "./ValuationAssumptions";
 import MetricGraph from "./MetricGraph";
@@ -31,6 +32,8 @@ import LiquidationValue from "./LiquidationValue";
 import GlassCardWrapper from "./GlassCardWrapper";
 import SaveValuationModal from "./SaveValuationModal";
 import ValuationActionToolbar from "./ValuationActionToolbar";
+import { getScaleFactor } from "./helpers";
+import ValuationCell from "./ValuationCell";
 
 const valuationCases = ["Bear", "Base", "Bull"];
 const topDownEditableFields = ["revenue", "op_margins"];
@@ -82,6 +85,9 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   };
 
   const handleValuationChange = (e, metricName, valuationCase, scaleFactor) => {
+    console.log("scale factor in udpate: ", scaleFactor);
+    console.log("value in udpate: ", e.target.value);
+
     dispatch(
       updateValuationData({
         newValue: e.target.value,
@@ -98,7 +104,7 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   let equityVal = [0, 0, 0];
   let netOpAssets = [0, 0, 0];
   let grossProfit = [0, 0, 0];
-
+  let rnoa = [0, 0, 0];
 
   if (valuationApproach === "topDown") {
     opIncome[0] = computeOpIncomeTopDown(valuationData, 0);
@@ -129,6 +135,11 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   grossProfit[0] = computeGrossProfit(valuationData, 0);
   grossProfit[1] = computeGrossProfit(valuationData, 1);
   grossProfit[2] = computeGrossProfit(valuationData, 2);
+
+  //compute rnoa
+  rnoa[0] = computeRnoa(nopat, valuationData.netOperatingAssets, 0);
+  rnoa[1] = computeRnoa(nopat, valuationData.netOperatingAssets, 1);
+  rnoa[2] = computeRnoa(nopat, valuationData.netOperatingAssets, 2);
 
   //compute equity value
   equityVal[0] = computeEquityVal(
@@ -255,9 +266,19 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                         ? values?.values[period]
                         : "-";
 
+                      let scaleFac = getScaleFactor(values?.type, scaling);
+                      console.log("scaleFac we have: ", scaleFac);
                       //if value is not of type ratio we scale it
-                      if (values?.type !== "ratio" && cellValue !== "-") {
-                        cellValue = (cellValue / scaling).toFixed(0);
+                      // if (values?.type !== "ratio" && cellValue !== "-") {
+                      if (cellValue !== "-") {
+                        // cellValue = (cellValue / scaling).toFixed(0);
+
+                        //for percentage values we will show 1 decimal place
+                        if (values?.type == "perc") {
+                          cellValue = (cellValue / scaleFac).toFixed(1);
+                        } else {
+                          cellValue = (cellValue / scaleFac).toFixed(0);
+                        }
                       }
                       return <TableCell key={period}>{cellValue}</TableCell>;
                     })}
@@ -270,7 +291,23 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           bottomUpEditableFields.includes(metricName);
                       }
 
-                      let scaleFactor = values.type !== "ratio" ? scaling : 1;
+                      let scaleFac = 1;
+
+                      scaleFac = getScaleFactor(values?.type, scaling);
+
+                      // switch (values.type) {
+                      //   case "absolute":
+                      //     scaleFactor = scaling;
+                      //     break;
+                      //   case "perc":
+                      //     scaleFactor = 0.01; //we divide by scale factor (so divide by 0.01 is the same as multiply by 100)
+                      //     break;
+                      // }
+
+                      // let scaleFactor = values.type !== "ratio" ? scaling : 1;
+
+                      //if values type is percentage we scale by 100
+                      // let scaleFactor = values.type === 'perc' ?
 
                       var value = valuationData[metricName]?.[index];
 
@@ -297,43 +334,46 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           value = taxRate;
                           break;
                       }
-                      //scale the value if the value is not a ratio
-                      if (values.type !== "ratio") {
-                        value = (value / scaleFactor).toFixed(0);
+                      //for percentage values we will allow 1 decimal place
+                      if (values.type === "perc") {
+                        console.log("this is value before to fixed: ", value);
+
+                        // value = value ? (value / scaleFac).toFixed(1) : value;
+                        value = value ? value / scaleFac : value;
+                        // value = value / scaleFac;
+
+                        // value = value / scaleFac;
+                      } else {
+                        value = value ? (value / scaleFac).toFixed(0) : value;
                       }
 
                       return (
-                        <TableCell>
-                          {/* <Tooltip
-                          placement="right-start"
-                          arrow
-                          title="Change the valuation approach in order to edit this field"
-                          // disableHoverListener={screenerState.activFilters?.length !== 0}
-                          disableHoverListener={isEditable}
-                          disableFocusListener={isEditable}
-                          disableTouchListener={isEditable}> */}
-                          <OutlinedInput
-                            disabled={!isEditable}
-                            onChange={(e) =>
-                              handleValuationChange(
-                                e,
-                                metricName,
-                                index,
-                                scaleFactor
-                              )
-                            }
-                            // onChange={(e) => handleChange(e, category, metric)}
-                            type="number"
-                            // value={valuationData[metricName]?.[index]}
-                            value={value}
-                            size="small"
-                            // inputProps={{
-                            //   style: { textAlign: "left" },
-                            // }}
-                            className="custom-input-valuation-table"
-                          />
-                          {/* </Tooltip> */}
-                        </TableCell>
+                        <ValuationCell
+                          isEditable={isEditable}
+                          // handleChange={handleValuationChange}
+                          metricName={metricName}
+                          index={index}
+                          scaleFac={scaleFac}
+                          value={value}
+                        />
+                        // <TableCell>
+                        //   <OutlinedInput
+                        //     disabled={!isEditable}
+                        //     onChange={(e) =>
+                        //       handleValuationChange(
+                        //         e,
+                        //         metricName,
+                        //         index,
+                        //         scaleFac
+                        //       )
+                        //     }
+                        //     type="number"
+                        //     value={value}
+                        //     size="small"
+
+                        //     className="custom-input-valuation-table"
+                        //   />
+                        // </TableCell>
                       );
                     })}
                   </TableRow>
@@ -371,9 +411,16 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           ? values?.values[period]
                           : "-";
 
+                        let scaleFac = getScaleFactor(values?.type, scaling);
                         //if value is not of type ratio we scale it
-                        if (values?.type !== "ratio" && cellValue !== "-") {
-                          cellValue = (cellValue / scaling).toFixed(0);
+                        // if (values?.type !== "ratio" && cellValue !== "-") {
+                        if (cellValue !== "-") {
+                          //for percentage values we will show 1 decimal place
+                          if (values?.type == "perc") {
+                            cellValue = (cellValue / scaleFac).toFixed(1);
+                          } else {
+                            cellValue = (cellValue / scaleFac).toFixed(0);
+                          }
                         }
                         return <TableCell key={period}>{cellValue}</TableCell>;
                       })}
@@ -387,22 +434,26 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                         //     bottomUpEditableFields.includes(metricName);
                         // }
 
-                        let scaleFactor = values.type !== "ratio" ? scaling : 1;
+                        // let scaleFactor = values.type !== "ratio" ? scaling : 1;
+                        let scaleFac = 1;
+
+                        scaleFac = getScaleFactor(values?.type, scaling);
 
                         var value = valuationData[metricName]?.[index];
 
                         switch (metricName) {
                           case "netOperatingAssets":
-                            // if (valuationApproach === "topDown") {
                             value = netOpAssets[index];
-                            // }
-
+                            break;
+                          case "rnoa":
+                            value = rnoa[index];
                             break;
                         }
 
-                        //scale the value if the value is not a ratio
-                        if (values.type !== "ratio") {
-                          value = (value / scaleFactor).toFixed(0);
+                        if (values.type === "perc") {
+                          value = (value / scaleFac).toFixed(1);
+                        } else {
+                          value = (value / scaleFac).toFixed(0);
                         }
 
                         return (
@@ -422,7 +473,7 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                                   e,
                                   metricName,
                                   index,
-                                  scaleFactor
+                                  scaleFac
                                 )
                               }
                               // onChange={(e) => handleChange(e, category, metric)}

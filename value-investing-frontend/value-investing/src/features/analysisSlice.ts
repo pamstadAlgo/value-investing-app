@@ -42,9 +42,28 @@ export const analysisSlice = createSlice({
       state.valuationData = action.payload;
     },
     updateValuationData: (state, action) => {
-      const { newValue, metricName, caseIndex, scaleFactor } = action.payload;
+      let { newValue, metricName, caseIndex, scaleFactor } = action.payload;
 
-      state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
+      let value;
+      console.log("DEBUG newValue we get: ", newValue);
+
+      //check if scale factor must be inversed; for percentage we scale with 0.01 in ui
+      // if (scaleFactor < 1) {
+      //   scaleFactor = 1 / scaleFactor;
+      // }
+
+      //check if value is valid number; if not don't scale otherwise it is converted to number
+      if (isNaN(Number(newValue)) || !newValue) {
+        console.log("we are in isNAN case");
+        value = newValue;
+      } else {
+        value = newValue * scaleFactor;
+      }
+
+      console.log("DEBUG value we set: ", value);
+
+      // state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
+      state.valuationData[metricName][caseIndex] = value;
     },
     updateLiquidationValuationData: (state, action) => {
       const { category, metric, newValue } = action.payload;
