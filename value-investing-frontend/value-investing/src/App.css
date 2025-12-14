@@ -23,6 +23,7 @@
   --bg-color-google-login-button: #181818;
 
   --background-color-mui-backdrop: rgba(0, 0, 0, 0.8);
+  --screener-table-header-icons-color: white;
 
   /* TERMINAL CARD STYLES - Solid, No Glass, Sharp Borders */
   --background-glass-card: #282828;
@@ -86,6 +87,9 @@
   --disabled-valuation-fields-color: #444444;
 
   --table-cell-color-valuation: white;
+
+  --screener-table-menu-background-color: var(--background-color);
+  --screener-table-cell-content-color: var(--inner-text-input-fields);
 }
 
 /* Force Dark Theme Logic by default for Terminal */
@@ -123,6 +127,9 @@
 /* defines the grey scale text color */
   --text-color-grey-scale: rgb(107 114 128);
   --text-color-mui-autocomplete-dp: rgb(107,114,128);
+
+  --screener-table-menu-background-color: white;
+  --screener-table-cell-content-color: var(--inner-text-input-fields);
   
   /* defines the action color; this includes buttons and logo */
     --action-color: rgb(79 70 229);
@@ -131,6 +138,7 @@
     --chip-applied-filter-bg-color: rgb(238 242 255 / 0.7);
   
     --color-floating-hint-editor: #838282;
+    --screener-table-header-icons-color: black;
   
     /* defines the black color, mainyl used for header */
     --header-color: rgb(17 24 39);
@@ -1098,6 +1106,10 @@ height: 0;
 .custom-input-valuation-table.liquidation-value >.MuiOutlinedInput-input {
   padding-left: 0px;
   text-align: right !important;
+}
+
+.MuiList-root.MuiList-padding{
+  background-color: var(--screener-table-menu-background-color) !important;
 }
 
 .custom-mui-table table {
