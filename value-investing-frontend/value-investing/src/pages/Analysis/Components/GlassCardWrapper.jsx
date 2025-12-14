@@ -8,12 +8,13 @@ function GlassCardWrapper({
   currencyCode,
   lastClosePrice,
   qfsSymbol,
+  headerAction,
 }) {
   return (
     <div className="glass-card" style={{ marginTop: "12px" }}>
       <div
         className="title-mid-size"
-        style={{ marginBottom: "20px", display: "flex", gap: "12px" }}>
+        style={{ marginBottom: "20px", display: "flex", gap: "12px", alignItems: "center" }}>
         {title} {qfsSymbol}
         <ValuationModelDefinition />
         {
@@ -24,6 +25,11 @@ function GlassCardWrapper({
             {lastClosePrice})
           </span>
         }
+        {headerAction && (
+          <div style={{ marginLeft: "auto" }}>
+            {headerAction}
+          </div>
+        )}
       </div>
       {children}
     </div>
