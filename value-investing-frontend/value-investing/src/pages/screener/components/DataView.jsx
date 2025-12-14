@@ -178,28 +178,29 @@ function DataView() {
           });
         }
       }
-      return generatedColumns;
 
       // Prepend the Watchlist/StarMenu column
-      // return [
-      //   {
-      //     id: "watchlist", // Unique ID for the column
-      //     header: "", // Empty header for the icon column
-      //     size: 60, // Small width
-      //     enableSorting: false,
-      //     enableColumnFilter: false,
-      //     enableColumnActions: false,
-      //     Cell: ({ row }) => (
-      //       <div
-      //         style={{ display: "flex", justifyContent: "center" }}
-      //         onClick={(e) => e.stopPropagation()} // Prevent row click events
-      //       >
-      //         <StarMenu ticker={row.original.qfs_symbol_id} />
-      //       </div>
-      //     ),
-      //   },
-      //   ...generatedColumns,
-      // ];
+      return [
+        {
+          id: "watchlist", // Unique ID for the column
+          header: "", // Empty header for the icon column
+          size: 60, // Small width
+          enableSorting: false,
+          enableColumnFilter: false,
+          enableColumnActions: false,
+          enableColumnResizing: false,
+          enableColumnOrdering: false,
+          Cell: ({ row }) => (
+            <div
+              style={{ display: "flex", justifyContent: "center" }}
+              onClick={(e) => e.stopPropagation()} // Prevent row click events
+            >
+              <StarMenu ticker={row.original.qfs_symbol_id} />
+            </div>
+          ),
+        },
+        ...generatedColumns,
+      ];
     }
     return [];
   }, [screenerState.queryResult]);
@@ -269,7 +270,7 @@ function DataView() {
         columns={columns}
         data={screenerState.queryResult || []} // Handle potential null/undefined
         // layoutMode="grid"
-        enableRowSelection
+
         enableColumnOrdering
         enableColumnResizing
         enableSorting
@@ -335,7 +336,7 @@ function DataView() {
         //   },
         // }}
         // 5. Force the Table Head to be Dark
-        muiTableHeadCellProps={{
+        muiTableHeadCellProps={({ column }) => ({
           className: "table-header-cell",
           sx: {
             backgroundColor: "var(--table-header-actions-bg-color)",
@@ -348,12 +349,13 @@ function DataView() {
               color: "var(--screener-table-header-icons-color) !important", // change icon color
             },
             "& .Mui-TableHeadCell-ResizeHandle-Wrapper": {
+              display: column.id === "watchlist" ? "none" : "block",
               "& hr.MuiDivider-root.MuiDivider-fullWidth": {
                 borderColor: "var(--input-fields-icons-color) !important", // change handle color
               },
             },
           },
-        }}
+        })}
         // --- END OF NEW STYLING PROPS ---
         icons={{
           // ✅ This replaces the default drag handle icon:
