@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import NavBar from "../GlobalComponents/NavBar";
 import Filters from "./components/Filters";
 import "./styles.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -139,7 +138,6 @@ function ContentScreenerPage() {
 
   return (
     <>
-      <NavBar />
       <div className="content-wrapper">
         <div className="flex-wrapper-screener-title-section">
           <h1>Stock Screener</h1>{" "}

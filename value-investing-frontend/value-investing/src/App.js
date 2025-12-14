@@ -1,5 +1,4 @@
 import "./App.css";
-import NavBar from "./pages/GlobalComponents/NavBar";
 import ContentHomePage from "./pages/home/ContentHomePage";
 import ContentScreenerPage from "./pages/screener/ContentScreenerPage";
 import ContentValuationPage from "./pages/valuation/ContentValuationPage";

@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import NavBar from "../GlobalComponents/NavBar";
 import DataView from "./components/DataView";
 import useAxiosWithAuth from "../../axios/useAxiosWithAuth";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,7 +25,6 @@ function ContentMCCPage() {
 
   return (
     <>
-      <NavBar />
       <div className="content-wrapper">
         <div className="flex-wrapper-screener-title-section">
           <h1>MicroCap Club Profiles</h1>

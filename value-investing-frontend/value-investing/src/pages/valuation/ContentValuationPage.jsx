@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Layout from "../GlobalComponents/Layout";
 import "./styles.css";
-import NavBar from "../GlobalComponents/NavBar";
 import TickerAutoComplete from "./components/TickerAutoComplete";
 import ValuationForm from "./components/ValuationForm";
 import ValuationCard from "./components/ValuationCard";
