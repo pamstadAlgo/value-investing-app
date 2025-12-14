@@ -1078,6 +1078,7 @@ height: 0;
 .liquidation-value-flex-wrapper {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .wrapper-liquidation-section{

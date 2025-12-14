@@ -49,26 +49,12 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
     setOpenNonCurrentLiab(!openNonCurrentLiab);
   };
 
-  const totalCurrentLiabs = useSelector(
-    (state) => sumBalanceSheetItems(state.analysis?.balanceSheet?.currentLiab)
-
-    // computeSumBalanceSheet(
-    //   state.valuation.assetValuations?.find(
-    //     (item) => item.qfsSymbol === qfsSymbol
-    //   ),
-    //   "currentLiab"
-    // )
+  const totalCurrentLiabs = useSelector((state) =>
+    sumBalanceSheetItems(state.analysis?.balanceSheet?.currentLiab)
   );
 
-  const totalNonCurrentLiabs = useSelector(
-    (state) =>
-      sumBalanceSheetItems(state.analysis?.balanceSheet?.nonCurrentLiab)
-    // computeSumBalanceSheet(
-    //   state.valuation.assetValuations?.find(
-    //     (item) => item.qfsSymbol === qfsSymbol
-    //   ),
-    //   "nonCurrentLiab"
-    // )
+  const totalNonCurrentLiabs = useSelector((state) =>
+    sumBalanceSheetItems(state.analysis?.balanceSheet?.nonCurrentLiab)
   );
 
   const totalLiabilities = useSelector((state) =>
@@ -77,12 +63,6 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
 
   const handleMetricChange = (e, category, metric) => {
     const newValue = e.target.value;
-
-    console.log("metric change asset val: qfsSymbol: ", qfsSymbol);
-    console.log("metric change asset val: category: ", category);
-    console.log("metric change asset val: metric: ", metric);
-    console.log("metric change asset val: newValue: ", newValue);
-
     dispatch(
       updateLiquidationValuationData(category, metric, newValue * scaling)
     );
@@ -90,12 +70,6 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
 
   const handleMultiplierChange = (e, category, metric) => {
     const newValue = e.target.value;
-
-    console.log("metric change asset val: qfsSymbol: ", qfsSymbol);
-    console.log("metric change asset val: category: ", category);
-    console.log("metric change asset val: metric: ", metric);
-    console.log("metric change asset val: newValue: ", newValue);
-
     dispatch(updateLiqValMultChange({ category, metric, newValue }));
   };
 
@@ -111,7 +85,7 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
       }}
       className="custom-mui-table">
       {" "}
-      <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+      <Table size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
           <TableRow>
             <TableCell style={{ width: tableColumnWidths[0] }}></TableCell>
@@ -174,7 +148,7 @@ function LiabilitiesTable({ qfsSymbol, tableColumnWidths, scaling }) {
             marginLeft="10px"
             value={(totalNonCurrentLiabs / scaling).toFixed(0)}
           />
-          {balanceSheet?.currentLiab?.map((lineItem) => {
+          {balanceSheet?.nonCurrentLiab?.map((lineItem) => {
             return (
               <AssetValLineItem
                 handleChange={handleMetricChange}

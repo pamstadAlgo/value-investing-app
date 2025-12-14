@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { computeNetLiqValue } from "./selectorFunctions";
 import { getCurrencySymbol } from "../../valuation/components/selectorFunctions";
 
-const tableColumnWidths = ["50%", "20%", "10%", "15%"];
+const tableColumnWidths = ["40%", "10%", "10%", "15%"];
 
 function LiquidationValue({
   qfsSymbol,
