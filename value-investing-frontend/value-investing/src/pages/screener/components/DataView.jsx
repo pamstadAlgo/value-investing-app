@@ -178,27 +178,28 @@ function DataView() {
           });
         }
       }
+      return generatedColumns;
 
       // Prepend the Watchlist/StarMenu column
-      return [
-        {
-          id: "watchlist", // Unique ID for the column
-          header: "", // Empty header for the icon column
-          size: 60, // Small width
-          enableSorting: false,
-          enableColumnFilter: false,
-          enableColumnActions: false,
-          Cell: ({ row }) => (
-            <div
-              style={{ display: "flex", justifyContent: "center" }}
-              onClick={(e) => e.stopPropagation()} // Prevent row click events
-            >
-              <StarMenu ticker={row.original.qfs_symbol_id} />
-            </div>
-          ),
-        },
-        ...generatedColumns,
-      ];
+      // return [
+      //   {
+      //     id: "watchlist", // Unique ID for the column
+      //     header: "", // Empty header for the icon column
+      //     size: 60, // Small width
+      //     enableSorting: false,
+      //     enableColumnFilter: false,
+      //     enableColumnActions: false,
+      //     Cell: ({ row }) => (
+      //       <div
+      //         style={{ display: "flex", justifyContent: "center" }}
+      //         onClick={(e) => e.stopPropagation()} // Prevent row click events
+      //       >
+      //         <StarMenu ticker={row.original.qfs_symbol_id} />
+      //       </div>
+      //     ),
+      //   },
+      //   ...generatedColumns,
+      // ];
     }
     return [];
   }, [screenerState.queryResult]);
@@ -267,7 +268,8 @@ function DataView() {
       <MaterialReactTable
         columns={columns}
         data={screenerState.queryResult || []} // Handle potential null/undefined
-        layoutMode="grid"
+        // layoutMode="grid"
+        enableRowSelection
         enableColumnOrdering
         enableColumnResizing
         enableSorting
@@ -327,6 +329,11 @@ function DataView() {
             },
           },
         }}
+        // muiTableHeadProps={{
+        //   sx: {
+        //     padding: "24px 8px",
+        //   },
+        // }}
         // 5. Force the Table Head to be Dark
         muiTableHeadCellProps={{
           className: "table-header-cell",
@@ -335,9 +342,15 @@ function DataView() {
             color: "var(--header-color)",
             fontFamily: "var(--font-family)",
             fontWeight: "600",
+            padding: "24px 8px !important",
             borderBottom: "1px solid var(--border-input-fields)",
             "& .MuiSvgIcon-root": {
               color: "var(--screener-table-header-icons-color) !important", // change icon color
+            },
+            "& .Mui-TableHeadCell-ResizeHandle-Wrapper": {
+              "& hr.MuiDivider-root.MuiDivider-fullWidth": {
+                borderColor: "var(--input-fields-icons-color) !important", // change handle color
+              },
             },
           },
         }}
