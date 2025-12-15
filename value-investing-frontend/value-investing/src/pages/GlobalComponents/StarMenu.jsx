@@ -28,16 +28,16 @@ const StarMenu = ({ ticker }) => {
   const dispatch = useDispatch();
   const { watchlists, status } = useSelector((state) => state.watchlist);
   const { showMessage } = useSnackbar(); // Access global showMessage function
-  
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  
+
   // Removed local state for toast/snackbar since we use the global one now
 
   const isStockInList = (list) => {
-    return list.items?.some((item) => 
-      item.qfs_symbol === ticker || item.ticker === ticker
+    return list.items?.some(
+      (item) => item.qfs_symbol === ticker || item.ticker === ticker
     );
   };
 
@@ -83,8 +83,9 @@ const StarMenu = ({ ticker }) => {
       dispatch(createWatchlist({ title: newTitle }))
         .unwrap()
         .then((newList) => {
-          dispatch(addStockToWatchlist({ watchlistId: newList.id, ticker }))
-            .then(() => showFeedback(`Created list and added stock`, "success"));
+          dispatch(
+            addStockToWatchlist({ watchlistId: newList.id, ticker })
+          ).then(() => showFeedback(`Created list and added stock`, "success"));
           setNewTitle("");
           setIsCreating(false);
         })
@@ -98,7 +99,7 @@ const StarMenu = ({ ticker }) => {
     <>
       <IconButton onClick={handleClick} size="small">
         {isInAnyList ? (
-          <StarIcon sx={{ color: "var(--action-color)" }} />
+          <StarIcon sx={{ fill: "var(--action-color)" }} />
         ) : (
           <StarBorderIcon sx={{ color: "var(--text-color-grey-scale)" }} />
         )}
@@ -111,19 +112,32 @@ const StarMenu = ({ ticker }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         onClick={(e) => e.stopPropagation()}
         PaperProps={{
-            sx: { backgroundImage: 'none' } 
-        }}
-      >
+          sx: { backgroundImage: "none" },
+        }}>
         <List sx={{ width: 250, p: 0 }}>
-          <ListItem sx={{ pb: 1, pt: 2, borderBottom: '1px solid var(--border-input-fields)' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: "bold", fontFamily: 'var(--font-family)', color: 'var(--header-color)' }}>
+          <ListItem
+            sx={{
+              pb: 1,
+              pt: 2,
+              borderBottom: "1px solid var(--border-input-fields)",
+            }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: "bold",
+                fontFamily: "var(--font-family)",
+                color: "var(--header-color)",
+              }}>
               Add to Watchlist
             </Typography>
           </ListItem>
 
           {watchlists.length === 0 && !isCreating && (
             <ListItem>
-              <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontFamily: 'var(--font-family)' }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ p: 2, fontFamily: "var(--font-family)" }}>
                 No watchlists found.
               </Typography>
             </ListItem>
@@ -137,10 +151,11 @@ const StarMenu = ({ ticker }) => {
                   role={undefined}
                   onClick={(event) => handleToggle(list, event)}
                   dense
-                  sx={{ 
-                      '&:hover': { backgroundColor: 'var(--action-color-more-transparent)' } 
-                  }}
-                >
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "var(--action-color-more-transparent)",
+                    },
+                  }}>
                   <ListItemIcon>
                     <Checkbox
                       edge="start"
@@ -150,72 +165,95 @@ const StarMenu = ({ ticker }) => {
                       size="small"
                       sx={{
                         color: "var(--text-color-grey-scale)",
-                        '&.Mui-checked': { color: "var(--action-color)" },
+                        "&.Mui-checked": { color: "var(--action-color)" },
                       }}
                     />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={list.title} 
-                    primaryTypographyProps={{ style: { fontFamily: 'var(--font-family)', color: 'var(--header-color)' } }}
+                  <ListItemText
+                    primary={list.title}
+                    primaryTypographyProps={{
+                      style: {
+                        fontFamily: "var(--font-family)",
+                        color: "var(--header-color)",
+                      },
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
             );
           })}
 
-          <Divider sx={{ borderColor: 'var(--border-input-fields)' }} />
-          
+          <Divider sx={{ borderColor: "var(--border-input-fields)" }} />
+
           {isCreating ? (
-            <ListItem sx={{ display: "flex", gap: 1, flexDirection: 'column', alignItems: 'stretch', p: 2 }}>
-               <input 
-                 autoFocus
-                 style={{ 
-                    padding: '8px', 
-                    width: '100%', 
-                    boxSizing: 'border-box',
-                    backgroundColor: 'transparent',
-                    border: '1px solid var(--border-input-fields)',
-                    color: 'var(--header-color)',
-                    fontFamily: 'var(--font-family)',
-                    outline: 'none',
-                    fontSize: '0.875rem'
-                 }}
-                 placeholder="List Name"
-                 value={newTitle}
-                 onChange={(e) => setNewTitle(e.target.value)}
-                 onClick={(e) => e.stopPropagation()}
-                 onKeyDown={(e) => e.key === 'Enter' && handleCreateQuick(e)}
-               />
-               <Button 
-                variant="contained" 
-                size="small" 
+            <ListItem
+              sx={{
+                display: "flex",
+                gap: 1,
+                flexDirection: "column",
+                alignItems: "stretch",
+                p: 2,
+              }}>
+              <input
+                autoFocus
+                style={{
+                  padding: "8px",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  backgroundColor: "transparent",
+                  border: "1px solid var(--border-input-fields)",
+                  color: "var(--header-color)",
+                  fontFamily: "var(--font-family)",
+                  outline: "none",
+                  fontSize: "0.875rem",
+                }}
+                placeholder="List Name"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateQuick(e)}
+              />
+              <Button
+                variant="contained"
+                size="small"
                 onClick={handleCreateQuick}
                 disabled={!newTitle.trim()}
-                sx={{ 
-                    mt: 1, 
-                    bgcolor: "var(--action-color)", 
-                    color: 'black', 
-                    fontWeight: 'bold', 
-                    '&:hover': { bgcolor: "var(--action-color)" }
-                }}
-               >
-                 Create & Add
-               </Button>
+                sx={{
+                  mt: 1,
+                  bgcolor: "var(--action-color)",
+                  color: "black",
+                  fontWeight: "bold",
+                  "&:hover": { bgcolor: "var(--action-color)" },
+                }}>
+                Create & Add
+              </Button>
             </ListItem>
           ) : (
-            <ListItemButton onClick={(e) => { e.stopPropagation(); setIsCreating(true); }}>
+            <ListItemButton
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCreating(true);
+              }}>
               <ListItemIcon>
-                <AddIcon fontSize="small" sx={{ color: 'var(--action-color)' }} />
+                <AddIcon
+                  fontSize="small"
+                  sx={{ color: "var(--action-color)" }}
+                />
               </ListItemIcon>
-              <ListItemText 
-                primary="Create new list" 
-                primaryTypographyProps={{ style: { fontFamily: 'var(--font-family)', color: 'var(--action-color)' } }}
+              <ListItemText
+                primary="Create new list"
+                primaryTypographyProps={{
+                  style: {
+                    fontFamily: "var(--font-family)",
+                    color: "var(--action-color)",
+                  },
+                }}
               />
             </ListItemButton>
           )}
         </List>
       </Popover>
-      
+
       {/* Removed local Snackbar component */}
     </>
   );

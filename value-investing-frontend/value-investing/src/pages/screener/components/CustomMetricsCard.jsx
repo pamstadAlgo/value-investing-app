@@ -45,7 +45,6 @@ function CustomMetricsCard() {
     axiosInstanceAuth
       .get("screener/custom-metrics/")
       .then((response) => {
-        console.log("custom metrics response.data: ", response.data);
         dispatch(initializeCustomMetrics(response.data));
         // setCustomMetrics(response.data);
       })

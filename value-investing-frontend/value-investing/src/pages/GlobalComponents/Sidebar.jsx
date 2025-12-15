@@ -89,7 +89,9 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
       </div>
 
       {/* Navigation Links */}
-      <List sx={{ flex: 1, padding: "24px 0" }}>
+      <List
+        sx={{ flex: 1, padding: "24px 0" }}
+        className="custom-list-transparent">
         {menuItems.map((item) => {
           const isActive = currentPath === item.path;
           return (
@@ -108,13 +110,14 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
                   backgroundColor: isActive
                     ? "var(--action-color-more-transparent)"
                     : "transparent",
-                  color: isActive ? "var(--action-color)" : "var(--text-color-grey-scale)",
+                  color: isActive
+                    ? "var(--action-color)"
+                    : "var(--text-color-grey-scale)",
                   "&:hover": {
                     backgroundColor: "var(--input-fields-hover-bg-color)",
                     color: "var(--action-color)",
                   },
-                }}
-              >
+                }}>
                 <ListItemText
                   primary={item.text}
                   primaryTypographyProps={{
@@ -124,7 +127,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                       fontSize: "0.875rem",
-                    }
+                    },
                   }}
                 />
               </ListItemButton>
@@ -138,55 +141,57 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
         style={{
           padding: "16px",
           borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-          backgroundColor: "rgba(0,0,0,0.02)" // Subtle contrast for footer
+          backgroundColor: "rgba(0,0,0,0.02)", // Subtle contrast for footer
         }}>
-        
         {/* Controls Row: Theme & Avatar */}
-        <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            mb: 2, 
-            px: 1 
-        }}>
-            {/* Theme Toggle */}
-            <IconButton
-              onClick={handleThemeToggle}
-              sx={{ color: "var(--text-color-grey-scale)" }}
-            >
-              {theme === "light" ? (
-                <NightlightOutlinedIcon fontSize="small" />
-              ) : (
-                <WbSunnyOutlinedIcon fontSize="small" />
-              )}
-            </IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+            px: 1,
+          }}>
+          {/* Theme Toggle */}
+          <IconButton
+            onClick={handleThemeToggle}
+            sx={{ color: "var(--text-color-grey-scale)" }}>
+            {theme === "light" ? (
+              <NightlightOutlinedIcon fontSize="small" />
+            ) : (
+              <WbSunnyOutlinedIcon fontSize="small" />
+            )}
+          </IconButton>
 
-            {/* User Avatar */}
-            <Box>
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar
-                        alt="User Avatar"
-                        src="/static/images/avatar/2.jpg"
-                        sx={{ width: 32, height: 32, border: '1px solid rgba(255,255,255,0.2)' }}
-                    />
-                </IconButton>
-                <Menu
-                    sx={{ mt: "-45px", ml: "45px" }} // Opens to the right/top of sidebar
-                    id="menu-appbar"
-                    anchorEl={anchorElUser}
-                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                    keepMounted
-                    transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-                    open={Boolean(anchorElUser)}
-                    onClose={handleCloseUserMenu}
-                >
-                    {settings.map((setting) => (
-                        <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                            <Typography textAlign="center">{setting}</Typography>
-                        </MenuItem>
-                    ))}
-                </Menu>
-            </Box>
+          {/* User Avatar */}
+          <Box>
+            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+              <Avatar
+                alt="User Avatar"
+                src="/static/images/avatar/2.jpg"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                }}
+              />
+            </IconButton>
+            <Menu
+              sx={{ mt: "-45px", ml: "45px" }} // Opens to the right/top of sidebar
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              keepMounted
+              transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}>
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <Typography textAlign="center">{setting}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
         </Box>
 
         {/* Sign Out Button */}
@@ -203,8 +208,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
                   backgroundColor: "rgba(255, 82, 82, 0.1)", // Subtle red tint on hover
                   color: "#ff5252",
                 },
-              }}
-            >
+              }}>
               <ListItemText
                 primary="Sign Out"
                 primaryTypographyProps={{
@@ -214,8 +218,8 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, window }) => {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     fontSize: "0.75rem",
-                    textAlign: "center"
-                  }
+                    textAlign: "center",
+                  },
                 }}
               />
             </ListItemButton>

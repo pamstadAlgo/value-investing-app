@@ -116,7 +116,7 @@ function AssetTable({ qfsSymbol, tableColumnWidths, scaling }) {
         height: "fit-content",
       }}
       className="custom-mui-table">
-      <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+      <Table size="small" aria-label="simple table">
         <TableHead className="custom-table-head">
           <TableRow>
             <TableCell style={{ width: tableColumnWidths[0] }}></TableCell>
