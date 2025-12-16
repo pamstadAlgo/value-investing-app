@@ -30,6 +30,8 @@ import LiquidationValue from "./LiquidationValue";
 import GlassCardWrapper from "./GlassCardWrapper";
 import SaveValuationModal from "./SaveValuationModal";
 import ValuationActionToolbar from "./ValuationActionToolbar";
+import NumericTableCell from "./NumericTableCell";
+import PercentageTableCell from "./PercentageTableCell";
 
 const valuationCases = ["BEAR", "BASE", "BULL"];
 const topDownEditableFields = ["revenue", "op_margins"];
@@ -240,12 +242,14 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                   <TableRow key={metricName}>
                     <TableCell>
                       <div className="flexbox-wrapper-table-cell-analysis">
-                        {metricName}
+                        {values.label ? values.label : metricName}
                         {/* display graph if time series data is available */}
                         {values.hasTs && (
                           <MetricGraph
                             data={values.ts}
-                            metricName={metricName}
+                            metricName={
+                              values.label ? values.label : metricName
+                            }
                           />
                         )}
                       </div>
@@ -255,11 +259,22 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                         ? values?.values[period]
                         : "-";
 
-                      //if value is not of type ratio we scale it
-                      if (values?.type !== "ratio" && cellValue !== "-") {
-                        cellValue = (cellValue / scaling).toFixed(0);
+                      //based on the value type we return different cell in order to format differently
+                      if (values?.type === "perc") {
+                        return (
+                          <PercentageTableCell
+                            cellValue={cellValue}
+                            scalingFactor={100}
+                          />
+                        );
+                      } else if (values?.type === "absolute") {
+                        return (
+                          <NumericTableCell
+                            cellValue={cellValue}
+                            scalingFactor={scaling}
+                          />
+                        );
                       }
-                      return <TableCell key={period}>{cellValue}</TableCell>;
                     })}
                     {valuationCases.map((valuationCase, index) => {
                       let isEditable = false;
@@ -353,12 +368,14 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                     <TableRow key={metricName}>
                       <TableCell>
                         <div className="flexbox-wrapper-table-cell-analysis">
-                          {metricName}
+                          {values.label ? values.label : metricName}{" "}
                           {/* display graph if time series data is available */}
                           {values.hasTs && (
                             <MetricGraph
                               data={values.ts}
-                              metricName={metricName}
+                              metricName={
+                                values.label ? values.label : metricName
+                              }
                             />
                           )}
                         </div>
@@ -368,22 +385,25 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           ? values?.values[period]
                           : "-";
 
-                        //if value is not of type ratio we scale it
-                        if (values?.type !== "ratio" && cellValue !== "-") {
-                          cellValue = (cellValue / scaling).toFixed(0);
+                        if (values?.type === "perc") {
+                          return (
+                            <PercentageTableCell
+                              cellValue={cellValue}
+                              scalingFactor={100}
+                            />
+                          );
+                        } else if (values?.type === "absolute") {
+                          return (
+                            <NumericTableCell
+                              cellValue={cellValue}
+                              scalingFactor={scaling}
+                            />
+                          );
                         }
-                        return <TableCell key={period}>{cellValue}</TableCell>;
                       })}
                       {valuationCases.map((valuationCase, index) => {
                         let isEditable =
                           editableFieldsCapitalStructure.includes(metricName);
-                        // if (valuationApproach === "topDown") {
-                        //   isEditable = topDownEditableFields.includes(metricName);
-                        // } else {
-                        //   isEditable =
-                        //     bottomUpEditableFields.includes(metricName);
-                        // }
-
                         let scaleFactor = values.type !== "ratio" ? scaling : 1;
 
                         var value = valuationData[metricName]?.[index];

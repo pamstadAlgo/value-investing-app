@@ -1296,7 +1296,7 @@ def get_rnoa_cases(qfs_symbol, n=6, tax_rate = 0.3):
         round(max(rnoa_values),2) if rnoa_values else None,
     ]
 
-def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3):
+def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=100):
      # Step 1: fetch last n+1 balances with net_operating_assets
     balances = (
         BalanceSheetAnnual.objects
@@ -1328,7 +1328,7 @@ def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3):
 
         rnoa = income_t.operating_income * (1 - tax_rate) / noa_prev
         year = income_t.period_end_date.year
-        rnoa_series.append({'year': str(year), 'value': rnoa})
+        rnoa_series.append({'year': str(year), 'value': rnoa*scaleFactor})
 
     # Step 4: keep only last n values
     rnoa_series = rnoa_series[-n:]
@@ -1384,7 +1384,7 @@ def get_noa_ts(qfs_symbol, n=10):
 
     return formatted_data
 
-def get_op_margin_ts(qfs_symbol, n=10):
+def get_op_margin_ts(qfs_symbol, n=10, scaleFactor=100):
     """
     Returns operating margins as a time series of the following format:
     [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
@@ -1409,13 +1409,47 @@ def get_op_margin_ts(qfs_symbol, n=10):
             margin = op_income / revenue
             formatted_data.append({
                 'year': str(record['year']),
-                'value': round(margin, 3)  # round to 3 decimals
+                'value': round(margin * scaleFactor, 3)  # round to 3 decimals
             })
 
     # Sort by year ascending
     formatted_data.sort(key=lambda x: x['year'])
 
     return formatted_data
+
+def get_gp_margin_ts(qfs_symbol, n=10, scaleFactor=100):
+    """
+    Returns gross profit margins as a time series of the following format:
+    [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
+    """
+
+    # Query the most recent N records for this symbol
+    last_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')[:n]
+        .values('year', 'gross_profit', 'revenue')
+    )
+
+    # Compute operating margin = operating_income / revenue
+    formatted_data = []
+    for record in last_records:
+        revenue = record.get('revenue')
+        op_income = record.get('gross_profit')
+
+        if revenue not in (None, 0):
+            margin = op_income / revenue
+            formatted_data.append({
+                'year': str(record['year']),
+                'value': round(margin*scaleFactor, 3)  # round to 3 decimals
+            })
+
+    # Sort by year ascending
+    formatted_data.sort(key=lambda x: x['year'])
+
+    return formatted_data
+
 
 def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3, tax_rate: float = 0.3):
     """
@@ -1525,6 +1559,49 @@ def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precisi
         )
 
         margins["TTM"] = op_margin_ttm
+
+
+    return margins
+
+
+def get_gp_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
+    """
+    Extracts gross profit margin for the past n years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_n_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')
+        .values('year','period_end_date', 'gross_profit', 'revenue')[:years]
+    )
+
+    margins = defaultdict()
+
+    for i, stmt in enumerate(reversed(last_n_records)):
+        margins[stmt.get('year', 0)] = round(stmt['gross_profit']/stmt['revenue'],precision) if stmt['revenue'] not in (None, 0) else 0
+
+
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                sum_gp=Sum(Coalesce('gross_profit', Value(0),output_field=FloatField())),
+            )
+        )
+
+        gp_margin_ttm = (
+            round(res['sum_gp'] / res['sum_rev'],precision)
+            if res['sum_rev'] else None
+        )
+
+        margins["TTM"] = gp_margin_ttm
 
 
     return margins
@@ -1792,7 +1869,7 @@ def get_financials(qfs_symbol: str, modelAnnual, modelQuarter, type: Literal["in
         "metrics": metrics
     }
 
-def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10):
+def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10, scale_factor = 1):
     """
     Function that returns time series for requested metric in the following format: [{'year': 2021, 'value' : 10000}, {'year': 2022, 'value' : 20000}, etc.]
     """
@@ -1805,7 +1882,7 @@ def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10):
     
     #we will sort data from oldest to newest (2019, 2020, 2021)
     ts = [
-        {'year': str(record['year']), 'value': record[metric]}
+        {'year': str(record['year']), 'value': record[metric]*scale_factor}
         for record in sorted(last_records, key=lambda x: x['year'])
     ]
 
@@ -1835,6 +1912,7 @@ class PenmanValuationAPIView(APIView):
         other_opex = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["other_opex"])
         operating_income = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["operating_income"])
         income_tax = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["income_tax"])
+        gp_margins = get_gp_margins(qfs_symbol, years)
         op_margins = get_op_margins(qfs_symbol, years)
         rnoa = get_rnoa(qfs_symbol, years)
         effective_tr = get_effective_tax_rates(qfs_symbol, years)
@@ -1863,6 +1941,7 @@ class PenmanValuationAPIView(APIView):
         rnd_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='rnd')
         other_opex_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='other_opex')
         op_margin_ts = get_op_margin_ts(qfs_symbol)
+        gp_margin_ts = get_gp_margin_ts(qfs_symbol)
         op_income_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='operating_income')
         op_assets_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='operating_assets')
         op_liab_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='operating_liabilities')
@@ -1908,104 +1987,129 @@ class PenmanValuationAPIView(APIView):
                     ,'metricsNopat' : {
                         'revenue' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Revenue',
                             'hasTs' : True, #defines if metric has times series attached
                             'ts' : revenue_ts,
                             'values': revenue['metrics']["revenue"]
                         },
                         'cogs' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'COGS',
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
                         },
                         'gross_profit' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Gross Profit',
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
                         },
+                        'gp_margins' : {
+                            'type' : 'perc', #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Gross margin',
+                            'hasTs' : True,
+                            'ts' : gp_margin_ts,
+                            'values' : gp_margins
+                        },
                         'sga' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'SG&A',
                             'hasTs' : True,
                             'ts' : sga_ts,
                             'values': sga['metrics']["sga"]
                         },
                         'rnd' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'R&D',
                             'hasTs' : True,
                             'ts' : rnd_ts,
                             'values': rnd['metrics']["rnd"]
                         },
                         'other_opex' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Other Opex',
                             'hasTs' : True,
                             'ts' : other_opex_ts,
                             'values': other_opex['metrics']["other_opex"]
+                        },                       
+                        'operating_income' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Op. Income',
+                            'hasTs' : True,
+                            'ts' : op_income_ts,
+                            'values': operating_income['metrics']["operating_income"]
                         },
                         'op_margins' : {
-                            'type' : 'ratio',
+                            'type' : 'perc',  #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Op. Margins',
                             'hasTs' : True,
                             'ts' : op_margin_ts,
                             'values' : op_margins
                         },
-                        'operating_income' : {
-                            'type' : 'absolute', #has an influence if this metric is scaled or not
-                            'hasTs' : True,
-                            'ts' : op_income_ts,
-                            'values': operating_income['metrics']["operating_income"]
-                        },                     
                         'income_tax' : {
                             'type': 'absolute',
+                            'label' : 'Tax',
                             'values' : income_tax['metrics']["income_tax"]
                         },
                         'eff_tax_rate' : {
-                            'type': 'ratio',
+                            'type': 'perc',
+                            'label' : 'Effective Tax Rate',
                             'values' : effective_tr
                         },
                         'NOPAT' : {
                             'type' : 'absolute',
+                            'label' : 'NOPAT',
                             'values' : nopat
                         }
                     },
                     'metricsNoa' : {
                         'operatingAssets' : {
                             'type' : 'absolute',
+                            'label' : 'Op. Assets',
                             'hasTs' : True,
                             'ts' : op_assets_ts,
                             'values' : op_assets['metrics']["operating_assets"]
                         },
                         'operatingLiabilities' : {
                             'type' : 'absolute',
+                            'label' : 'Op. Liabilities',
                             'hasTs' : True,
                             'ts' : op_liab_ts,
                             'values' : op_liab['metrics']["operating_liabilities"]
                         },
                         'netOperatingAssets' : {
                             'type' : 'absolute',
+                            'label' : 'NOA',
                             'hasTs' : True,
                             'ts' : net_op_assets_ts,
                             'values' : net_op_assets['metrics']["net_operating_assets"]
                         },
                         'bookValue' : {
                             'type' : 'absolute',
+                            'label' : 'Book Value',
                             'hasTs' : True,
                             'ts' : book_value_ts,
                             'values' : book_value['metrics']["total_equity"]
                         },
                         'rnoa' : {
-                            'type' : 'ratio',
+                            'type' : 'perc',
+                            'label' : 'RNOA',
                             'hasTs' : True,
                             'ts' : rnoa_ts,
                             'values' : rnoa
                         },
                         'debt' : {
                             'type' : 'absolute',
+                            'label' : 'Total Debt',
                             'hasTs' : True,
                             'ts' : debt_ts,
                             'values' : debt
                         },
                         'nrShares' : {
                             'type' : 'absolute',
+                            'label' : 'Nr. Shares (diluted)',
                             'hasTs' : True,
                             'ts' : nr_shares_ts,
                             'values' : shares_diluted['metrics']["shares_diluted"]
