@@ -851,7 +851,12 @@ border-bottom: 1px solid var(--action-color) !important;
 }
 
 .MuiTableCell-root.valuation-model-title-row{
-  background: #bcbaba;
+  background: #2c2c2c;
+  border-bottom: none;
+  border-top: 1px solid #444444;
+  padding: 10px 16px;
+  color: rgb(176, 176, 176);
+  font-size: 0.75rem;
 }
 
 .MuiPopover-root.save-val-model-popover > .MuiPaper-root.MuiPaper-elevation{
@@ -896,13 +901,18 @@ border-bottom: 1px solid var(--action-color) !important;
 }
 
 .MuiTableHead-root.custom-table-head{
-  background-color: var(--action-color);
+  background-color: var(--background-color);
+}
+
+.MuiTableBody-root.custom-table-body-val-model>tr>td{
+border-bottom: none;
 }
 
 .MuiTableHead-root.custom-table-head > tr > th {
-  color: #000000; /* Contrast against orange header */
+  color: var(--text-color-grey-scale); /* Contrast against orange header */
   font-weight: 800;
   font-size: 14px;
+  border-bottom: none;
 }
 
 .MuiSvgIcon-root.custom-icon-table{

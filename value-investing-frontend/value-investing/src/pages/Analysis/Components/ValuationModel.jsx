@@ -31,7 +31,7 @@ import GlassCardWrapper from "./GlassCardWrapper";
 import SaveValuationModal from "./SaveValuationModal";
 import ValuationActionToolbar from "./ValuationActionToolbar";
 
-const valuationCases = ["Bear", "Base", "Bull"];
+const valuationCases = ["BEAR", "BASE", "BULL"];
 const topDownEditableFields = ["revenue", "op_margins"];
 const bottomUpEditableFields = ["revenue", "cogs", "sga", "rnd", "other_opex"];
 const editableFieldsCapitalStructure = [
@@ -218,7 +218,7 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
             className="custom-table-analysis-page">
             <TableHead className="custom-table-head">
               <TableRow>
-                <TableCell>Line Item</TableCell>
+                <TableCell>LINE ITEM</TableCell>
                 {companyData?.periods?.map((period) => {
                   return <TableCell>{period}</TableCell>;
                 })}
@@ -227,14 +227,11 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                 })}
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody className="custom-table-body-val-model">
               <TableRow>
-                <TableCell
-                  className="valuation-model-title-row"
-                  colSpan={10}
-                  style={{ padding: "10px 16px" }}>
+                <TableCell className="valuation-model-title-row" colSpan={10}>
                   <div className="flex-box-wrapper-table-header-val-model">
-                    <span> NOPAT Derivation</span>
+                    <span> NOPAT DERIVATION</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -343,9 +340,10 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
               )}
               <TableRow>
                 <TableCell className="valuation-model-title-row" colSpan={10}>
-                  <div className="flex-box-wrapper-table-header-val-model">
-                    <span>Invested Capital (NOA)</span>
-                    {/* <ValuationApproachSelect /> */}
+                  <div
+                    className="flex-box-wrapper-table-header-val-model valuation-model-title-row"
+                    style={{ fontSize: "0.75rem" }}>
+                    <span>INVESTED CAPITAL (NOA)</span>
                   </div>
                 </TableCell>
               </TableRow>
