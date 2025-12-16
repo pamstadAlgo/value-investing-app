@@ -235,7 +235,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                   style={{ padding: "10px 16px" }}>
                   <div className="flex-box-wrapper-table-header-val-model">
                     <span> NOPAT Derivation</span>
-                    <ValuationApproachSelect />
                   </div>
                 </TableCell>
               </TableRow>

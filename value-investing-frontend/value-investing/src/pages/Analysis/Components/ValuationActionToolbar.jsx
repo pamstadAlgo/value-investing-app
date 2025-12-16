@@ -19,13 +19,15 @@ const ValuationActionToolbar = ({
         alignItems: "center",
         mt: 2,
         mb: 1,
-      }}
-    >
+      }}>
       <div className="button-group-wrapper" style={{ margin: 0 }}>
         <ToggleButtonsScaling value={scaling} handleChange={onScalingChange} />
       </div>
 
-      <Stack direction="row" spacing={2}>
+      <Stack
+        direction="row"
+        spacing={2}
+        style={{ alignSelf: "flex-end" }}>
         <Button
           variant="outlined"
           startIcon={<SaveIcon />}
@@ -39,8 +41,7 @@ const ValuationActionToolbar = ({
               borderColor: "var(--header-color)",
               color: "var(--header-color)",
             },
-          }}
-        >
+          }}>
           Save Analysis
         </Button>
 
@@ -60,8 +61,7 @@ const ValuationActionToolbar = ({
                 : "var(--input-fields-hover-bg-color)",
               borderColor: "var(--header-color)",
             },
-          }}
-        >
+          }}>
           History
         </Button>
       </Stack>
