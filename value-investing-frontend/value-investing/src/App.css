@@ -394,6 +394,10 @@ background-color: var(--background-color-mui-backdrop);
   background-color: var(--background-glass-card);
 }
 
+.MuiInputAdornment-root.custom-input-adornment > p {
+  color: var(--border-input-fields);
+}
+
 .custom-fieldset legend {
   padding: 0 4px;
   font-size: 0.9em;

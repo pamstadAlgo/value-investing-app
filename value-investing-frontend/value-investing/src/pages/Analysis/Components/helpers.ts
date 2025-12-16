@@ -16,7 +16,7 @@ export function loadValuationModel(
   }
 
   if (data?.taxRate) {
-    dispatch(changeTaxRate(data?.taxRate));
+    dispatch(changeTaxRate(Number(data?.taxRate)));
   }
 
   if (data?.wacc) {
