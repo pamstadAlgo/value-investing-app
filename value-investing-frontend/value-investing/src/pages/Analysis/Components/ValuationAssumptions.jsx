@@ -125,9 +125,9 @@ function ValuationAssumptions({ scalingFactor }) {
                 </InputAdornment>
               ),
             }}
-            label="Cost of Capital (WACC)"
+            label="Termial Growth Rate"
             size="small"
-            placeholder="10"
+            placeholder="0"
             onValueChange={(values) => {
               const { floatValue } = values;
               if (floatValue != null) {
@@ -140,44 +140,6 @@ function ValuationAssumptions({ scalingFactor }) {
             }}
           />
         </Tooltip>
-
-        <Tooltip
-          placement="right-start"
-          arrow
-          open={errorG}
-          title="Invalid number">
-          <NumericFormat
-            id="wacc-input"
-            value={analysisData.terminalGrowthRate * SCALE_PERC}
-            decimalScale={1} // 1 decimal place
-            decimalSeparator="." // use dot for decimal
-            customInput={TextField}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment
-                  className="custom-input-adornment"
-                  style={{ color: "var(--border-input-fields)" }}
-                  position="end">
-                  %
-                </InputAdornment>
-              ),
-            }}
-            label="Cost of Capital (WACC)"
-            size="small"
-            placeholder="10"
-            onValueChange={(values) => {
-              const { floatValue } = values;
-              if (floatValue != null) {
-                setErrorG(false);
-                dispatch(changeTerminalGrowthRate(floatValue / SCALE_PERC));
-              } else {
-                setErrorG(true);
-                dispatch(changeTerminalGrowthRate(null));
-              }
-            }}
-          />
-        </Tooltip>
-
         <Tooltip
           placement="right-start"
           arrow
