@@ -1335,6 +1335,46 @@ def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=100):
 
     return rnoa_series
 
+
+def get_ato_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=1):
+     # Step 1: fetch last n+1 balances with net_operating_assets
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'net_operating_assets')
+    )[:n+1]
+
+
+    # Step 2: fetch corresponding income statements
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'revenue')
+    )[:n+1]
+
+    incomes = sorted(incomes, key=lambda i: i.period_end_date)  # oldest -> newest
+    balances = sorted(balances, key=lambda b: b.period_end_date)  # oldest -> newest
+
+    # Step 3: compute RNOA using NOA from previous period
+    ato_series = []
+    for i in range(1, len(balances)):
+        income_t = incomes[i]
+        noa_prev = balances[i-1].net_operating_assets
+
+        if noa_prev == 0:
+            continue  # avoid division by zero
+
+        ato = income_t.revenue  / noa_prev
+        year = income_t.period_end_date.year
+        ato_series.append({'year': str(year), 'value': ato*scaleFactor})
+
+    # Step 4: keep only last n values
+    ato_series = ato_series[-n:]
+
+    return ato_series
+
 def get_noa(qfs_symbol, n=2):
     """
     Compute net operating assets = operating_assets - operating liabilities
@@ -1477,8 +1517,6 @@ def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: in
     incomes = list(reversed(incomes))
     balances = list(reversed(balances))
 
-    print('incomes: 0,', incomes)
-
     # step 3: compute rnoa. Remember we have ordered entries in descending order, so at position 0 we have the newest value
     for i in range(1, len(incomes)):
         year_t = incomes[i].year
@@ -1520,6 +1558,73 @@ def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: in
 
     return rnoa
  
+
+def get_asset_turnover(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3, tax_rate: float = 0.3):
+    """
+    Computes Asset turnover which is defined as ATO = Revenue_t/NOA_t-1
+    """
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # descending to get latest n+1 periods
+        .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
+    )[:years+1]
+
+    # Step 2: fetch last n+1 income statements (only needed fields)
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # ascending
+        .only('period_end_date', 'revenue')
+    )[:years+1]
+
+    ato = defaultdict()
+    incomes = list(reversed(incomes))
+    balances = list(reversed(balances))
+
+
+    # step 3: compute ato. Remember we have ordered entries in descending order, so at position 0 we have the newest value
+    for i in range(1, len(incomes)):
+        year_t = incomes[i].year
+        revenue_t = incomes[i].revenue
+        noa_t_minus_1 = balances[i-1].net_operating_assets
+
+        # avoid invalid denominator
+        if noa_t_minus_1 in (None, 0):
+            ato[year_t] = 0
+            continue
+
+        ato_value = revenue_t / noa_t_minus_1
+        ato[year_t] = round(ato_value, precision)
+
+    if include_ttm:
+        #get sum of operating income of the last four quarters
+        res_rev = (IncomeStatementQuarter.objects
+                        .filter(qfs_symbol_id = qfs_symbol)
+                        .order_by('-period_end_date')
+                        .aggregate(
+                            sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                        ))
+        
+        balance = (BalanceSheetQuarter.objects
+                   .filter(qfs_symbol_id = qfs_symbol)
+                   .order_by('-period_end_date')
+                   .only('net_operating_assets'))[3]
+        
+       #keep only the forth quarter
+        # balance = balance[-1] 
+        
+        # compute rnoa
+        ato_ttm = (
+            round(res_rev['sum_rev'] / balance.net_operating_assets,precision)
+            if balance.net_operating_assets else 0
+        )
+
+        ato["TTM"] = ato_ttm
+
+    return ato
 
 def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
     """
@@ -1915,6 +2020,7 @@ class PenmanValuationAPIView(APIView):
         gp_margins = get_gp_margins(qfs_symbol, years)
         op_margins = get_op_margins(qfs_symbol, years)
         rnoa = get_rnoa(qfs_symbol, years)
+        ato = get_asset_turnover(qfs_symbol, years)
         effective_tr = get_effective_tax_rates(qfs_symbol, years)
 
         #get operating assets, operating liabilities, net operating assets
@@ -1945,6 +2051,7 @@ class PenmanValuationAPIView(APIView):
         net_op_assets_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='net_operating_assets')
         book_value_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='total_equity')
         rnoa_ts = get_rnoa_ts(qfs_symbol)
+        ato_ts = get_ato_ts(qfs_symbol)
         debt_ts = get_debt_ts(qfs_symbol)
         nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol)
 
@@ -2003,6 +2110,7 @@ class PenmanValuationAPIView(APIView):
                         'gross_profit' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Gross Profit',
+                            'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
@@ -2010,6 +2118,7 @@ class PenmanValuationAPIView(APIView):
                         'gp_margins' : {
                             'type' : 'perc', #percentage type will be scaled by factor 100 on frontend
                             'label' : 'Gross margin',
+                            'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : gp_margin_ts,
                             'values' : gp_margins
@@ -2038,6 +2147,7 @@ class PenmanValuationAPIView(APIView):
                         'operating_income' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Op. Income',
+                            'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : op_income_ts,
                             'values': operating_income['metrics']["operating_income"]
@@ -2094,13 +2204,7 @@ class PenmanValuationAPIView(APIView):
                             'ts' : book_value_ts,
                             'values' : book_value['metrics']["total_equity"]
                         },
-                        'rnoa' : {
-                            'type' : 'perc',
-                            'label' : 'RNOA',
-                            'hasTs' : True,
-                            'ts' : rnoa_ts,
-                            'values' : rnoa
-                        },
+                       
                         'debt' : {
                             'type' : 'absolute',
                             'label' : 'Total Debt',
@@ -2114,6 +2218,29 @@ class PenmanValuationAPIView(APIView):
                             'hasTs' : True,
                             'ts' : nr_shares_ts,
                             'values' : shares_diluted['metrics']["shares_diluted"]
+                        },
+                    },
+                    'metricsValDrivers' : {
+                        'rnoa' : {
+                            'type' : 'perc',
+                            'label' : 'RNOA',
+                            'hasTs' : True,
+                            'ts' : rnoa_ts,
+                            'values' : rnoa
+                        },
+                        'ato' : {
+                            'type' : 'absolute',
+                            'label' : 'Asset Turnover',
+                            'hasTs' : True,
+                            'ts' : ato_ts,
+                            'values' : ato
+                        },
+                        'op_margins' : {
+                            'type' : 'perc',  #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Op. Margins',
+                            'hasTs' : True,
+                            'ts' : op_margin_ts,
+                            'values' : op_margins
                         },
                     },
                     'valuationDefaults' : {

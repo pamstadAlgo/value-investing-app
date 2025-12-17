@@ -908,6 +908,10 @@ border-bottom: 1px solid var(--action-color) !important;
 border-bottom: none;
 }
 
+.MuiTableBody-root.custom-table-body-val-model>tr.computed-row {
+  font-style: italic;
+}
+
 .MuiTableHead-root.custom-table-head > tr > th {
   color: var(--text-color-grey-scale); /* Contrast against orange header */
   font-weight: 800;
@@ -1052,10 +1056,6 @@ height: 0;
   min-width: 160px;
 }
 
-.filters-criteria-grid-item{
-  /* height: fit-content; */
-}
-
 .applied-filters-flexbox-wrapper{
   display: flex;
   gap: 6px;
@@ -1177,12 +1177,7 @@ height: 0;
 }
 
 
-.borders-table-header{
-  /* border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  border-radius: 20px 20px 0px 0px; */
-}
+
 
 .flexbox-wrapper-table-cell-analysis{
   display: flex;

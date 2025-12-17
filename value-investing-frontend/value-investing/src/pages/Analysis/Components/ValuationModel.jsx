@@ -13,6 +13,7 @@ import ValuationApproachSelect from "./ValuationApproachSelect";
 import Tooltip from "@mui/material/Tooltip";
 import { updateValuationData } from "../../../features/analysisSlice";
 import {
+  computeAto,
   computeEquityVal,
   computeNetOpAssets,
   computeNopatBottomUp,
@@ -20,6 +21,7 @@ import {
   computeOpIncomeBottomUp,
   computeOpIncomeTopDown,
   computeOpMarginBottomUp,
+  computeRnoa,
 } from "./selectorFunctions";
 import ValuationAssumptions from "./ValuationAssumptions";
 import MetricGraph from "./MetricGraph";
@@ -105,69 +107,44 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   let opMargins = [0, 0, 0];
   let equityVal = [0, 0, 0];
   let netOpAssets = [0, 0, 0];
+  let rnoa = [0, 0, 0];
+  let ato = [0, 0, 0];
 
-  //   let opIncomeBear = null;
-  //   let opIncomeBase = null;
-  //   let opIncomeBull = null;
 
   if (valuationApproach === "topDown") {
-    opIncome[0] = computeOpIncomeTopDown(valuationData, 0);
-    opIncome[1] = computeOpIncomeTopDown(valuationData, 1);
-    opIncome[2] = computeOpIncomeTopDown(valuationData, 2);
-
-    nopat[0] = computeNopatTopDown(valuationData, taxRate, 0);
-    nopat[1] = computeNopatTopDown(valuationData, taxRate, 1);
-    nopat[2] = computeNopatTopDown(valuationData, taxRate, 2);
+    //compute metrics for bear, base, bull
+    for (let i = 0; i < valuationCases.length; i++) {
+      opIncome[i] = computeOpIncomeTopDown(valuationData, i);
+      nopat[i] = computeNopatTopDown(valuationData, taxRate, i);
+    }
   } else if (valuationApproach === "bottomUp") {
-    //bottomUp we need to compute OpIncome, OpMargin and nopat
-    opIncome[0] = computeOpIncomeBottomUp(valuationData, 0);
-    opIncome[1] = computeOpIncomeBottomUp(valuationData, 1);
-    opIncome[2] = computeOpIncomeBottomUp(valuationData, 2);
+    for (let i = 0; i < valuationCases.length; i++) {
+      //bottomUp we need to compute OpIncome, OpMargin and nopat
+      opIncome[i] = computeOpIncomeBottomUp(valuationData, i);
 
-    //compute op margin
-    opMargins[0] = computeOpMarginBottomUp(valuationData, 0).toFixed(3);
-    opMargins[1] = computeOpMarginBottomUp(valuationData, 1).toFixed(3);
-    opMargins[2] = computeOpMarginBottomUp(valuationData, 2).toFixed(3);
+      //compute op margin
+      opMargins[i] = computeOpMarginBottomUp(valuationData, i);
 
-    //compute NOPAT
-    nopat[0] = computeNopatBottomUp(valuationData, taxRate, 0);
-    nopat[1] = computeNopatBottomUp(valuationData, taxRate, 1);
-    nopat[2] = computeNopatBottomUp(valuationData, taxRate, 2);
+      //compute NOPAT
+      nopat[i] = computeNopatBottomUp(valuationData, taxRate, i);
+    }
   }
 
-  //compute equity value
-  equityVal[0] = computeEquityVal(
-    valuationData?.bookValue,
-    nopat,
-    wacc,
-    valuationData?.netOperatingAssets,
-    g,
-    0
-  );
-  equityVal[1] = computeEquityVal(
-    valuationData?.bookValue,
-    nopat,
-    wacc,
-    valuationData?.netOperatingAssets,
-    g,
-    1
-  );
-  equityVal[2] = computeEquityVal(
-    valuationData?.bookValue,
-    nopat,
-    wacc,
-    valuationData?.netOperatingAssets,
-    g,
-    2
-  );
+  //compute equity val, netOperating assets, rnoa, asset turnover
+  for (let i = 0; i < valuationCases.length; i++) {
+    equityVal[i] = computeEquityVal(
+      valuationData?.bookValue,
+      nopat,
+      wacc,
+      valuationData?.netOperatingAssets,
+      g,
+      i
+    );
 
-  //compute net operating assets
-  netOpAssets[0] = computeNetOpAssets(valuationData, 0);
-  netOpAssets[1] = computeNetOpAssets(valuationData, 1);
-  netOpAssets[2] = computeNetOpAssets(valuationData, 2);
-
-  console.log("equityVal that we pass: ", equityVal);
-  console.log("nr shares: ", nrShares);
+    netOpAssets[i] = computeNetOpAssets(valuationData, i);
+    rnoa[i] = computeRnoa(nopat[i], netOpAssets[i], taxRate);
+    ato[i] = computeAto(valuationData, i);
+  }
 
   return (
     <>
@@ -188,12 +165,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
         onToggleHistory={onToggleHistory}
         isHistoryOpen={isHistoryOpen}
       />
-      {/* <div className="button-group-wrapper">
-        <ToggleButtonsScaling
-          value={scaling}
-          handleChange={handleToggleButtonChange}
-        />
-      </div> */}
       <GlassCardWrapper
         title="Valuation Model"
         currencyCode={currencyCode}
@@ -208,11 +179,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
             marginTop: "12px",
           }}
           className="custom-mui-table">
-          {/* <div
-            className="table-header-title"
-            style={{ borderRadius: "20px 20px 0px 0px" }}>
-            Valuation Model
-          </div> */}
           <Table
             sx={{ minWidth: 650 }}
             size="small"
@@ -239,7 +205,11 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
               </TableRow>
               {Object.entries(companyData?.metricsNopat).map(
                 ([metricName, values]) => (
-                  <TableRow key={metricName}>
+                  <TableRow
+                    key={metricName}
+                    className={
+                      values.fontStyle === "italic" ? "computed-row" : ""
+                    }>
                     <TableCell>
                       <div className="flexbox-wrapper-table-cell-analysis">
                         {values.label ? values.label : metricName}
@@ -313,9 +283,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           value = taxRate;
                           break;
                       }
-
-                      //scale the value if the value is not a ratio
-
                       if (values?.type === "absolute") {
                         return (
                           <NumericTableCellInput
@@ -355,7 +322,11 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
               {Object.entries(companyData?.metricsNoa).map(
                 ([metricName, values]) => {
                   return (
-                    <TableRow key={metricName}>
+                    <TableRow
+                      key={metricName}
+                      className={
+                        values.fontStyle === "italic" ? "computed-row" : ""
+                      }>
                       <TableCell>
                         <div className="flexbox-wrapper-table-cell-analysis">
                           {values.label ? values.label : metricName}{" "}
@@ -407,41 +378,135 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                             break;
                         }
 
-                        //scale the value if the value is not a ratio
-                        if (values.type !== "ratio") {
-                          value = (value / scaleFactor).toFixed(0);
+                        if (values?.type === "absolute") {
+                          return (
+                            <NumericTableCellInput
+                              value={value}
+                              scalingFactor={scaleFactor}
+                              metricName={metricName}
+                              isEditable={isEditable}
+                              valuationCase={index}
+                              handleChange={handleValuationChange}
+                            />
+                          );
+                        } else if (values?.type === "perc") {
+                          return (
+                            <PercentageTableCellInput
+                              value={value}
+                              scalingFactor={scaleFactor}
+                              metricName={metricName}
+                              isEditable={isEditable}
+                              valuationCase={index}
+                              handleChange={handleValuationChange}
+                            />
+                          );
+                        }
+                      })}
+                    </TableRow>
+                  );
+                }
+              )}
+              <TableRow>
+                <TableCell className="valuation-model-title-row" colSpan={10}>
+                  <div className="flex-box-wrapper-table-header-val-model">
+                    <span>VALUATION DRIVERS</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+              {Object.entries(companyData?.metricsValDrivers).map(
+                ([metricName, values]) => {
+                  return (
+                    <TableRow key={metricName}>
+                      <TableCell>
+                        <div className="flexbox-wrapper-table-cell-analysis">
+                          {values.label ? values.label : metricName}{" "}
+                          {/* display graph if time series data is available */}
+                          {values.hasTs && (
+                            <MetricGraph
+                              data={values.ts}
+                              metricName={
+                                values.label ? values.label : metricName
+                              }
+                            />
+                          )}
+                        </div>
+                      </TableCell>
+                      {companyData?.periods.map((period) => {
+                        let cellValue = values?.values[period]
+                          ? values?.values[period]
+                          : "-";
+
+                        //check if metric is asset turnover
+                        const isAto = metricName === "ato";
+
+                        if (values?.type === "perc") {
+                          return (
+                            <PercentageTableCell
+                              cellValue={cellValue}
+                              scalingFactor={100}
+                            />
+                          );
+                        } else if (values?.type === "absolute") {
+                          return (
+                            <NumericTableCell
+                              cellValue={cellValue}
+                              scalingFactor={scaling}
+                              {...(isAto && {
+                                decimalPlaces: 2,
+                                suffix: "x",
+                                scalingFactor: 1,
+                              })}
+                            />
+                          );
+                        }
+                      })}
+                      {valuationCases.map((valuationCase, index) => {
+                        let isEditable =
+                          editableFieldsCapitalStructure.includes(metricName);
+                        let scaleFactor = values.type !== "ratio" ? scaling : 1;
+
+                        //check if metric is asset turnover
+                        const isAto = metricName === "ato";
+
+                        var value = valuationData[metricName]?.[index];
+
+                        switch (metricName) {
+                          case "rnoa":
+                            value = rnoa[index];
+                            break;
+                          case "ato":
+                            value = ato[index];
+                            break;
                         }
 
-                        return (
-                          <TableCell>
-                            {/* <Tooltip
-                          placement="right-start"
-                          arrow
-                          title="Change the valuation approach in order to edit this field"
-                          // disableHoverListener={screenerState.activFilters?.length !== 0}
-                          disableHoverListener={isEditable}
-                          disableFocusListener={isEditable}
-                          disableTouchListener={isEditable}> */}
-                            <OutlinedInput
-                              disabled={!isEditable}
-                              onChange={(e) =>
-                                handleValuationChange(
-                                  e,
-                                  metricName,
-                                  index,
-                                  scaleFactor
-                                )
-                              }
-                              // onChange={(e) => handleChange(e, category, metric)}
-                              type="number"
-                              // value={valuationData[metricName]?.[index]}
+                        if (values?.type === "absolute") {
+                          return (
+                            <NumericTableCellInput
                               value={value}
-                              size="small"
-                              className="custom-input-valuation-table"
+                              scalingFactor={scaleFactor}
+                              metricName={metricName}
+                              isEditable={isEditable}
+                              valuationCase={index}
+                              handleChange={handleValuationChange}
+                              {...(isAto && {
+                                decimalPlaces: 2,
+                                suffix: "x",
+                                scalingFactor: 1,
+                              })}
                             />
-                            {/* </Tooltip> */}
-                          </TableCell>
-                        );
+                          );
+                        } else if (values?.type === "perc") {
+                          return (
+                            <PercentageTableCellInput
+                              value={value}
+                              scalingFactor={scaleFactor}
+                              metricName={metricName}
+                              isEditable={isEditable}
+                              valuationCase={index}
+                              handleChange={handleValuationChange}
+                            />
+                          );
+                        }
                       })}
                     </TableRow>
                   );

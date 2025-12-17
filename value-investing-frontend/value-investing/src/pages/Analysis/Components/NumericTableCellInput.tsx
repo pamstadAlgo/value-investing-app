@@ -8,6 +8,8 @@ type NumericTableCellInputProps = {
   scalingFactor: number;
   metricName: string;
   isEditable: boolean;
+  decimalPlaces?: number;
+  suffix?: string;
   valuationCase: 0 | 1 | 2;
   handleChange: (
     value: number | null,
@@ -24,16 +26,19 @@ function NumericTableCellInput({
   metricName,
   isEditable,
   valuationCase,
+  decimalPlaces = 0,
+  suffix = "",
 }: NumericTableCellInputProps) {
   return (
     <TableCell>
       <NumericFormat
         value={value / scalingFactor}
-        decimalScale={0} // 1 decimal place
+        decimalScale={decimalPlaces} // nr of decimal places
         fixedDecimalScale={false} // important: show decimal only if needed
         thousandSeparator=","
         customInput={OutlinedInput}
         disabled={!isEditable}
+        suffix={suffix}
         size="small"
         className="custom-input-valuation-table"
         onValueChange={(values) => {

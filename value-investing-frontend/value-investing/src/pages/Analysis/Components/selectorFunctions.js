@@ -39,7 +39,6 @@ export function computeNopatBottomUp(data, taxRate, caseIndex) {
 }
 
 export function computeEquityVal(b0, nopat, wacc, noa, g, caseIndex) {
-
   //compute residual earnings 1 = (NOPAT - r*NOA)/(1+r)
   var re1 = (nopat[caseIndex] - wacc * noa[caseIndex]) / (1 + wacc);
 
@@ -74,8 +73,13 @@ export function computeNetLiqValue(balanceSheet) {
   const totalAssets = computeTotAssets(balanceSheet);
   const totalLiabilities = computeTotLiab(balanceSheet);
 
-  console.log("total assets: ", totalAssets);
-  console.log("totalLiabilities: ", totalLiabilities);
-
   return totalAssets - totalLiabilities;
+}
+
+export function computeRnoa(nopat, noa, taxRate) {
+  return (nopat * (1 - taxRate)) / noa;
+}
+
+export function computeAto(data, caseIndex) {
+  return data?.revenue[caseIndex] / data?.netOperatingAssets[caseIndex];
 }
