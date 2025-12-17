@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   ScatterChart,
@@ -10,7 +10,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  ReferenceArea,
 } from "recharts";
 import {
   Box,
@@ -35,10 +34,184 @@ import { setHighlightedTicker } from "../../../features/stockScreenerSlice";
 import { fetchWatchlists } from "../../../features/watchlistSlice";
 
 // --- Constants ---
-const COLOR_DEFAULT = "#4f46e5";
-const COLOR_WATCHLIST = "#00e676";
-const COLOR_SELECTED = "#ff9800";
-const COLOR_DIMMED = "#333";
+// Using CSS Variables where possible, or matching hexes for Recharts if needed logic strictly requires hex (though CSS vars work for fill)
+const COLOR_DEFAULT = "var(--action-color)"; // Terminal Orange by default or whatever action color is
+const COLOR_WATCHLIST = "var(--success-color)"; // Terminal Green
+const COLOR_SELECTED = "var(--action-color)"; // Explicit Orange for selected to ensure visibility
+const COLOR_DIMMED = "var(--action-color-transparent-less)";
+
+const formatMillions = (value) => {
+  if (typeof value !== "number") return value;
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(2)}M`;
+  }
+  return value.toLocaleString();
+};
+
+const MemoizedScatterChart = React.memo(
+  ({
+    data,
+    xAxisKey,
+    yAxisKey,
+    zAxisKey,
+    xDomain,
+    yDomain,
+    handleChartClick,
+    handleNodeClick,
+    selectedNode,
+    highlightedTicker,
+    focusedWatchlistId,
+    watchlistMap,
+  }) => {
+
+    // Custom Tooltip
+    const CustomTooltip = ({ active, payload }) => {
+      if (active && payload && payload.length && !selectedNode) {
+        const data = payload[0].payload;
+        const name = data.company || data.name || data.qfs_symbol;
+        return (
+          <Paper
+            sx={{
+              p: 1.5,
+              backgroundColor: "rgba(20, 20, 20, 0.95)",
+              border: "1px solid #444",
+              zIndex: 10,
+            }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ color: COLOR_SELECTED, fontWeight: "bold" }}>
+              {name}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#ccc" }}>
+              {xAxisKey}: {data.x?.toFixed(2)}, {yAxisKey}: {data.y?.toFixed(2)}
+            </Typography>
+          </Paper>
+        );
+      }
+      return null;
+    };
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart
+          onClick={handleChartClick}
+          margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+
+          <XAxis
+            type="number"
+            dataKey="x"
+            name={xAxisKey}
+            domain={xDomain}
+            stroke="#888"
+            allowDataOverflow
+            tickFormatter={(val) =>
+              Math.abs(val) >= 1000
+                ? `${(val / 1000).toFixed(0)}k`
+                : val.toFixed(1)
+            }
+          />
+          <YAxis
+            type="number"
+            dataKey="y"
+            name={yAxisKey}
+            domain={yDomain}
+            stroke="#888"
+            allowDataOverflow
+            tickFormatter={(val) =>
+              Math.abs(val) >= 1000
+                ? `${(val / 1000).toFixed(0)}k`
+                : val.toFixed(1)
+            }
+          />
+          <ZAxis
+            type="number"
+            dataKey="z"
+            range={[60, 900]}
+            name={zAxisKey}
+          />
+
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ strokeDasharray: "3 3", stroke: "#555" }}
+            wrapperStyle={{ pointerEvents: "none" }}
+          />
+
+          <Scatter
+            name="Companies"
+            data={data}
+            isAnimationActive={false}
+            onClick={handleNodeClick}
+            style={{ cursor: "pointer" }}>
+            {data.map((entry, index) => {
+              const symbol = entry.qfs_symbol || entry.qfs_symbol_id;
+              const isSelected = selectedNode?.data?.qfs_symbol_id === symbol;
+              const isHighlighted = highlightedTicker === symbol;
+
+              const listsContaining = watchlistMap.get(symbol);
+              const isInAnyList = listsContaining && listsContaining.length > 0;
+              const isInFocusedList =
+                focusedWatchlistId &&
+                listsContaining?.includes(focusedWatchlistId);
+
+              // Default logic
+              let fillColor = COLOR_DEFAULT;
+              let strokeColor = "none";
+              let opacity = 0.8;
+
+              // Selection overrides everything
+              if (isSelected || isHighlighted) {
+                fillColor = COLOR_SELECTED;
+                strokeColor = "#fff";
+                opacity = 1;
+              }
+              // Focused list logic
+              else if (focusedWatchlistId) {
+                if (isInFocusedList) {
+                  fillColor = COLOR_WATCHLIST;
+                  opacity = 1;
+                } else {
+                  fillColor = COLOR_DIMMED;
+                  opacity = 0.3;
+                }
+              }
+              // Any list logic
+              else if (isInAnyList) {
+                fillColor = COLOR_WATCHLIST;
+                opacity = 0.9;
+              }
+
+              return (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={fillColor}
+                  stroke={strokeColor}
+                  strokeWidth={isSelected ? 2 : 0}
+                  fillOpacity={opacity}
+                />
+              );
+            })}
+          </Scatter>
+        </ScatterChart>
+      </ResponsiveContainer>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison for performance if needed, or rely on React.memo shallow compare if props are stable
+    // Since we pass 'data' (sortedChartData) which is memoized in parent, and 'watchlistMap' (memoized), this should be fine.
+    return (
+      prevProps.data === nextProps.data &&
+      prevProps.xAxisKey === nextProps.xAxisKey &&
+      prevProps.yAxisKey === nextProps.yAxisKey &&
+      prevProps.zAxisKey === nextProps.zAxisKey &&
+      prevProps.xDomain === nextProps.xDomain &&
+      prevProps.yDomain === nextProps.yDomain &&
+      prevProps.selectedNode === nextProps.selectedNode &&
+      prevProps.highlightedTicker === nextProps.highlightedTicker &&
+      prevProps.focusedWatchlistId === nextProps.focusedWatchlistId
+    );
+  }
+);
 
 const FinancialScatterPlot = () => {
   const dispatch = useDispatch();
@@ -47,7 +220,7 @@ const FinancialScatterPlot = () => {
   const { queryResult, highlightedTicker } = useSelector(
     (state) => state.stockscrenner
   );
-  const { watchlists, status: watchlistStatus } = useSelector(
+  const { watchlists } = useSelector(
     (state) => state.watchlist
   );
 
@@ -65,18 +238,18 @@ const FinancialScatterPlot = () => {
   const [xDomain, setXDomain] = useState([0, 100]);
   const [yDomain, setYDomain] = useState([0, 100]);
 
+  // Local input state to allow free typing
+  const [xMinInput, setXMinInput] = useState("0");
+  const [xMaxInput, setXMaxInput] = useState("100");
+  const [yMinInput, setYMinInput] = useState("0");
+  const [yMaxInput, setYMaxInput] = useState("100");
+
   // Flag to prevent background click from overriding bubble click
   const isNodeClicked = useRef(false);
-  const hasFetched = useRef(false);
 
   // --- Initial Load ---
   useEffect(() => {
-    // if (watchlistStatus === 'idle') {
-    // if (!hasFetched.current) {
-      dispatch(fetchWatchlists());
-    //   hasFetched.current = true;
-    // }
-    // }
+    dispatch(fetchWatchlists());
   }, []);
 
   // --- Data Helpers ---
@@ -116,7 +289,6 @@ const FinancialScatterPlot = () => {
   }, [watchlists]);
 
   // 3. Sort Data (Selected/Watchlist on Top)
-  // This changes whenever selection changes, BUT we won't use this for calculating extents anymore.
   const sortedChartData = useMemo(() => {
     return [...rawData].sort((a, b) => {
       const symbolA = a.qfs_symbol || a.qfs_symbol_id;
@@ -148,15 +320,11 @@ const FinancialScatterPlot = () => {
   }, [rawData, selectedNode, focusedWatchlistId, watchlistMap]);
 
   // --- Calculate Extents (STABLE) ---
-  // CRITICAL FIX: Depend on 'rawData' (unsorted), NOT 'sortedChartData'.
-  // 'rawData' does NOT change when you select a node, so this calculation won't re-run
-  // and the useEffect below won't fire, preserving your manual axis inputs.
   const dataExtent = useMemo(() => {
     if (!rawData.length) return { xMin: 0, xMax: 100, yMin: 0, yMax: 100 };
     const xs = rawData.map((d) => d.x);
     const ys = rawData.map((d) => d.y);
     return {
-      // Precise extent logic
       xMin: Math.min(...xs),
       xMax: Math.max(...xs),
       yMin: Math.min(...ys),
@@ -166,32 +334,61 @@ const FinancialScatterPlot = () => {
 
   // Reset domains only when the underlying data (metrics) actually changes
   useEffect(() => {
-    // Add a small buffer to the extent so points aren't cut off at the edge
     const xBuffer = (dataExtent.xMax - dataExtent.xMin) * 0.05 || 1;
     const yBuffer = (dataExtent.yMax - dataExtent.yMin) * 0.05 || 1;
 
-    setXDomain([dataExtent.xMin - xBuffer, dataExtent.xMax + xBuffer]);
-    setYDomain([dataExtent.yMin - yBuffer, dataExtent.yMax + yBuffer]);
+    const newXMin = dataExtent.xMin - xBuffer;
+    const newXMax = dataExtent.xMax + xBuffer;
+    const newYMin = dataExtent.yMin - yBuffer;
+    const newYMax = dataExtent.yMax + yBuffer;
+
+    setXDomain([newXMin, newXMax]);
+    setYDomain([newYMin, newYMax]);
+
+    // Sync inputs
+    setXMinInput(newXMin.toString());
+    setXMaxInput(newXMax.toString());
+    setYMinInput(newYMin.toString());
+    setYMaxInput(newYMax.toString());
   }, [dataExtent]);
 
   // --- Handlers ---
   const handleClosePopup = () => setSelectedNode(null);
 
-  const handleManualAxisChange = (axis, bound, value) => {
-    if (value === "" || value === "-") return;
-    const numVal = parseFloat(value);
-    if (isNaN(numVal)) return;
-
-    if (axis === "x") {
-      setXDomain((prev) =>
-        bound === "min" ? [numVal, prev[1]] : [prev[0], numVal]
-      );
-    } else {
-      setYDomain((prev) =>
-        bound === "min" ? [numVal, prev[1]] : [prev[0], numVal]
-      );
-    }
+  // Input Handlers
+  const handleInputChange = (setter) => (e) => {
+    setter(e.target.value);
   };
+
+  const commitAxisChange = (axis, bound, valueStr, currentDomain) => {
+    const val = parseFloat(valueStr);
+    if (isNaN(val)) return; // Don't update if invalid
+
+    if (axis === 'x') {
+      if (bound === 'min') setXDomain([val, currentDomain[1]]);
+      else setXDomain([currentDomain[0], val]);
+    } else {
+      if (bound === 'min') setYDomain([val, currentDomain[1]]);
+      else setYDomain([currentDomain[0], val]);
+    }
+  }
+
+  const handleBlur = (axis, bound) => {
+    if (axis === 'x') {
+      if (bound === 'min') commitAxisChange('x', 'min', xMinInput, xDomain);
+      else commitAxisChange('x', 'max', xMaxInput, xDomain);
+    } else {
+      if (bound === 'min') commitAxisChange('y', 'min', yMinInput, yDomain);
+      else commitAxisChange('y', 'max', yMaxInput, yDomain);
+    }
+  }
+
+  const handleKeyDown = (e, axis, bound) => {
+    if (e.key === 'Enter') {
+      handleBlur(axis, bound);
+    }
+  }
+
 
   const resetView = () => {
     setSelectedNode(null);
@@ -199,60 +396,74 @@ const FinancialScatterPlot = () => {
 
     const xBuffer = (dataExtent.xMax - dataExtent.xMin) * 0.05 || 1;
     const yBuffer = (dataExtent.yMax - dataExtent.yMin) * 0.05 || 1;
-    setXDomain([dataExtent.xMin - xBuffer, dataExtent.xMax + xBuffer]);
-    setYDomain([dataExtent.yMin - yBuffer, dataExtent.yMax + yBuffer]);
+
+    const newX = [dataExtent.xMin - xBuffer, dataExtent.xMax + xBuffer];
+    const newY = [dataExtent.yMin - yBuffer, dataExtent.yMax + yBuffer];
+
+    setXDomain(newX);
+    setYDomain(newY);
+    setXMinInput(newX[0].toString());
+    setXMaxInput(newX[1].toString());
+    setYMinInput(newY[0].toString());
+    setYMaxInput(newY[1].toString());
   };
 
   // --- CLICK Handlers ---
-  const handleNodeClick = (node, index, event) => {
+  // Memoized handlers to ensure stable props for the chart
+  const handleNodeClick = useCallback((node, index, event) => {
     isNodeClicked.current = true;
     if (node && node.payload) {
       setSelectedNode({ data: node.payload, cx: node.cx, cy: node.cy });
       dispatch(setHighlightedTicker(node.payload.qfs_symbol_id));
     }
     if (event && event.stopPropagation) event.stopPropagation();
-  };
+  }, [dispatch]);
 
-  const handleChartClick = (e) => {
+  const handleChartClick = useCallback((e) => {
     if (isNodeClicked.current) {
       isNodeClicked.current = false;
       return;
     }
     setSelectedNode(null);
-  };
-
-  // --- Renderers ---
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length && !selectedNode) {
-      const data = payload[0].payload;
-      const name = data.company || data.name || data.qfs_symbol;
-      return (
-        <Paper
-          sx={{
-            p: 1.5,
-            backgroundColor: "rgba(20, 20, 20, 0.95)",
-            border: "1px solid #444",
-            zIndex: 10,
-          }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ color: COLOR_SELECTED, fontWeight: "bold" }}>
-            {name}
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#ccc" }}>
-            {xAxisKey}: {data.x?.toFixed(2)}, {yAxisKey}: {data.y?.toFixed(2)}
-          </Typography>
-        </Paper>
-      );
-    }
-    return null;
-  };
+  }, []);
 
   const inputSx = {
-    "& .MuiInputBase-root": { color: "#ccc", fontSize: "0.85rem" },
-    "& .MuiInputLabel-root": { color: "#888", fontSize: "0.85rem" },
-    "& .MuiOutlinedInput-notchedOutline": { borderColor: "#444" },
+    "& .MuiInputBase-root": {
+      color: "var(--inner-text-input-fields)",
+      fontSize: "0.85rem"
+    },
+    "& .MuiInputLabel-root": {
+      color: "var(--label-color-input-fields)",
+      fontSize: "0.85rem"
+    },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "var(--border-input-fields)"
+    },
   };
+
+  // Button Styles
+  const buttonStyleDefault = {
+    height: "40px",
+    minWidth: "40px", // added to ensure Tune button isn't tiny when outlined
+    borderColor: "var(--border-input-fields)",
+    color: "var(--text-color-grey-scale)",
+    '&:hover': {
+      borderColor: "var(--action-color)",
+      color: "var(--header-color)",
+      backgroundColor: "rgba(255, 255, 255, 0.05)"
+    }
+  };
+
+  const buttonStyleActive = {
+    height: "40px",
+    minWidth: "40px",
+    backgroundColor: "var(--action-color)",
+    color: "white",
+    '&:hover': {
+      backgroundColor: "var(--action-color-monaco-editor-hover)"
+    }
+  };
+
 
   return (
     <Box
@@ -324,7 +535,7 @@ const FinancialScatterPlot = () => {
           onClick={() => setShowAxisSettings(!showAxisSettings)}
           variant={showAxisSettings ? "contained" : "outlined"}
           size="small"
-          sx={{ height: "40px", minWidth: "40px" }}>
+          sx={showAxisSettings ? buttonStyleActive : buttonStyleDefault}>
           <span style={{ display: "none" }}>Axes</span>
         </Button>
 
@@ -333,7 +544,7 @@ const FinancialScatterPlot = () => {
           onClick={resetView}
           variant="outlined"
           size="small"
-          sx={{ height: "40px" }}>
+          sx={buttonStyleDefault}>
           Reset
         </Button>
       </Box>
@@ -346,7 +557,7 @@ const FinancialScatterPlot = () => {
             p: 2,
             bgcolor: "rgba(255,255,255,0.03)",
             borderRadius: 1,
-            border: "1px dashed #444",
+            border: "1px dashed var(--border-input-fields)",
           }}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
@@ -364,26 +575,22 @@ const FinancialScatterPlot = () => {
                 <TextField
                   label="Min"
                   size="small"
-                  type="number"
                   fullWidth
                   sx={inputSx}
-                  inputProps={{ step: "any" }}
-                  value={xDomain[0]}
-                  onChange={(e) =>
-                    handleManualAxisChange("x", "min", e.target.value)
-                  }
+                  value={xMinInput}
+                  onChange={handleInputChange(setXMinInput)}
+                  onBlur={() => handleBlur('x', 'min')}
+                  onKeyDown={(e) => handleKeyDown(e, 'x', 'min')}
                 />
                 <TextField
                   label="Max"
                   size="small"
-                  type="number"
                   fullWidth
                   sx={inputSx}
-                  inputProps={{ step: "any" }}
-                  value={xDomain[1]}
-                  onChange={(e) =>
-                    handleManualAxisChange("x", "max", e.target.value)
-                  }
+                  value={xMaxInput}
+                  onChange={handleInputChange(setXMaxInput)}
+                  onBlur={() => handleBlur('x', 'max')}
+                  onKeyDown={(e) => handleKeyDown(e, 'x', 'max')}
                 />
               </Box>
             </Grid>
@@ -402,26 +609,22 @@ const FinancialScatterPlot = () => {
                 <TextField
                   label="Min"
                   size="small"
-                  type="number"
                   fullWidth
                   sx={inputSx}
-                  inputProps={{ step: "any" }}
-                  value={yDomain[0]}
-                  onChange={(e) =>
-                    handleManualAxisChange("y", "min", e.target.value)
-                  }
+                  value={yMinInput}
+                  onChange={handleInputChange(setYMinInput)}
+                  onBlur={() => handleBlur('y', 'min')}
+                  onKeyDown={(e) => handleKeyDown(e, 'y', 'min')}
                 />
                 <TextField
                   label="Max"
                   size="small"
-                  type="number"
                   fullWidth
                   sx={inputSx}
-                  inputProps={{ step: "any" }}
-                  value={yDomain[1]}
-                  onChange={(e) =>
-                    handleManualAxisChange("y", "max", e.target.value)
-                  }
+                  value={yMaxInput}
+                  onChange={handleInputChange(setYMaxInput)}
+                  onBlur={() => handleBlur('y', 'max')}
+                  onKeyDown={(e) => handleKeyDown(e, 'y', 'max')}
                 />
               </Box>
             </Grid>
@@ -431,103 +634,20 @@ const FinancialScatterPlot = () => {
 
       {/* 2. Chart Area */}
       <Box sx={{ height: 500, width: "100%", position: "relative" }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart
-            onClick={handleChartClick}
-            margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-
-            <XAxis
-              type="number"
-              dataKey="x"
-              name={xAxisKey}
-              domain={xDomain}
-              stroke="#888"
-              allowDataOverflow
-              tickFormatter={(val) =>
-                Math.abs(val) >= 1000
-                  ? `${(val / 1000).toFixed(0)}k`
-                  : val.toFixed(1)
-              }
-            />
-            <YAxis
-              type="number"
-              dataKey="y"
-              name={yAxisKey}
-              domain={yDomain}
-              stroke="#888"
-              allowDataOverflow
-              tickFormatter={(val) =>
-                Math.abs(val) >= 1000
-                  ? `${(val / 1000).toFixed(0)}k`
-                  : val.toFixed(1)
-              }
-            />
-            <ZAxis
-              type="number"
-              dataKey="z"
-              range={[60, 900]}
-              name={zAxisKey}
-            />
-
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ strokeDasharray: "3 3", stroke: "#555" }}
-              wrapperStyle={{ pointerEvents: "none" }}
-            />
-
-            <Scatter
-              name="Companies"
-              data={sortedChartData}
-              isAnimationActive={false}
-              onClick={handleNodeClick} // Handles bubble clicks
-              style={{ cursor: "pointer" }}>
-              {sortedChartData.map((entry, index) => {
-                const symbol = entry.qfs_symbol || entry.qfs_symbol_id;
-                const isSelected = selectedNode?.data?.qfs_symbol_id === symbol;
-                const isHighlighted = highlightedTicker === symbol;
-
-                const listsContaining = watchlistMap.get(symbol);
-                const isInAnyList =
-                  listsContaining && listsContaining.length > 0;
-                const isInFocusedList =
-                  focusedWatchlistId &&
-                  listsContaining?.includes(focusedWatchlistId);
-
-                let fillColor = COLOR_DEFAULT;
-                let strokeColor = "none";
-                let opacity = 0.8;
-
-                if (isSelected || isHighlighted) {
-                  fillColor = COLOR_SELECTED;
-                  strokeColor = "#fff";
-                  opacity = 1;
-                } else if (focusedWatchlistId) {
-                  if (isInFocusedList) {
-                    fillColor = COLOR_WATCHLIST;
-                    opacity = 1;
-                  } else {
-                    fillColor = COLOR_DIMMED;
-                    opacity = 0.3;
-                  }
-                } else if (isInAnyList) {
-                  fillColor = COLOR_WATCHLIST;
-                  opacity = 0.9;
-                }
-
-                return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={isSelected ? 2 : 0}
-                    fillOpacity={opacity}
-                  />
-                );
-              })}
-            </Scatter>
-          </ScatterChart>
-        </ResponsiveContainer>
+        <MemoizedScatterChart
+          data={sortedChartData}
+          xAxisKey={xAxisKey}
+          yAxisKey={yAxisKey}
+          zAxisKey={zAxisKey}
+          xDomain={xDomain}
+          yDomain={yDomain}
+          handleChartClick={handleChartClick}
+          handleNodeClick={handleNodeClick}
+          selectedNode={selectedNode}
+          highlightedTicker={highlightedTicker}
+          focusedWatchlistId={focusedWatchlistId}
+          watchlistMap={watchlistMap}
+        />
 
         {/* 3. Popup Card */}
         {selectedNode && (
@@ -541,8 +661,7 @@ const FinancialScatterPlot = () => {
               p: 2,
               minWidth: 220,
               maxWidth: 300,
-              backgroundColor:
-                "var(--background-glass-card, #1e1e1e) !important",
+              backgroundColor: "var(--background-glass-card, #1e1e1e) !important",
               color: "var(--text-color, #e0e0e0)",
               border: "1px solid var(--border-input-fields, #333)",
               boxShadow: "0px 4px 20px rgba(0,0,0,0.5)",
@@ -582,26 +701,24 @@ const FinancialScatterPlot = () => {
               <Typography
                 variant="caption"
                 display="block"
-                sx={{ color: "#fff" }}>
-                <span style={{ color: "#888" }}>{xAxisKey}:</span>{" "}
-                <b>{selectedNode.data.x?.toFixed(2)}</b>
+                sx={{ color: "var(--text-color-grey-scale)" }}>
+                <span style={{ color: "var(--text-color-grey-scale)" }}>{xAxisKey}:</span>{" "}
+                <b style={{ color: "var(--header-color)" }}>{selectedNode.data.x?.toFixed(2)}</b>
               </Typography>
               <Typography
                 variant="caption"
                 display="block"
-                sx={{ color: "#fff" }}>
-                <span style={{ color: "#888" }}>{yAxisKey}:</span>{" "}
-                <b>{selectedNode.data.y?.toFixed(2)}</b>
+                sx={{ color: "var(--text-color-grey-scale)" }}>
+                <span style={{ color: "var(--text-color-grey-scale)" }}>{yAxisKey}:</span>{" "}
+                <b style={{ color: "var(--header-color)" }}>{selectedNode.data.y?.toFixed(2)}</b>
               </Typography>
               <Typography
                 variant="caption"
                 display="block"
-                sx={{ color: "#fff" }}>
-                <span style={{ color: "#888" }}>Size:</span>{" "}
-                <b>
-                  {typeof selectedNode.data.z === "number"
-                    ? selectedNode.data.z.toLocaleString()
-                    : selectedNode.data.z}
+                sx={{ color: "var(--text-color-grey-scale)" }}>
+                <span style={{ color: "var(--text-color-grey-scale)" }}>Size:</span>{" "}
+                <b style={{ color: "var(--header-color)" }}>
+                  {formatMillions(selectedNode.data.z)}
                 </b>
               </Typography>
             </Box>
@@ -623,10 +740,11 @@ const FinancialScatterPlot = () => {
           variant={focusedWatchlistId === null ? "filled" : "outlined"}
           onClick={() => setFocusedWatchlistId(null)}
           sx={{
-            color: focusedWatchlistId === null ? "#fff" : "#888",
+            color: focusedWatchlistId === null ? "#1e1e1e" : "var(--text-color-grey-scale)",
             bgcolor:
-              focusedWatchlistId === null ? COLOR_DEFAULT : "transparent",
-            borderColor: "#444",
+              focusedWatchlistId === null ? "var(--action-color)" : "transparent",
+            borderColor: "var(--border-input-fields)",
+            fontWeight: focusedWatchlistId === null ? "bold" : "normal",
           }}
         />
         {watchlists.map((list) => (
@@ -650,13 +768,13 @@ const FinancialScatterPlot = () => {
               />
             }
             sx={{
-              color: focusedWatchlistId === list.id ? "#000" : "#ccc",
+              color: focusedWatchlistId === list.id ? "#000" : "var(--text-color-grey-scale)",
               bgcolor:
                 focusedWatchlistId === list.id
                   ? COLOR_WATCHLIST
                   : "transparent",
               borderColor:
-                focusedWatchlistId === list.id ? COLOR_WATCHLIST : "#444",
+                focusedWatchlistId === list.id ? COLOR_WATCHLIST : "var(--border-input-fields)",
               fontWeight: focusedWatchlistId === list.id ? "bold" : "normal",
             }}
           />
