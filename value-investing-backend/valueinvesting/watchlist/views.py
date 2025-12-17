@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Q, Prefetch, Subquery, OuterRef
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from .models import Watchlist, WatchlistItem
@@ -16,9 +16,40 @@ class WatchlistViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Watchlist.objects.filter(
+        
+        # Original base queryset
+        queryset = Watchlist.objects.filter(
             Q(owner=user) | Q(shared_with=user)
         ).distinct().order_by('-updated_at')
+
+        # Subqueries for ValuationSnapshot
+        # We need a way to look up the latest valuation for (user, company)
+        # We correlate on qfs_symbol.
+        from valuation_history.models import ValuationSnapshot
+        from quickfs_dj.models import ScreenerData
+
+        newest_valuation = ValuationSnapshot.objects.filter(
+            user=user,
+            qfs_symbol=OuterRef('company__qfs_symbol')
+        ).order_by('-created_at')
+
+        screener_data = ScreenerData.objects.filter(
+            qfs_symbol=OuterRef('company__qfs_symbol')
+        )
+
+        # Create the optimized item queryset with all necessary annotations
+        items_qs = WatchlistItem.objects.select_related('company').annotate(
+            latest_price_target=Subquery(newest_valuation.values('price_target')[:1]),
+            latest_valuation_date=Subquery(newest_valuation.values('created_at')[:1]),
+            latest_notes=Subquery(newest_valuation.values('thesis')[:1]),
+            latest_analyst_name=Subquery(newest_valuation.values('analyst_name')[:1]),
+            latest_model_inputs=Subquery(newest_valuation.values('model_inputs')[:1]),
+            latest_market_cap=Subquery(screener_data.values('market_cap_q')[:1])
+        )
+
+        return queryset.prefetch_related(
+            Prefetch('items', queryset=items_qs)
+        )
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
