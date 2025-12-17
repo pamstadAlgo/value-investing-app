@@ -32,6 +32,8 @@ import SaveValuationModal from "./SaveValuationModal";
 import ValuationActionToolbar from "./ValuationActionToolbar";
 import NumericTableCell from "./NumericTableCell";
 import PercentageTableCell from "./PercentageTableCell";
+import NumericTableCellInput from "./NumericTableCellInput";
+import PercentageTableCellInput from "./PercentageTableCellInput";
 
 const valuationCases = ["BEAR", "BASE", "BULL"];
 const topDownEditableFields = ["revenue", "op_margins"];
@@ -82,10 +84,15 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
     }
   };
 
-  const handleValuationChange = (e, metricName, valuationCase, scaleFactor) => {
+  const handleValuationChange = (
+    value,
+    metricName,
+    valuationCase,
+    scaleFactor
+  ) => {
     dispatch(
       updateValuationData({
-        newValue: e.target.value,
+        newValue: value,
         metricName: metricName,
         caseIndex: valuationCase,
         scaleFactor: scaleFactor,
@@ -127,13 +134,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
     nopat[1] = computeNopatBottomUp(valuationData, taxRate, 1);
     nopat[2] = computeNopatBottomUp(valuationData, taxRate, 2);
   }
-
-  console.log("nopat before function: ", nopat);
-  console.log("valuationData?.bookValue: ", valuationData?.bookValue);
-  console.log(
-    "valuationData?.netOperatingAssets: ",
-    valuationData?.netOperatingAssets
-  );
 
   //compute equity value
   equityVal[0] = computeEquityVal(
@@ -300,55 +300,45 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                           value = nopat[index];
                           break;
                         case "op_margins":
-                          //if valuation approach is topDown, op margin will be inpute by user; it bottomUp it will be computed
+                          //if valuation approach is topDown, op margin will be input by user; for bottomUp it will be computed
                           if (valuationApproach === "bottomUp") {
                             value = opMargins[index];
                           }
                           break;
-                      }
-
-                      if (metricName === "revenue") {
-                        console.log("this is value: ", value);
+                        case "income_tax":
+                          //compute the income tax
+                          value = opIncome[index] * taxRate;
+                          break;
+                        case "eff_tax_rate":
+                          value = taxRate;
+                          break;
                       }
 
                       //scale the value if the value is not a ratio
-                      if (values.type !== "ratio") {
-                        value = (value / scaleFactor).toFixed(0);
-                      }
 
-                      return (
-                        <TableCell>
-                          {/* <Tooltip
-                          placement="right-start"
-                          arrow
-                          title="Change the valuation approach in order to edit this field"
-                          // disableHoverListener={screenerState.activFilters?.length !== 0}
-                          disableHoverListener={isEditable}
-                          disableFocusListener={isEditable}
-                          disableTouchListener={isEditable}> */}
-                          <OutlinedInput
-                            disabled={!isEditable}
-                            onChange={(e) =>
-                              handleValuationChange(
-                                e,
-                                metricName,
-                                index,
-                                scaleFactor
-                              )
-                            }
-                            // onChange={(e) => handleChange(e, category, metric)}
-                            type="number"
-                            // value={valuationData[metricName]?.[index]}
+                      if (values?.type === "absolute") {
+                        return (
+                          <NumericTableCellInput
                             value={value}
-                            size="small"
-                            // inputProps={{
-                            //   style: { textAlign: "left" },
-                            // }}
-                            className="custom-input-valuation-table"
+                            scalingFactor={scaleFactor}
+                            metricName={metricName}
+                            isEditable={isEditable}
+                            valuationCase={index}
+                            handleChange={handleValuationChange}
                           />
-                          {/* </Tooltip> */}
-                        </TableCell>
-                      );
+                        );
+                      } else if (values?.type === "perc") {
+                        return (
+                          <PercentageTableCellInput
+                            value={value}
+                            scalingFactor={scaleFactor}
+                            metricName={metricName}
+                            isEditable={isEditable}
+                            valuationCase={index}
+                            handleChange={handleValuationChange}
+                          />
+                        );
+                      }
                     })}
                   </TableRow>
                 )

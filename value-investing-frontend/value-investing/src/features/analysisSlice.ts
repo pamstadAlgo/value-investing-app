@@ -43,7 +43,6 @@ export const analysisSlice = createSlice({
     },
     updateValuationData: (state, action) => {
       const { newValue, metricName, caseIndex, scaleFactor } = action.payload;
-
       state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
     },
     updateLiquidationValuationData: (state, action) => {

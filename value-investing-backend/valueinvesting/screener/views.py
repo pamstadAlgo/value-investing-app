@@ -1928,9 +1928,6 @@ class PenmanValuationAPIView(APIView):
         lt_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["lt_debt"])
         shares_diluted = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter,type = "balance", years=years, metric_fields=["shares_diluted"])
 
-        print('short-term debt: ', st_debt['metrics']["st_debt"])
-        print('long-term debt: ', lt_debt['metrics']["lt_debt"])
-
         #sum the short-term and long-term debt
         debt = dict(Counter(st_debt['metrics']["st_debt"]) + Counter(lt_debt['metrics']["lt_debt"]))
 
@@ -1978,6 +1975,10 @@ class PenmanValuationAPIView(APIView):
         op_liab_dftl = op_liab['metrics']["operating_liabilities"]["TTM"]
         op_net_assets_dftl = net_op_assets['metrics']["net_operating_assets"]["TTM"]
         book_value_dftl = book_value['metrics']["total_equity"]["TTM"]
+
+        #compute gross profit defaults
+        gp_dftl = [bear_rev - cogs_val_dflt, base_rev - cogs_val_dflt, bull_rev - cogs_val_dflt]
+        gp_margin_dftl = [gp_dftl[0]/bear_rev, gp_dftl[1]/base_rev, gp_dftl[2]/bull_rev]
 
         response = {'qfsSymbol' : qfs_symbol
                     ,'currency' : currency
@@ -2118,6 +2119,8 @@ class PenmanValuationAPIView(APIView):
                     'valuationDefaults' : {
                         'revenue' : [bear_rev, base_rev, bull_rev],
                         'cogs' : [cogs_val_dflt, cogs_val_dflt, cogs_val_dflt],
+                        'gross_profit' : gp_dftl,
+                        'gp_margins' : gp_margin_dftl,
                         'sga' : [sga_val_dflt, sga_val_dflt, sga_val_dflt],
                         'rnd' : [rnd_val_dflt, rnd_val_dflt, rnd_val_dflt],
                         'other_opex' : [other_opex_val_dflt, other_opex_val_dflt, other_opex_val_dflt],
