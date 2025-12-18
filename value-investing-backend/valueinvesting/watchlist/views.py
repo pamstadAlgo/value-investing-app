@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from .models import Watchlist, WatchlistItem
 from .serializers import WatchlistSerializer, WatchlistItemSerializer
 from quickfs_dj.models import TradedCompanies
+from rest_framework.exceptions import PermissionDenied
 
 User = get_user_model()
 
@@ -42,7 +43,7 @@ class WatchlistDetailAPIView(APIView):
         # For simplicity and to match ViewSet behavior which restricts access to get_queryset:
         user = request.user
         if not (watchlist.owner == user or user in watchlist.shared_with.all()):
-             return Response(status=status.HTTP_404_NOT_FOUND) # Mimic not found in queryset
+            raise PermissionDenied("You do not have permission to access this watchlist.")
 
         serializer = WatchlistSerializer(watchlist)
         return Response(serializer.data)
