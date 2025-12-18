@@ -2096,6 +2096,8 @@ class PenmanValuationAPIView(APIView):
                         'revenue' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Revenue',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'hasTs' : True, #defines if metric has times series attached
                             'ts' : revenue_ts,
                             'values': revenue['metrics']["revenue"]
@@ -2103,6 +2105,8 @@ class PenmanValuationAPIView(APIView):
                         'cogs' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'COGS',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
                             'hasTs' : True,
                             'ts' : cogs_ts,
                             'values': cogs['metrics']["cogs"]
@@ -2110,6 +2114,8 @@ class PenmanValuationAPIView(APIView):
                         'gross_profit' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Gross Profit',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
                             'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : cogs_ts,
@@ -2118,6 +2124,8 @@ class PenmanValuationAPIView(APIView):
                         'gp_margins' : {
                             'type' : 'perc', #percentage type will be scaled by factor 100 on frontend
                             'label' : 'Gross margin',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : gp_margin_ts,
@@ -2126,6 +2134,8 @@ class PenmanValuationAPIView(APIView):
                         'sga' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'SG&A',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
                             'hasTs' : True,
                             'ts' : sga_ts,
                             'values': sga['metrics']["sga"]
@@ -2133,6 +2143,8 @@ class PenmanValuationAPIView(APIView):
                         'rnd' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'R&D',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
                             'hasTs' : True,
                             'ts' : rnd_ts,
                             'values': rnd['metrics']["rnd"]
@@ -2140,6 +2152,8 @@ class PenmanValuationAPIView(APIView):
                         'other_opex' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Other Opex',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
                             'hasTs' : True,
                             'ts' : other_opex_ts,
                             'values': other_opex['metrics']["other_opex"]
@@ -2147,6 +2161,8 @@ class PenmanValuationAPIView(APIView):
                         'operating_income' : {
                             'type' : 'absolute', #has an influence if this metric is scaled or not
                             'label' : 'Op. Income',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : op_income_ts,
@@ -2155,6 +2171,9 @@ class PenmanValuationAPIView(APIView):
                         'op_margins' : {
                             'type' : 'perc',  #percentage type will be scaled by factor 100 on frontend
                             'label' : 'Op. Margins',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : op_margin_ts,
                             'values' : op_margins
@@ -2162,16 +2181,22 @@ class PenmanValuationAPIView(APIView):
                         'income_tax' : {
                             'type': 'absolute',
                             'label' : 'Tax',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'values' : income_tax['metrics']["income_tax"]
                         },
                         'eff_tax_rate' : {
                             'type': 'perc',
                             'label' : 'Effective Tax Rate',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'values' : effective_tr
                         },
                         'NOPAT' : {
                             'type' : 'absolute',
                             'label' : 'NOPAT',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
                             'values' : nopat
                         }
                     },
@@ -2193,6 +2218,7 @@ class PenmanValuationAPIView(APIView):
                         'netOperatingAssets' : {
                             'type' : 'absolute',
                             'label' : 'NOA',
+                            'fontStyle' : 'italic',
                             'hasTs' : True,
                             'ts' : net_op_assets_ts,
                             'values' : net_op_assets['metrics']["net_operating_assets"]

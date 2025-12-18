@@ -110,7 +110,6 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
   let rnoa = [0, 0, 0];
   let ato = [0, 0, 0];
 
-
   if (valuationApproach === "topDown") {
     //compute metrics for bear, base, bull
     for (let i = 0; i < valuationCases.length; i++) {
@@ -248,11 +247,18 @@ function ValuationModel({ qfsSymbol, onToggleHistory, isHistoryOpen }) {
                     })}
                     {valuationCases.map((valuationCase, index) => {
                       let isEditable = false;
+                      let isVisible = false;
                       if (valuationApproach === "topDown") {
                         isEditable = topDownEditableFields.includes(metricName);
+                        isVisible = values.topDownVisible;
                       } else {
                         isEditable =
                           bottomUpEditableFields.includes(metricName);
+                        isVisible = values.bottomUpVisible;
+                      }
+
+                      if (!isVisible) {
+                        return;
                       }
 
                       let scaleFactor = values.type !== "ratio" ? scaling : 1;
