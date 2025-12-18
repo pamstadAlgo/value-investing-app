@@ -6,8 +6,7 @@ from .models import ValuationSnapshot
 from .serializers import ValuationSnapshotSerializer
 
 class ValuationSnapshotListAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def get(self, request):
         """
         By default, show all valuations or filter by ticker.
@@ -30,8 +29,7 @@ class ValuationSnapshotListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ValuationSnapshotDetailAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
+        
     def get_object(self, pk):
         return get_object_or_404(ValuationSnapshot, pk=pk)
 
@@ -54,8 +52,7 @@ class ValuationSnapshotDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserValuationHistoryAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def get(self, request):
         """
         Get only valuations created by the current user.

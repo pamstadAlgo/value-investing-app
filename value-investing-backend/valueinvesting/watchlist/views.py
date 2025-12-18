@@ -11,8 +11,7 @@ from quickfs_dj.models import TradedCompanies
 User = get_user_model()
 
 class WatchlistListAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def get(self, request):
         user = request.user
         queryset = Watchlist.objects.filter(
@@ -29,8 +28,7 @@ class WatchlistListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class WatchlistDetailAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
+        
     def get_object(self, pk):
         return get_object_or_404(Watchlist, pk=pk)
 
@@ -68,8 +66,7 @@ class WatchlistDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class WatchlistAddStockAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def post(self, request, pk):
         watchlist = get_object_or_404(Watchlist, pk=pk)
         qfs_symbol = request.data.get('ticker')
@@ -86,8 +83,7 @@ class WatchlistAddStockAPIView(APIView):
         return Response(WatchlistItemSerializer(item).data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
 class WatchlistRemoveStockAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def post(self, request, pk):
         watchlist = get_object_or_404(Watchlist, pk=pk)
         qfs_symbol = request.data.get('ticker')
@@ -106,8 +102,7 @@ class WatchlistRemoveStockAPIView(APIView):
         return Response({"message": "Stock removed"}, status=status.HTTP_200_OK)
 
 class WatchlistShareAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def post(self, request, pk):
         watchlist = get_object_or_404(Watchlist, pk=pk)
         email = request.data.get('email')
