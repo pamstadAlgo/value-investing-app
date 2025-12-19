@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useDispatch, useSelector } from "react-redux";
 import { VariableSizeList } from "react-window";
@@ -59,31 +59,29 @@ function CompanySearchField({ setBackdropLoading }) {
 
   const { showMessage } = useSnackbar();
 
-  const handleChange = (event, newValue) => {
-    dispatch(initializeTickerSymbol(newValue));
+  const fetchTickerData = useCallback(
+    (qfsSymbol) => {
+      if (!qfsSymbol) return;
 
-    if (newValue) {
       setBackdropLoading(true);
 
-      //fetch data for selected ticker symbol
+      // --- main analysis data ---
       axiosInstanceAuth
-        .get(`screener/analysis/${newValue.qfs_symbol}/`)
+        .get(`screener/analysis/${qfsSymbol}/`)
         .then((response) => {
           dispatch(initializeCompanyData(response.data));
           dispatch(initializeValuationData(response?.data?.valuationDefaults));
-          setBackdropLoading(false);
         })
         .catch((error) => {
           showMessage(`Error fetching data: ${error}`, "error");
-          setBackdropLoading(false);
-
           console.error("ERROR: GET screener/analysis/: ", error);
-        });
+        })
+        .finally(() => setBackdropLoading(false));
 
-      //fetch balance sheet data for liquidation value
+      // --- balance sheet (liquidation value) ---
       axiosInstanceAuth
         .post("/screener/asset-val-fundamentals/", {
-          qfs_symbols: [newValue.qfs_symbol],
+          qfs_symbols: [qfsSymbol],
         })
         .then((response) => {
           dispatch(initalizeBalanceSheet(response.data[0]?.data));
@@ -96,35 +94,39 @@ function CompanySearchField({ setBackdropLoading }) {
           );
         });
 
-      //fetch valuation history
+      // --- valuation history ---
       dispatch(clearHistory());
-      dispatch(fetchValuationHistory({ ticker: newValue.qfs_symbol }));
+      dispatch(fetchValuationHistory({ ticker: qfsSymbol }));
 
-      // fetch saved valuation models
+      // --- saved valuation models ---
       axiosInstanceAuth
-        .get("/screener/valuation-model/", {
-          params: {
-            qfsSymbol: newValue.qfs_symbol,
-          },
-        })
+        .get("/screener/valuation-model/", { params: { qfsSymbol } })
         .then((response) => {
-          console.log("response.data: ", response.data);
           dispatch(initializeSavedModels(response.data));
-
-          // initalize selected model as a new one
           dispatch(setSelectedModel({ isNew: true }));
         })
         .catch((error) =>
-          console.error("error fetch /screener/valuation-model/: ", error)
+          console.error("ERROR: GET /screener/valuation-model/: ", error)
         );
+    },
+    [axiosInstanceAuth, dispatch, setBackdropLoading, showMessage]
+  );
+
+  useEffect(() => {
+    const qfsSymbol = analysisState.selectedTickerSymbol?.qfs_symbol;
+    if (qfsSymbol) {
+      fetchTickerData(qfsSymbol);
     }
+  }, [analysisState.selectedTickerSymbol]);
+
+  const handleChange = (event, newValue) => {
+    dispatch(initializeTickerSymbol(newValue));
   };
 
   useEffect(() => {
     axiosInstanceAuth
       .get("/screener/get-ticker-symbols/")
       .then((response) => {
-        console.log("response.data ticker symbols: ", response.data);
         dispatch(initializeTickerSymbols(response.data.data));
       })
       .catch((error) => {
