@@ -156,4 +156,4 @@ function CompanySearchField({ setBackdropLoading }) {
   );
 }
 
-export default CompanySearchField;
+export default CompanySearchField
