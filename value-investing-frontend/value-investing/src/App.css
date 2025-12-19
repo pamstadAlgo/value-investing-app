@@ -304,6 +304,10 @@ body, html{
   color: var(--label-color-input-fields) !important;
 }
 
+.MuiDialog-root.custom-dialog-watchlist > .MuiDialog-container.MuiDialog-scrollPaper > .MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded{
+width: 60vw !important;
+}
+
 .MuiFormLabel-root.MuiInputLabel-root.Mui-focused {
   color: var(--action-color) !important;
 }

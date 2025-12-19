@@ -6,10 +6,15 @@ import {
   ListItem,
   ListItemButton,
   Button,
+  Tooltip,
 } from "@mui/material";
-
+import AddIcon from "@mui/icons-material/Add";
 // Reusable Text Button (moved here or to a shared util if used elsewhere)
-const TextActionBtn = ({ label, onClick, color = "var(--text-color-grey-scale)" }) => (
+const TextActionBtn = ({
+  label,
+  onClick,
+  color = "var(--text-color-grey-scale)",
+}) => (
   <Button
     onClick={onClick}
     disableRipple
@@ -26,13 +31,17 @@ const TextActionBtn = ({ label, onClick, color = "var(--text-color-grey-scale)" 
         backgroundColor: "transparent",
         textDecoration: "underline",
       },
-    }}
-  >
+    }}>
     [{label}]
   </Button>
 );
 
-const WatchlistSidebar = ({ watchlists, activeListId, onSelect, onCreateClick }) => {
+const WatchlistSidebar = ({
+  watchlists,
+  activeListId,
+  onSelect,
+  onCreateClick,
+}) => {
   return (
     <Box
       sx={{
@@ -41,8 +50,7 @@ const WatchlistSidebar = ({ watchlists, activeListId, onSelect, onCreateClick })
         borderRight: "1px solid var(--border-input-fields)",
         display: "flex",
         flexDirection: "column",
-      }}
-    >
+      }}>
       {/* HEADER */}
       <Box
         sx={{
@@ -52,16 +60,14 @@ const WatchlistSidebar = ({ watchlists, activeListId, onSelect, onCreateClick })
           px: 2,
           borderBottom: "1px solid var(--border-input-fields)",
           boxSizing: "border-box",
-        }}
-      >
+        }}>
         <Typography
           variant="subtitle2"
           sx={{
             fontFamily: "var(--font-family)",
             color: "var(--text-color-grey-scale)",
             letterSpacing: "1px",
-          }}
-        >
+          }}>
           WATCHLISTS
         </Typography>
       </Box>
@@ -88,18 +94,22 @@ const WatchlistSidebar = ({ watchlists, activeListId, onSelect, onCreateClick })
                   "&:hover": {
                     backgroundColor: "var(--input-fields-hover-bg-color)",
                   },
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontFamily: "var(--font-family)",
-                    fontSize: "0.9rem",
-                    fontWeight: isActive ? 600 : 400,
-                    ml: 1,
-                  }}
-                >
-                  {list.title}
-                </Typography>
+                }}>
+                {/* <Tooltip title={list.title} placement="right"> */}
+                  <Typography
+                    sx={{
+                      fontFamily: "var(--font-family)",
+                      fontSize: "0.9rem",
+                      fontWeight: isActive ? 600 : 400,
+                      ml: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                    }}>
+                    {list.title}
+                  </Typography>
+                {/* </Tooltip> */}
               </ListItemButton>
             </ListItem>
           );
@@ -112,13 +122,16 @@ const WatchlistSidebar = ({ watchlists, activeListId, onSelect, onCreateClick })
           p: 1,
           borderTop: "1px solid var(--border-input-fields)",
           textAlign: "center",
-        }}
-      >
-        <TextActionBtn
-          label="+ NEW LIST"
-          onClick={onCreateClick}
-          color="var(--header-color)"
-        />
+        }}>
+        <Button
+          style={{ width: "100%" }}
+          variant="contained"
+          className="contained-custom-button"
+          startIcon={<AddIcon className="button-icon" />}
+          onClick={onCreateClick}>
+          {" "}
+          NEW LIST
+        </Button>
       </Box>
     </Box>
   );
