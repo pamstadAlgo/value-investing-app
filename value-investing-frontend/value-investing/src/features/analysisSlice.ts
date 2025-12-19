@@ -43,7 +43,6 @@ export const analysisSlice = createSlice({
     },
     updateValuationData: (state, action) => {
       const { newValue, metricName, caseIndex, scaleFactor } = action.payload;
-
       state.valuationData[metricName][caseIndex] = newValue * scaleFactor;
     },
     updateLiquidationValuationData: (state, action) => {
@@ -72,7 +71,7 @@ export const analysisSlice = createSlice({
       target.multiplier = newValue; // Immer lets you mutate directly
     },
     changeTaxRate: (state, action) => {
-      state.taxRate = Number(action.payload);
+      state.taxRate = action.payload;
     },
     changeWacc: (state, action) => {
       state.wacc = action.payload;

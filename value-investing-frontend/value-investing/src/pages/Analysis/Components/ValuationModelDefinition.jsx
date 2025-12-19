@@ -22,7 +22,10 @@ function ValuationModelDefinition() {
   };
 
   return (
-    <div onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose}>
+    <div
+      onMouseEnter={handlePopoverOpen}
+      onMouseLeave={handlePopoverClose}
+      style={{ marginTop: "-2px" }}>
       {" "}
       <HelpOutlineIcon className="custom-icon-table" />{" "}
       <Popper

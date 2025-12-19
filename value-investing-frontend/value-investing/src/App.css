@@ -85,7 +85,7 @@
   --bg-color-custom-metrics-hover: #181818;
   --valuation-table-cell-font-color: #EAEAEA;
 
-  --disabled-valuation-fields-color: #444444;
+  --disabled-valuation-fields-color: #626262;
 
   --table-cell-color-valuation: white;
 
@@ -392,6 +392,10 @@ background-color: var(--background-color-mui-backdrop);
 
 .MuiDrawer-root.custom-drawer-val-history > .MuiPaper-root {
   background-color: var(--background-glass-card);
+}
+
+.MuiInputAdornment-root.custom-input-adornment > p {
+  color: var(--border-input-fields);
 }
 
 .custom-fieldset legend {
@@ -847,7 +851,12 @@ border-bottom: 1px solid var(--action-color) !important;
 }
 
 .MuiTableCell-root.valuation-model-title-row{
-  background: #bcbaba;
+  background: #2c2c2c;
+  border-bottom: none;
+  border-top: 1px solid #444444;
+  padding: 10px 16px;
+  color: rgb(176, 176, 176);
+  font-size: 0.75rem;
 }
 
 .MuiPopover-root.save-val-model-popover > .MuiPaper-root.MuiPaper-elevation{
@@ -892,13 +901,22 @@ border-bottom: 1px solid var(--action-color) !important;
 }
 
 .MuiTableHead-root.custom-table-head{
-  background-color: var(--action-color);
+  background-color: var(--background-color);
+}
+
+.MuiTableBody-root.custom-table-body-val-model>tr>td{
+border-bottom: none;
+}
+
+.MuiTableBody-root.custom-table-body-val-model>tr.computed-row {
+  font-style: italic;
 }
 
 .MuiTableHead-root.custom-table-head > tr > th {
-  color: #000000; /* Contrast against orange header */
+  color: var(--text-color-grey-scale); /* Contrast against orange header */
   font-weight: 800;
   font-size: 14px;
+  border-bottom: none;
 }
 
 .MuiSvgIcon-root.custom-icon-table{
@@ -1038,10 +1056,6 @@ height: 0;
   min-width: 160px;
 }
 
-.filters-criteria-grid-item{
-  /* height: fit-content; */
-}
-
 .applied-filters-flexbox-wrapper{
   display: flex;
   gap: 6px;
@@ -1163,12 +1177,7 @@ height: 0;
 }
 
 
-.borders-table-header{
-  /* border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  border-radius: 20px 20px 0px 0px; */
-}
+
 
 .flexbox-wrapper-table-cell-analysis{
   display: flex;
