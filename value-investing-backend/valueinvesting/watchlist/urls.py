@@ -1,10 +1,10 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import WatchlistViewSet
-
-router = DefaultRouter()
-router.register(r'', WatchlistViewSet, basename='watchlist')
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', views.WatchlistListAPIView.as_view(), name='watchlist-list'),
+    path('<int:pk>/', views.WatchlistDetailAPIView.as_view(), name='watchlist-detail'),
+    path('<int:pk>/add_stock/', views.WatchlistAddStockAPIView.as_view(), name='watchlist-add-stock'),
+    path('<int:pk>/remove_stock/', views.WatchlistRemoveStockAPIView.as_view(), name='watchlist-remove-stock'),
+    path('<int:pk>/share/', views.WatchlistShareAPIView.as_view(), name='watchlist-share'),
 ]

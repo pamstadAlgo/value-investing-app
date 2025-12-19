@@ -1,5 +1,5 @@
-from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.views import APIView
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from django.db.models import Q, Prefetch, Subquery, OuterRef
 from django.shortcuts import get_object_or_404
@@ -7,56 +7,69 @@ from django.contrib.auth import get_user_model
 from .models import Watchlist, WatchlistItem
 from .serializers import WatchlistSerializer, WatchlistItemSerializer
 from quickfs_dj.models import TradedCompanies
+from rest_framework.exceptions import PermissionDenied
 
 User = get_user_model()
 
-class WatchlistViewSet(viewsets.ModelViewSet):
-    serializer_class = WatchlistSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        
-        # Original base queryset
+class WatchlistListAPIView(APIView):
+    
+    def get(self, request):
+        user = request.user
         queryset = Watchlist.objects.filter(
             Q(owner=user) | Q(shared_with=user)
         ).distinct().order_by('-updated_at')
+        serializer = WatchlistSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-        # Subqueries for ValuationSnapshot
-        # We need a way to look up the latest valuation for (user, company)
-        # We correlate on qfs_symbol.
-        from valuation_history.models import ValuationSnapshot
-        from quickfs_dj.models import ScreenerData
+    def post(self, request):
+        serializer = WatchlistSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        newest_valuation = ValuationSnapshot.objects.filter(
-            user=user,
-            qfs_symbol=OuterRef('company__qfs_symbol')
-        ).order_by('-created_at')
+class WatchlistDetailAPIView(APIView):
+        
+    def get_object(self, pk):
+        return get_object_or_404(Watchlist, pk=pk)
 
-        screener_data = ScreenerData.objects.filter(
-            qfs_symbol=OuterRef('company__qfs_symbol')
-        )
+    def get(self, request, pk):
+        watchlist = self.get_object(pk)
+        # Check permissions - though list query handles it, direct access might need check
+        # Original ViewSet filtered get_queryset so users could only see their own/shared.
+        # We should probably replicate that check or rely on the fact that if they have the ID they might have access?
+        # Better safe: replicate get_queryset logic for single object retrieval if possible, OR
+        # just check logic. 
+        # For simplicity and to match ViewSet behavior which restricts access to get_queryset:
+        user = request.user
+        if not (watchlist.owner == user or user in watchlist.shared_with.all()):
+            raise PermissionDenied("You do not have permission to access this watchlist.")
 
-        # Create the optimized item queryset with all necessary annotations
-        items_qs = WatchlistItem.objects.select_related('company').annotate(
-            latest_price_target=Subquery(newest_valuation.values('price_target')[:1]),
-            latest_valuation_date=Subquery(newest_valuation.values('created_at')[:1]),
-            latest_notes=Subquery(newest_valuation.values('thesis')[:1]),
-            latest_analyst_name=Subquery(newest_valuation.values('analyst_name')[:1]),
-            latest_model_inputs=Subquery(newest_valuation.values('model_inputs')[:1]),
-            latest_market_cap=Subquery(screener_data.values('market_cap_q')[:1])
-        )
+        serializer = WatchlistSerializer(watchlist)
+        return Response(serializer.data)
 
-        return queryset.prefetch_related(
-            Prefetch('items', queryset=items_qs)
-        )
+    def put(self, request, pk):
+        watchlist = self.get_object(pk)
+        if watchlist.owner != request.user:
+             return Response({"error": "Only owner can edit"}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = WatchlistSerializer(watchlist, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+    def delete(self, request, pk):
+        watchlist = self.get_object(pk)
+        if watchlist.owner != request.user:
+             return Response({"error": "Only owner can delete"}, status=status.HTTP_403_FORBIDDEN)
+        watchlist.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'])
-    def add_stock(self, request, pk=None):
-        watchlist = self.get_object()
+class WatchlistAddStockAPIView(APIView):
+    
+    def post(self, request, pk):
+        watchlist = get_object_or_404(Watchlist, pk=pk)
         qfs_symbol = request.data.get('ticker')
 
         if not qfs_symbol:
@@ -70,9 +83,10 @@ class WatchlistViewSet(viewsets.ModelViewSet):
         item, created = WatchlistItem.objects.get_or_create(watchlist=watchlist, company=company)
         return Response(WatchlistItemSerializer(item).data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'])
-    def remove_stock(self, request, pk=None):
-        watchlist = self.get_object()
+class WatchlistRemoveStockAPIView(APIView):
+    
+    def post(self, request, pk):
+        watchlist = get_object_or_404(Watchlist, pk=pk)
         qfs_symbol = request.data.get('ticker')
 
         if not qfs_symbol:
@@ -88,9 +102,10 @@ class WatchlistViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Stock removed"}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
-    def share(self, request, pk=None):
-        watchlist = self.get_object()
+class WatchlistShareAPIView(APIView):
+    
+    def post(self, request, pk):
+        watchlist = get_object_or_404(Watchlist, pk=pk)
         email = request.data.get('email')
 
         if watchlist.owner != request.user:
