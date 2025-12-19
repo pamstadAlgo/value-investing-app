@@ -30,6 +30,7 @@ class WatchlistItemSerializer(serializers.ModelSerializer):
         ]
 
     def get_latest_valuation(self, obj):
+        # Fallback helper: used only if annotations are missing
         # Lazy import to prevent circular dependency errors
         from valuation_history.models import ValuationSnapshot
         return ValuationSnapshot.objects.filter(
@@ -38,26 +39,39 @@ class WatchlistItemSerializer(serializers.ModelSerializer):
         ).order_by('-created_at').first()
 
     def get_price_target(self, obj):
+        if hasattr(obj, 'latest_price_target'):
+            return obj.latest_price_target
         val = self.get_latest_valuation(obj)
         return val.price_target if val else None
 
     def get_valuation_date(self, obj):
+        if hasattr(obj, 'latest_valuation_date'):
+            return obj.latest_valuation_date.date() if obj.latest_valuation_date else None
         val = self.get_latest_valuation(obj)
         return val.created_at.date() if val else None
 
     def get_notes(self, obj):
+        if hasattr(obj, 'latest_notes'):
+            return obj.latest_notes
         val = self.get_latest_valuation(obj)
         return val.thesis if val else None
     
     def get_analyst_name(self, obj):
+        if hasattr(obj, 'latest_analyst_name'):
+            return obj.latest_analyst_name
         val = self.get_latest_valuation(obj)
         return val.analyst_name if val else None
 
     def get_valuation_inputs(self, obj):
+        if hasattr(obj, 'latest_model_inputs'):
+            return obj.latest_model_inputs
         val = self.get_latest_valuation(obj)
         return val.model_inputs if val else None
     
     def get_market_cap(self, obj):
+        if hasattr(obj, 'latest_market_cap'):
+            return obj.latest_market_cap
+            
         # Lazy import to prevent circular dependency errors
         from quickfs_dj.models import ScreenerData
         # Fetch the latest quarterly market cap
