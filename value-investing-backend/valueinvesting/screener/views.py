@@ -2085,7 +2085,7 @@ class PenmanValuationAPIView(APIView):
 
         #compute gross profit defaults
         gp_dftl = [bear_rev - cogs_val_dflt, base_rev - cogs_val_dflt, bull_rev - cogs_val_dflt]
-        gp_margin_dftl = [gp_dftl[0]/bear_rev, gp_dftl[1]/base_rev, gp_dftl[2]/bull_rev]
+        gp_margin_dftl = [gp_dftl[0]/bear_rev if bear_rev != 0 else None, gp_dftl[1]/base_rev if base_rev != 0 else None, gp_dftl[2]/bull_rev if bull_rev != 0 else None]
 
         response = {'qfsSymbol' : qfs_symbol
                     ,'currency' : currency

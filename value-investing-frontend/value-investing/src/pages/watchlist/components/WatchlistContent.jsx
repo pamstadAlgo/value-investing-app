@@ -47,7 +47,7 @@ const WatchlistContent = ({
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflowX: "hidden",
       }}>
       {/* HEADER */}
       <Box
@@ -60,6 +60,7 @@ const WatchlistContent = ({
           borderBottom: "1px solid var(--border-input-fields)",
           bgcolor: "var(--background-color-nav-bar)",
           boxSizing: "border-box",
+          gap: "32px",
         }}>
         <Typography
           sx={{
@@ -67,6 +68,10 @@ const WatchlistContent = ({
             fontWeight: 700,
             color: "var(--action-color)",
             textTransform: "uppercase",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
           }}>
           {activeList.title}
         </Typography>
@@ -87,12 +92,7 @@ const WatchlistContent = ({
       </Box>
 
       {/* TABLE AREA */}
-      <Box sx={{ flex: 1, overflow: "hidden", position: "relative" }}>
-        <WatchlistTable
-          data={activeList.items || []}
-          onRemove={onRemoveStock}
-        />
-      </Box>
+      <WatchlistTable data={activeList.items || []} onRemove={onRemoveStock} />
 
       {/* STATUS BAR */}
       <Box
@@ -103,7 +103,7 @@ const WatchlistContent = ({
           alignItems: "center",
           px: 2,
           gap: 4,
-          bgcolor: "#000",
+          bgcolor: "var(--screener-table-menu-background-color)",
         }}>
         <Typography
           variant="caption"
@@ -114,7 +114,7 @@ const WatchlistContent = ({
           variant="caption"
           sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           ITEMS:{" "}
-          <span style={{ color: "var(--header-color)" }}>
+          <span style={{ color: "var(--action-color)" }}>
             {activeList.items?.length || 0}
           </span>
         </Typography>
@@ -122,7 +122,7 @@ const WatchlistContent = ({
           variant="caption"
           sx={{ fontFamily: "var(--font-family)", color: "gray" }}>
           OWNER:{" "}
-          <span style={{ color: "var(--header-color)" }}>
+          <span style={{ color: "var(--action-color)" }}>
             {activeList.owner_name?.toUpperCase() || "ME"}
           </span>
         </Typography>

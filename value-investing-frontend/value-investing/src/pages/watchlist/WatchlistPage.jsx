@@ -54,8 +54,11 @@ const WatchlistPage = () => {
         .then((newList) => {
           setActiveListId(newList.id);
           setIsCreateOpen(false);
+          showMessage("New Watchlist successfully created");
         })
-        .catch((err) => alert(err.message));
+        .catch((err) => {
+          showMessage(`Error creating watchlist ${err}`, "error");
+        });
     },
     [dispatch]
   );
