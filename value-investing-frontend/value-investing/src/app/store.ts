@@ -12,6 +12,7 @@ import valuationReducer from "../features/valuationSlice";
 import microcapReducer from "../features/microcapSlice";
 import hardSet from "redux-persist/lib/stateReconciler/hardSet";
 import analysisReducer from "../features/analysisSlice";
+import sessionReducer from "../features/sessionSlice";
 import { PersistPartial } from "redux-persist/es/persistReducer";
 import watchlistReducer from "../features/watchlistSlice";
 import valuationHistoryReducer from "../features/valuationHistorySlice";
@@ -34,6 +35,7 @@ const rootReducer = combineReducers({
   analysis: analysisReducer,
   watchlist: watchlistReducer,
   valuationHistory: valuationHistoryReducer,
+  session: sessionReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

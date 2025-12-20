@@ -9,6 +9,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { useSelector } from "react-redux";
+import WatchlistItem from "./WatchlistItem";
 // Reusable Text Button (moved here or to a shared util if used elsewhere)
 const TextActionBtn = ({
   label,
@@ -42,6 +44,12 @@ const WatchlistSidebar = ({
   onSelect,
   onCreateClick,
 }) => {
+  // divide watchlists into my own watch lists and of other users
+  const userId = useSelector((state) => state.session?.userId);
+
+  const ownWatchLists = watchlists.filter((item) => item.owner === userId);
+  const otherWatchLists = watchlists.filter((item) => item.owner !== userId);
+
   return (
     <Box
       sx={{
@@ -74,46 +82,45 @@ const WatchlistSidebar = ({
 
       {/* LIST */}
       <List sx={{ flex: 1, overflowY: "auto", p: 0 }}>
-        {watchlists.map((list) => {
+        <div className="title-watch-list-items">MY WATCHLISTS</div>
+        {ownWatchLists?.length > 0 &&
+          ownWatchLists.map((item) => {
+            return (
+              <WatchlistItem
+                id={item.id}
+                isActive={activeListId === item.id}
+                title={item.title}
+                setActiveItem={onSelect}
+              />
+            );
+          })}
+
+        {otherWatchLists?.length > 0 && (
+          <div className="title-watch-list-items" style={{marginTop: "32px"}}>SHARED WITH ME</div>
+        )}
+        {otherWatchLists?.length > 0 &&
+          otherWatchLists.map((item) => {
+            return (
+              <WatchlistItem
+                id={item.id}
+                isActive={activeListId === item.id}
+                title={item.title}
+                setActiveItem={onSelect}
+              />
+            );
+          })}
+
+        {/* {watchlists.map((list) => {
           const isActive = activeListId === list.id;
           return (
-            <ListItem key={list.id} disablePadding>
-              <ListItemButton
-                onClick={() => onSelect(list.id)}
-                sx={{
-                  height: "40px",
-                  borderLeft: isActive
-                    ? "3px solid var(--action-color)"
-                    : "3px solid transparent",
-                  backgroundColor: isActive
-                    ? "var(--action-color-more-transparent)"
-                    : "transparent",
-                  color: isActive
-                    ? "var(--action-color)"
-                    : "var(--header-color)",
-                  "&:hover": {
-                    backgroundColor: "var(--input-fields-hover-bg-color)",
-                  },
-                }}>
-                {/* <Tooltip title={list.title} placement="right"> */}
-                  <Typography
-                    sx={{
-                      fontFamily: "var(--font-family)",
-                      fontSize: "0.9rem",
-                      fontWeight: isActive ? 600 : 400,
-                      ml: 1,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      width: "100%",
-                    }}>
-                    {list.title}
-                  </Typography>
-                {/* </Tooltip> */}
-              </ListItemButton>
-            </ListItem>
+            <WatchlistItem
+              id={list.id}
+              isActive={isActive}
+              title={list.title}
+              setActiveItem={onSelect}
+            />
           );
-        })}
+        })} */}
       </List>
 
       {/* FOOTER */}
