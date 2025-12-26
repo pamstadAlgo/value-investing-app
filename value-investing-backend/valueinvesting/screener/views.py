@@ -2124,7 +2124,7 @@ class PenmanValuationAPIView(APIView):
                         'gp_margins' : {
                             'type' : 'perc', #percentage type will be scaled by factor 100 on frontend
                             'label' : 'Gross margin',
-                            'topDownVisible' : True,
+                            'topDownVisible' : False,
                             'bottomUpVisible' : True,
                             'fontStyle' : 'italic',
                             'hasTs' : True,
