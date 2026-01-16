@@ -249,7 +249,7 @@ const FinancialScatterPlot = () => {
 
   // Flag to prevent background click from overriding bubble click
   const isNodeClicked = useRef(false);
-  
+
   // Track previous axis keys to detect changes
   const prevAxisKeys = useRef({ x: xAxisKey, y: yAxisKey, z: zAxisKey });
 
@@ -341,7 +341,7 @@ const FinancialScatterPlot = () => {
   // Reset domains only when the underlying data (metrics) actually changes
   useEffect(() => {
     // Check if axis keys have changed
-    const axisChanged = 
+    const axisChanged =
       prevAxisKeys.current.x !== xAxisKey ||
       prevAxisKeys.current.y !== yAxisKey ||
       prevAxisKeys.current.z !== zAxisKey;
@@ -364,7 +364,7 @@ const FinancialScatterPlot = () => {
       setXMaxInput(newXMax.toString());
       setYMinInput(newYMin.toString());
       setYMaxInput(newYMax.toString());
-      
+
       // Update previous axis keys
       prevAxisKeys.current = { x: xAxisKey, y: yAxisKey, z: zAxisKey };
     }
@@ -447,10 +447,11 @@ const FinancialScatterPlot = () => {
 
   const handleNavigateToAnalysis = (targetTab) => {
     if (selectedNode) {
-      const symbol = selectedNode.data.qfs_symbol || selectedNode.data.ticker;
+      const symbol = selectedNode.data.qfs_symbol || selectedNode.data.ticker || selectedNode.data.qfs_symbol_id;
       const normalizedTickerData = {
         ...selectedNode.data,
         qfs_symbol: symbol,
+        ticker: symbol,
       };
 
       dispatch(initializeTickerSymbol(normalizedTickerData));
