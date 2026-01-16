@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   ScatterChart,
   Scatter,
@@ -32,6 +33,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import StarMenu from "../../GlobalComponents/StarMenu";
 import { setHighlightedTicker } from "../../../features/stockScreenerSlice";
 import { fetchWatchlists } from "../../../features/watchlistSlice";
+import { initializeTickerSymbol } from "../../../features/analysisSlice";
 
 // --- Constants ---
 // Using CSS Variables where possible, or matching hexes for Recharts if needed logic strictly requires hex (though CSS vars work for fill)
@@ -215,6 +217,7 @@ const MemoizedScatterChart = React.memo(
 
 const FinancialScatterPlot = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Redux
   const { queryResult, highlightedTicker } = useSelector(
@@ -225,9 +228,9 @@ const FinancialScatterPlot = () => {
   );
 
   // --- Configuration State ---
-  const [xAxisKey, setXAxisKey] = useState("pe_ratio");
-  const [yAxisKey, setYAxisKey] = useState("roic");
-  const [zAxisKey, setZAxisKey] = useState("market_cap");
+  const [xAxisKey, setXAxisKey] = useState("rnoa_ttm");
+  const [yAxisKey, setYAxisKey] = useState("penman_g");
+  const [zAxisKey, setZAxisKey] = useState("market_cap_q");
   const [showAxisSettings, setShowAxisSettings] = useState(false);
 
   // --- Interaction State ---
@@ -235,17 +238,20 @@ const FinancialScatterPlot = () => {
   const [focusedWatchlistId, setFocusedWatchlistId] = useState(null);
 
   // --- Axis Domains ---
-  const [xDomain, setXDomain] = useState([0, 100]);
-  const [yDomain, setYDomain] = useState([0, 100]);
+  const [xDomain, setXDomain] = useState([0, 0.5]);
+  const [yDomain, setYDomain] = useState([-0.5, 0.5]);
 
   // Local input state to allow free typing
   const [xMinInput, setXMinInput] = useState("0");
-  const [xMaxInput, setXMaxInput] = useState("100");
-  const [yMinInput, setYMinInput] = useState("0");
-  const [yMaxInput, setYMaxInput] = useState("100");
+  const [xMaxInput, setXMaxInput] = useState("0.5");
+  const [yMinInput, setYMinInput] = useState("-0.5");
+  const [yMaxInput, setYMaxInput] = useState("0.5");
 
   // Flag to prevent background click from overriding bubble click
   const isNodeClicked = useRef(false);
+  
+  // Track previous axis keys to detect changes
+  const prevAxisKeys = useRef({ x: xAxisKey, y: yAxisKey, z: zAxisKey });
 
   // --- Initial Load ---
   useEffect(() => {
@@ -334,23 +340,35 @@ const FinancialScatterPlot = () => {
 
   // Reset domains only when the underlying data (metrics) actually changes
   useEffect(() => {
-    const xBuffer = (dataExtent.xMax - dataExtent.xMin) * 0.05 || 1;
-    const yBuffer = (dataExtent.yMax - dataExtent.yMin) * 0.05 || 1;
+    // Check if axis keys have changed
+    const axisChanged = 
+      prevAxisKeys.current.x !== xAxisKey ||
+      prevAxisKeys.current.y !== yAxisKey ||
+      prevAxisKeys.current.z !== zAxisKey;
 
-    const newXMin = dataExtent.xMin - xBuffer;
-    const newXMax = dataExtent.xMax + xBuffer;
-    const newYMin = dataExtent.yMin - yBuffer;
-    const newYMax = dataExtent.yMax + yBuffer;
+    // Only auto-scale if axes have changed from previous value
+    if (axisChanged) {
+      const xBuffer = (dataExtent.xMax - dataExtent.xMin) * 0.05 || 1;
+      const yBuffer = (dataExtent.yMax - dataExtent.yMin) * 0.05 || 1;
 
-    setXDomain([newXMin, newXMax]);
-    setYDomain([newYMin, newYMax]);
+      const newXMin = dataExtent.xMin - xBuffer;
+      const newXMax = dataExtent.xMax + xBuffer;
+      const newYMin = dataExtent.yMin - yBuffer;
+      const newYMax = dataExtent.yMax + yBuffer;
 
-    // Sync inputs
-    setXMinInput(newXMin.toString());
-    setXMaxInput(newXMax.toString());
-    setYMinInput(newYMin.toString());
-    setYMaxInput(newYMax.toString());
-  }, [dataExtent]);
+      setXDomain([newXMin, newXMax]);
+      setYDomain([newYMin, newYMax]);
+
+      // Sync inputs
+      setXMinInput(newXMin.toString());
+      setXMaxInput(newXMax.toString());
+      setYMinInput(newYMin.toString());
+      setYMaxInput(newYMax.toString());
+      
+      // Update previous axis keys
+      prevAxisKeys.current = { x: xAxisKey, y: yAxisKey, z: zAxisKey };
+    }
+  }, [dataExtent, xAxisKey, yAxisKey, zAxisKey]);
 
   // --- Handlers ---
   const handleClosePopup = () => setSelectedNode(null);
@@ -426,6 +444,19 @@ const FinancialScatterPlot = () => {
     }
     setSelectedNode(null);
   }, []);
+
+  const handleNavigateToAnalysis = (targetTab) => {
+    if (selectedNode) {
+      const symbol = selectedNode.data.qfs_symbol || selectedNode.data.ticker;
+      const normalizedTickerData = {
+        ...selectedNode.data,
+        qfs_symbol: symbol,
+      };
+
+      dispatch(initializeTickerSymbol(normalizedTickerData));
+      navigate("/analysis", { state: { initialTab: targetTab } });
+    }
+  };
 
   const inputSx = {
     "& .MuiInputBase-root": {
@@ -721,6 +752,40 @@ const FinancialScatterPlot = () => {
                   {formatMillions(selectedNode.data.z)}
                 </b>
               </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                onClick={() => handleNavigateToAnalysis(0)}
+                sx={{
+                  borderColor: "var(--border-input-fields)",
+                  color: "var(--text-color-grey-scale)",
+                  '&:hover': {
+                    borderColor: "var(--action-color)",
+                    color: "var(--header-color)",
+                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  }
+                }}>
+                Go To Overview
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                onClick={() => handleNavigateToAnalysis(1)}
+                sx={{
+                  borderColor: "var(--border-input-fields)",
+                  color: "var(--text-color-grey-scale)",
+                  '&:hover': {
+                    borderColor: "var(--action-color)",
+                    color: "var(--header-color)",
+                    backgroundColor: "rgba(255, 255, 255, 0.05)"
+                  }
+                }}>
+                Go To Valuation
+              </Button>
             </Box>
           </Paper>
         )}
