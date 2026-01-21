@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     # "stockscreener",
     "screener",
     "quickfs_dj", #quickfs_dj stands for quickfs_django; still name was chosen because of the collision with the offical quickfs python package
+    'watchlist',
+    'valuation_history',
 ]
 
 SITE_ID = 1

@@ -44,13 +44,8 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(
 });
 
 function TickerAutoComplete({ formik }) {
-  const options = Array.from(new Array(35000)).map(
-    (_, index) => `Item ${index + 1}`
-  );
   const valuationState = useSelector((state) => state.valuation);
-
   const dispatch = useDispatch();
-
   const axiosInstanceAuth = useAxiosWithAuth();
 
   useEffect(() => {
@@ -65,21 +60,15 @@ function TickerAutoComplete({ formik }) {
       });
   }, []);
 
-  const handleInputChange = (event, newInputValue) => {
-    console.log("this is new inputValue: ", newInputValue);
-    console.log("event.target.value: ", event.target.value);
-  };
+  // const handleInputChange = (event, newInputValue) => {
+  //   console.log("this is new inputValue: ", newInputValue);
+  //   console.log("event.target.value: ", event.target.value);
+  // };
 
   const handleChange = (event, newValue) => {
     console.log("this is new newValue: ", newValue);
     console.log("event.target.value: ", event.target.value);
     dispatch(setSelectedTickers(newValue));
-
-    // if (newValue?.length > 0) {
-    //   formik.setFieldValue("tickers", "non-empty");
-    // } else {
-    //   formik.setFieldValue("tickers", "");
-    // }
   };
 
   return (
@@ -92,7 +81,7 @@ function TickerAutoComplete({ formik }) {
         options={valuationState.tickerSymbols}
         ListboxComponent={ListboxComponent}
         onChange={handleChange}
-        onInputChange={handleInputChange}
+        // onInputChange={handleInputChange}
         getOptionLabel={(option) => `${option.qfs_symbol} - ${option.name}`}
         renderTags={(tagValue, getTagProps) =>
           tagValue.map((option, index) => {

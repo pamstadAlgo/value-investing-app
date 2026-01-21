@@ -9,9 +9,6 @@ function ContentLoginPage() {
     let googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     let googleCallbackURI = process.env.REACT_APP_GOOGLE_CALLBACK_URI;
 
-    console.log("googleCallbackURI react frontend: ", googleCallbackURI);
-    console.log("googleClientId react frontend: ", googleClientId);
-
     try {
       //replace current url with the google auth URL; this will direct you to the google login form
       window.location.replace(
@@ -32,7 +29,7 @@ function ContentLoginPage() {
           <CompanyLogo />
           <h2 className="header-color-black-scale ">StockVal</h2>
         </div>
-        <div className="login-card glass-card">
+        <div className="login-card glass-card" style={{ zIndex: 2 }}>
           <div className="login-page-title">Welcome Back</div>
           <div className="login-sub-title">
             Login to access the application.

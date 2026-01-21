@@ -1,5 +1,4 @@
 import "./App.css";
-import NavBar from "./pages/GlobalComponents/NavBar";
 import ContentHomePage from "./pages/home/ContentHomePage";
 import ContentScreenerPage from "./pages/screener/ContentScreenerPage";
 import ContentValuationPage from "./pages/valuation/ContentValuationPage";
@@ -10,6 +9,8 @@ import ContentLoginPage from "./pages/login/ContentLoginPage";
 import GoogleCallback from "./pages/login/components/GoogleCallback";
 import ContentMCCPage from "./pages/microcapclub/ContentMCCPage";
 import ContentScreenerPageNew from "./pages/screener/ContentScreenerPageNew";
+import ContentAnalysisPage from "./pages/Analysis/ContentAnalysisPage";
+import WatchlistPage from "./pages/watchlist/WatchlistPage";
 
 function App() {
   // define a color theme. These colors will be used throughout the App
@@ -28,16 +29,12 @@ function App() {
           <Route
             path="/google-auth/callback"
             element={<GoogleCallback />}></Route>
-
-          {/* <Route path="/" element={<ContentHomePage />}></Route> */}
           <Route path="/screener" element={<ContentScreenerPageNew />}></Route>
-          {/* <Route
-            path="/screener-new"
-            element={<ContentScreenerPageNew />}></Route> */}
           <Route path="/valuation" element={<ContentValuationPage />}></Route>
+          <Route path="/analysis" element={<ContentAnalysisPage />}></Route>
+          <Route path="/watchlist" element={<WatchlistPage />}></Route>
           <Route path="/mcc" element={<ContentMCCPage />}></Route>
           <Route path="/testing" element={<ContentTestingPage />}></Route>
-          {/* <ContentValuationPage></ContentValuationPage> */}
         </Routes>
       </ThemeProvider>
     </>

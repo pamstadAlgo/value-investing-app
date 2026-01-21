@@ -15,6 +15,7 @@ import BarChartNivo from "../valuation/components/BarChartNivo";
 import TestPenmanFormula from "./TestPenmanFormula";
 import TestPenmanSecond from "./TestPenmanSecond";
 import TestPenmanThird from "./TestPenmanThird";
+import Layout from "../GlobalComponents/Layout";
 
 function ContentTestingPage() {
   const data = [
@@ -287,7 +288,8 @@ function ContentTestingPage() {
 
   return (
     <>
-      {/* <EditorTestingFinal />
+      <Layout>
+        {/* <EditorTestingFinal />
       <fieldset class="custom-fieldset">
         <legend>Label</legend>
         <div>Content inside</div>
@@ -296,9 +298,10 @@ function ContentTestingPage() {
       <ExampleTable />
       <PlainTable />
       <ExampleTableSecond /> */}
-      <TestPenmanFormula />
-      <TestPenmanSecond />
-      <TestPenmanThird />
+        <TestPenmanFormula />
+        <TestPenmanSecond />
+        <TestPenmanThird />
+      </Layout>
     </>
   );
 }

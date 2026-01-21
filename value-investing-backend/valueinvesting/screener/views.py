@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from quickfs_dj.models import BalanceSheetAnnual, BalanceSheetQuarter, IncomeStatementAnnual, IncomeStatementQuarter, TradedCompanies, CashFlowStatementAnnual, KeyRatiosAnnual, TradedCompanies, KeyRatiosQuarter, LatestIncomeStatementAnnual, LatestBalanceSheetQuarter, LatestKeyRatiosAnnual, LatestKeyRatiosQuarter, LatestCashFlowStatementAnnual, Valuation, ScreenerData
-from screener.models import CustomMetrics, FilterViews
-from .serializers import StockScreenerFiltersSerializer, CustomMetricsSerializer, FilterViewsSerializer,CharFieldFilterOptions
+from screener.models import CustomMetrics, FilterViews, ValuationModel
+from .serializers import StockScreenerFiltersSerializer, CustomMetricsSerializer, FilterViewsSerializer,CharFieldFilterOptions, ValuationModelSerizalizer
 from django.core.cache import cache
 from django.db import connection
 import yfinance as yf
@@ -27,8 +27,11 @@ from django.db.models.functions import ExtractYear
 #from .epv import compute_epv_cpp
 # from .helpers import add
 from django.db.models import Q
-from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg
-
+from django.db.models import F, FloatField, Case, When, Value, ExpressionWrapper, Min, Max, Avg,Sum
+from django.db.models.functions import Coalesce
+from collections import defaultdict, Counter
+from typing import Literal
+import time
 
 
 
@@ -1246,27 +1249,15 @@ def get_nopat(qfs_symbol, n=5, tax_rate=0.3):
         nopat_stats['max_nopat']
     ]
 
-def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
+def get_rnoa_cases(qfs_symbol, n=6, tax_rate = 0.3):
     """
     Computes RNOA_t = NOPAT_t/NOA_t-1 where NOPAT_t = EBIT_t*(1-tr) and NOA_t-1 = OperatingAssets_t-1 - operatingLiabilities_t-1
     Returns bear, base, bull RNOA. Bear is min(RNOA) over the last n-1 years; base is avg(RNOA) over the last n-1 years; bull is max(RNOA) over the last n-1 years
     """
-    #compute net operating assets
-    # balances = (
-    #     BalanceSheetAnnual.objects
-    #     .filter(qfs_symbol_id=qfs_symbol)
-    #     .annotate(
-    #         noa=ExpressionWrapper(
-    #             F('operating_assets') - F('operating_liabilities'),
-    #             output_field=FloatField()
-    #         )
-    #     )
-    #     .order_by('-period_end_date')  # ascending for correct RNOA calculation
-    #     .only('period_end_date', 'operating_assets', 'operating_liabilities')  # fetch only needed fields
-    # )[:n+1]
     balances = (
         BalanceSheetAnnual.objects
         .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
         .order_by('-period_end_date')  # descending to get latest n+1 periods
         .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
     )[:n+1]
@@ -1275,6 +1266,7 @@ def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
     incomes = (
         IncomeStatementAnnual.objects
         .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
         .order_by('-period_end_date')  # ascending
         .only('period_end_date', 'operating_income')
     )[:n+1]
@@ -1304,7 +1296,7 @@ def get_rnoa(qfs_symbol, n=6, tax_rate = 0.3):
         round(max(rnoa_values),2) if rnoa_values else None,
     ]
 
-def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3):
+def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=100):
      # Step 1: fetch last n+1 balances with net_operating_assets
     balances = (
         BalanceSheetAnnual.objects
@@ -1336,12 +1328,52 @@ def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3):
 
         rnoa = income_t.operating_income * (1 - tax_rate) / noa_prev
         year = income_t.period_end_date.year
-        rnoa_series.append({'year': str(year), 'value': rnoa})
+        rnoa_series.append({'year': str(year), 'value': rnoa*scaleFactor})
 
     # Step 4: keep only last n values
     rnoa_series = rnoa_series[-n:]
 
     return rnoa_series
+
+
+def get_ato_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=1):
+     # Step 1: fetch last n+1 balances with net_operating_assets
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'net_operating_assets')
+    )[:n+1]
+
+
+    # Step 2: fetch corresponding income statements
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .order_by('-period_end_date')  # latest first
+        .only('period_end_date', 'revenue')
+    )[:n+1]
+
+    incomes = sorted(incomes, key=lambda i: i.period_end_date)  # oldest -> newest
+    balances = sorted(balances, key=lambda b: b.period_end_date)  # oldest -> newest
+
+    # Step 3: compute RNOA using NOA from previous period
+    ato_series = []
+    for i in range(1, len(balances)):
+        income_t = incomes[i]
+        noa_prev = balances[i-1].net_operating_assets
+
+        if noa_prev == 0:
+            continue  # avoid division by zero
+
+        ato = income_t.revenue  / noa_prev
+        year = income_t.period_end_date.year
+        ato_series.append({'year': str(year), 'value': ato*scaleFactor})
+
+    # Step 4: keep only last n values
+    ato_series = ato_series[-n:]
+
+    return ato_series
 
 def get_noa(qfs_symbol, n=2):
     """
@@ -1392,7 +1424,7 @@ def get_noa_ts(qfs_symbol, n=10):
 
     return formatted_data
 
-def get_op_margin_ts(qfs_symbol, n=10):
+def get_op_margin_ts(qfs_symbol, n=10, scaleFactor=100):
     """
     Returns operating margins as a time series of the following format:
     [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
@@ -1417,13 +1449,308 @@ def get_op_margin_ts(qfs_symbol, n=10):
             margin = op_income / revenue
             formatted_data.append({
                 'year': str(record['year']),
-                'value': round(margin, 3)  # round to 3 decimals
+                'value': round(margin * scaleFactor, 3)  # round to 3 decimals
             })
 
     # Sort by year ascending
     formatted_data.sort(key=lambda x: x['year'])
 
     return formatted_data
+
+def get_gp_margin_ts(qfs_symbol, n=10, scaleFactor=100):
+    """
+    Returns gross profit margins as a time series of the following format:
+    [{'year': '2021', 'value': 0.25}, {'year': '2022', 'value': 0.27}, ...]
+    """
+
+    # Query the most recent N records for this symbol
+    last_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')[:n]
+        .values('year', 'gross_profit', 'revenue')
+    )
+
+    # Compute operating margin = operating_income / revenue
+    formatted_data = []
+    for record in last_records:
+        revenue = record.get('revenue')
+        op_income = record.get('gross_profit')
+
+        if revenue not in (None, 0):
+            margin = op_income / revenue
+            formatted_data.append({
+                'year': str(record['year']),
+                'value': round(margin*scaleFactor, 3)  # round to 3 decimals
+            })
+
+    # Sort by year ascending
+    formatted_data.sort(key=lambda x: x['year'])
+
+    return formatted_data
+
+
+def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3, tax_rate: float = 0.3):
+    """
+    Computes RNOA_t = NOPAT_t/NOA_t-1 where NOPAT_t = EBIT_t*(1-tr) and NOA_t-1 = OperatingAssets_t-1 - operatingLiabilities_t-1
+    Returns bear, base, bull RNOA. Bear is min(RNOA) over the last n-1 years; base is avg(RNOA) over the last n-1 years; bull is max(RNOA) over the last n-1 years
+    """
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # descending to get latest n+1 periods
+        .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
+    )[:years+1]
+
+    # Step 2: fetch last n+1 income statements (only needed fields)
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # ascending
+        .only('period_end_date', 'operating_income')
+    )[:years+1]
+
+    rnoa = defaultdict()
+    incomes = list(reversed(incomes))
+    balances = list(reversed(balances))
+
+    # step 3: compute rnoa. Remember we have ordered entries in descending order, so at position 0 we have the newest value
+    for i in range(1, len(incomes)):
+        year_t = incomes[i].year
+        op_income_t = incomes[i].operating_income
+        noa_t_minus_1 = balances[i-1].net_operating_assets
+
+        # avoid invalid denominator
+        if noa_t_minus_1 in (None, 0):
+            rnoa[year_t] = 0
+            continue
+
+        rnoa_value = op_income_t * (1 - tax_rate) / noa_t_minus_1
+        rnoa[year_t] = round(rnoa_value, precision)
+
+    if include_ttm:
+        #get sum of operating income of the last four quarters
+        res_op_income = (IncomeStatementQuarter.objects
+                        .filter(qfs_symbol_id = qfs_symbol)
+                        .order_by('-period_end_date')
+                        .aggregate(
+                            sum_op=Sum(Coalesce('operating_income', Value(0),output_field=FloatField())),
+                        ))
+        
+        balance = (BalanceSheetQuarter.objects
+                   .filter(qfs_symbol_id = qfs_symbol)
+                   .order_by('-period_end_date')
+                   .only('net_operating_assets'))[3]
+        
+       #keep only the forth quarter
+        # balance = balance[-1] 
+        
+        # compute rnoa
+        rnoa_ttm = (
+            round(res_op_income['sum_op']*(1-tax_rate) / balance.net_operating_assets,precision)
+            if balance.net_operating_assets else 0
+        )
+
+        rnoa["TTM"] = rnoa_ttm
+
+    return rnoa
+ 
+
+def get_asset_turnover(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3, tax_rate: float = 0.3):
+    """
+    Computes Asset turnover which is defined as ATO = Revenue_t/NOA_t-1
+    """
+    balances = (
+        BalanceSheetAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # descending to get latest n+1 periods
+        .only('period_end_date', 'net_operating_assets')  # fetch only needed fields
+    )[:years+1]
+
+    # Step 2: fetch last n+1 income statements (only needed fields)
+    incomes = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')  # ascending
+        .only('period_end_date', 'revenue')
+    )[:years+1]
+
+    ato = defaultdict()
+    incomes = list(reversed(incomes))
+    balances = list(reversed(balances))
+
+
+    # step 3: compute ato. Remember we have ordered entries in descending order, so at position 0 we have the newest value
+    for i in range(1, len(incomes)):
+        year_t = incomes[i].year
+        revenue_t = incomes[i].revenue
+        noa_t_minus_1 = balances[i-1].net_operating_assets
+
+        # avoid invalid denominator
+        if noa_t_minus_1 in (None, 0):
+            ato[year_t] = 0
+            continue
+
+        ato_value = revenue_t / noa_t_minus_1
+        ato[year_t] = round(ato_value, precision)
+
+    if include_ttm:
+        #get sum of operating income of the last four quarters
+        res_rev = (IncomeStatementQuarter.objects
+                        .filter(qfs_symbol_id = qfs_symbol)
+                        .order_by('-period_end_date')
+                        .aggregate(
+                            sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                        ))
+        
+        balance = (BalanceSheetQuarter.objects
+                   .filter(qfs_symbol_id = qfs_symbol)
+                   .order_by('-period_end_date')
+                   .only('net_operating_assets'))[3]
+        
+       #keep only the forth quarter
+        # balance = balance[-1] 
+        
+        # compute rnoa
+        ato_ttm = (
+            round(res_rev['sum_rev'] / balance.net_operating_assets,precision)
+            if balance.net_operating_assets else 0
+        )
+
+        ato["TTM"] = ato_ttm
+
+    return ato
+
+def get_op_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
+    """
+    Extracts min, max and avg revenue values of the past 5 years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_n_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')
+        .values('year','period_end_date', 'operating_income', 'revenue')[:years]
+    )
+
+    margins = defaultdict()
+
+    for i, stmt in enumerate(reversed(last_n_records)):
+        margins[stmt.get('year', 0)] = round(stmt['operating_income']/stmt['revenue'],precision) if stmt['revenue'] not in (None, 0) else 0
+
+
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                sum_op=Sum(Coalesce('operating_income', Value(0),output_field=FloatField())),
+            )
+        )
+
+        op_margin_ttm = (
+            round(res['sum_op'] / res['sum_rev'],precision)
+            if res['sum_rev'] else None
+        )
+
+        margins["TTM"] = op_margin_ttm
+
+
+    return margins
+
+
+def get_gp_margins(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: int = 3):
+    """
+    Extracts gross profit margin for the past n years
+    """
+    # Get the most recent 5 records for this ticker, ordered by period_end_date descending
+    # Fetch only the fields we actually need
+    last_n_records = (
+        IncomeStatementAnnual.objects
+        .filter(qfs_symbol_id=qfs_symbol)
+        .annotate(year=ExtractYear('period_end_date'))
+        .order_by('-period_end_date')
+        .values('year','period_end_date', 'gross_profit', 'revenue')[:years]
+    )
+
+    margins = defaultdict()
+
+    for i, stmt in enumerate(reversed(last_n_records)):
+        margins[stmt.get('year', 0)] = round(stmt['gross_profit']/stmt['revenue'],precision) if stmt['revenue'] not in (None, 0) else 0
+
+
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_rev=Sum(Coalesce('revenue', Value(0),output_field=FloatField())),
+                sum_gp=Sum(Coalesce('gross_profit', Value(0),output_field=FloatField())),
+            )
+        )
+
+        gp_margin_ttm = (
+            round(res['sum_gp'] / res['sum_rev'],precision)
+            if res['sum_rev'] else None
+        )
+
+        margins["TTM"] = gp_margin_ttm
+
+
+    return margins
+
+
+
+def get_effective_tax_rates(qfs_symbol, years: int=5, include_ttm: bool = True, precision: int = 3):
+    """
+    computes the effective tax rate as income_tax/pretax_income
+    """
+    ins = (IncomeStatementAnnual.objects
+           .filter(qfs_symbol_id=qfs_symbol)
+           .annotate(year=ExtractYear('period_end_date'))
+           .order_by('-period_end_date')[:years]
+           .values('year', 'pretax_income', 'income_tax')
+    )
+
+    effective_tr = defaultdict()
+
+    #compute effective tax rate
+    for i, stmt in enumerate(reversed(ins)):
+        effective_tr[stmt.get('year', 0)] = round(stmt['income_tax']/stmt['pretax_income'],precision) if stmt['pretax_income'] not in (None, 0) else 0
+
+    #compute ttm
+    #include ttm values
+    if include_ttm:
+        res = (
+            IncomeStatementQuarter.objects
+            .filter(qfs_symbol__qfs_symbol=qfs_symbol)
+            .order_by('-period_end_date')[:4]
+            .aggregate(
+                sum_itax=Sum(Coalesce('income_tax', Value(0),output_field=FloatField())),
+                sum_income=Sum(Coalesce('pretax_income', Value(0),output_field=FloatField())),
+            )
+        )
+
+        eff_tr_ttm = (
+            round(res['sum_itax'] / res['sum_income'], precision)
+            if res['sum_income'] else None
+        )
+
+        effective_tr["TTM"] = eff_tr_ttm
+
+    return effective_tr
 
 def get_op_margin(qfs_symbol):
     """
@@ -1579,6 +1906,387 @@ def get_nr_diluted_shares(qfs_symbol):
         nr_shares_dil = None
 
     return nr_shares_dil
+
+
+def get_financials(qfs_symbol: str, modelAnnual, modelQuarter, type: Literal["income", "balance"], years: int = 5, metric_fields: list[str] = ["revenue", "cogs", "gross_profit", "sga", "rnd", "other_opex", "operating_income", "income_tax"], include_ttm: bool = True):
+    """
+    type: use to determine how ttm is computed. For income, last four entries of quarterly statements are summed up; for balance most recent entry is taken
+    """
+    
+    # Fetch only needed fields + period_end_date
+    qs = (modelAnnual.objects
+            .filter(qfs_symbol_id=qfs_symbol)
+            .annotate(year=ExtractYear('period_end_date'))
+            .order_by('-period_end_date')[:years]
+            .values('year','period_end_date', *metric_fields)
+        )
+
+    if not qs.exists():
+        return {"symbol": qfs_symbol, "periods": [], "metrics": []}
+
+    latest_statements = list(qs)
+
+    # Build periods: FY-5 → FY-1 → TTM
+    periods = []
+    for i, stmt in enumerate(reversed(latest_statements)):
+        periods.append(stmt.get("year", 0))
+    
+    # Compute TTM if requested
+    ttm_values = {}
+    if include_ttm and type == "income":
+        # Fetch the latest 4 quarterly statements
+        qtrs = modelQuarter.objects.filter(qfs_symbol__qfs_symbol=qfs_symbol)\
+            .order_by('-period_end_date')[:4]\
+            .values(*metric_fields)
+
+        if qtrs.exists():
+            # Sum each metric over the last 4 quarters
+            for field in metric_fields:
+                ttm_values[field] = sum(q.get(field, 0.0) or 0.0 for q in qtrs)
+
+            periods.append("TTM")
+            latest_statements.insert(0,ttm_values)  # append TTM as a pseudo-statement
+    elif include_ttm and type == "balance":
+         # Fetch the latest 4 quarterly statements
+        qtrs = modelQuarter.objects.filter(qfs_symbol__qfs_symbol=qfs_symbol)\
+            .order_by('-period_end_date')[:1]\
+            .values(*metric_fields)
+
+        if qtrs.exists():
+            row = qtrs[0]  # extract the dict row
+
+            # Sum each metric over the last 4 quarters
+            for field in metric_fields:
+                ttm_values[field] = row.get(field, 0.0)
+
+            periods.append("TTM")
+            latest_statements.insert(0,ttm_values)  # append TTM as a pseudo-statement
+
+    # Build metrics dict
+    metrics = defaultdict(dict)
+    for period_label, stmt in zip(periods, reversed(latest_statements)):
+        for field in metric_fields:
+            metrics[field][period_label] = stmt.get(field, 0.0) or 0.0
+
+    return {
+        "symbol": qfs_symbol,
+        "periods": periods,
+        "metrics": metrics
+    }
+
+def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10, scale_factor = 1):
+    """
+    Function that returns time series for requested metric in the following format: [{'year': 2021, 'value' : 10000}, {'year': 2022, 'value' : 20000}, etc.]
+    """
+    last_records = (model.objects
+                    .filter(qfs_symbol_id = qfs_symbol)
+                    .annotate(year=ExtractYear('period_end_date'))
+                    .order_by('-period_end_date')[:years]
+                    .values('year', metric)
+            )
+    
+    #we will sort data from oldest to newest (2019, 2020, 2021)
+    ts = [
+        {'year': str(record['year']), 'value': record[metric]*scale_factor}
+        for record in sorted(last_records, key=lambda x: x['year'])
+    ]
+
+    return ts
+
+
+class PenmanValuationAPIView(APIView):
+    def get(self, request, qfs_symbol):
+        # return Response("ok")
+        # Get number of years from query parameter (default to 5)
+        years = int(request.query_params.get("years", 5))
+        include_ttm = request.query_params.get("ttm", "true").lower() == "true"
+
+        #get unix timestamp to store last fetch time
+        last_fetch = int(time.time() * 1000) 
+
+        #get currency of company
+        currency = TradedCompanies.objects.filter(qfs_symbol = qfs_symbol).first().currency
+        nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
+
+        # get different income statement items
+        revenue = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter,type = "income", years=years, metric_fields=["revenue"])
+        cogs = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["cogs"])
+        gp = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["gross_profit"])
+        sga = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["sga"])
+        rnd = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["rnd"])
+        other_opex = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["other_opex"])
+        operating_income = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["operating_income"])
+        income_tax = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter, type = "income", years=years, metric_fields=["income_tax"])
+        gp_margins = get_gp_margins(qfs_symbol, years)
+        op_margins = get_op_margins(qfs_symbol, years)
+        rnoa = get_rnoa(qfs_symbol, years)
+        ato = get_asset_turnover(qfs_symbol, years)
+        effective_tr = get_effective_tax_rates(qfs_symbol, years)
+
+        #get operating assets, operating liabilities, net operating assets
+        op_assets = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["operating_assets"])
+        op_liab = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["operating_liabilities"])
+        net_op_assets = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["net_operating_assets"])
+        book_value = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["total_equity"])
+
+        #get debt and number of shares
+        st_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["st_debt"])
+        lt_debt = get_financials(qfs_symbol, modelAnnual=BalanceSheetAnnual, modelQuarter=BalanceSheetQuarter,type = "balance", years=years, metric_fields=["lt_debt"])
+        shares_diluted = get_financials(qfs_symbol, modelAnnual=IncomeStatementAnnual, modelQuarter=IncomeStatementQuarter,type = "balance", years=years, metric_fields=["shares_diluted"])
+
+        #sum the short-term and long-term debt
+        debt = dict(Counter(st_debt['metrics']["st_debt"]) + Counter(lt_debt['metrics']["lt_debt"]))
+
+        #extract time series data in format [{'year': 2021, 'value' : 10000}, {'year': 2022, 'value' : 20000}, etc.]
+        revenue_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='revenue')
+        cogs_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='cogs')
+        sga_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='sga')
+        rnd_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='rnd')
+        other_opex_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='other_opex')
+        op_margin_ts = get_op_margin_ts(qfs_symbol)
+        gp_margin_ts = get_gp_margin_ts(qfs_symbol)
+        op_income_ts = get_financials_ts(qfs_symbol, model=IncomeStatementAnnual, metric='operating_income')
+        op_assets_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='operating_assets')
+        op_liab_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='operating_liabilities')
+        net_op_assets_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='net_operating_assets')
+        book_value_ts = get_financials_ts(qfs_symbol, model=BalanceSheetAnnual, metric='total_equity')
+        rnoa_ts = get_rnoa_ts(qfs_symbol)
+        ato_ts = get_ato_ts(qfs_symbol)
+        debt_ts = get_debt_ts(qfs_symbol)
+        nr_shares_ts = get_nr_diluted_shares_ts(qfs_symbol)
+
+        #extract revenues to give default value for valuation (bear, base, bull)
+        revenues = [val for key, val in  revenue['metrics']["revenue"].items() if key != "TTM"]
+        base_rev = sum(revenues)/len(revenues)
+        bull_rev = max(revenues)
+        bear_rev = 0.7*base_rev
+
+        #compute op margin valuation defaults
+        op_margins_vals = [val for key, val in op_margins.items() if key != "TTM"]
+        base_op_margin = round(sum(op_margins_vals)/len(op_margins_vals),3)
+        bull_op_margin = round(max(op_margins_vals),3)
+        bear_op_margin = round(0.7*base_op_margin,3)
+
+        #compute the NOPAT as operating income - income tax
+        nopat =  {
+                year: operating_income['metrics']["operating_income"][year] + income_tax['metrics']["income_tax"][year]
+                for year in operating_income['metrics']["operating_income"]
+                }
+
+        #default values for cogs, sga, rnd, op asset, op liabilites, net op assets and other opex is just TTM
+        cogs_val_dflt = cogs['metrics']["cogs"]["TTM"]
+        sga_val_dflt = sga['metrics']["sga"]["TTM"]
+        rnd_val_dflt = rnd['metrics']["rnd"]["TTM"]
+        other_opex_val_dflt = other_opex['metrics']["other_opex"]["TTM"]
+        op_assets_dftl = op_assets['metrics']["operating_assets"]["TTM"]
+        op_liab_dftl = op_liab['metrics']["operating_liabilities"]["TTM"]
+        op_net_assets_dftl = net_op_assets['metrics']["net_operating_assets"]["TTM"]
+        book_value_dftl = book_value['metrics']["total_equity"]["TTM"]
+
+        #compute gross profit defaults
+        gp_dftl = [bear_rev - cogs_val_dflt, base_rev - cogs_val_dflt, bull_rev - cogs_val_dflt]
+        gp_margin_dftl = [gp_dftl[0]/bear_rev if bear_rev != 0 else None, gp_dftl[1]/base_rev if base_rev != 0 else None, gp_dftl[2]/bull_rev if bull_rev != 0 else None]
+
+        response = {'qfsSymbol' : qfs_symbol
+                    ,'currency' : currency
+                    ,'nrShares' : nr_shares
+                    ,'lastFetch' : last_fetch
+                    ,'periods' : revenue['periods']
+                    ,'metricsNopat' : {
+                        'revenue' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Revenue',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'hasTs' : True, #defines if metric has times series attached
+                            'ts' : revenue_ts,
+                            'values': revenue['metrics']["revenue"]
+                        },
+                        'cogs' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'COGS',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'hasTs' : True,
+                            'ts' : cogs_ts,
+                            'values': cogs['metrics']["cogs"]
+                        },
+                        'gross_profit' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Gross Profit',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'fontStyle' : 'italic',
+                            'hasTs' : True,
+                            'ts' : cogs_ts,
+                            'values': cogs['metrics']["cogs"]
+                        },
+                        'gp_margins' : {
+                            'type' : 'perc', #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Gross margin',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'fontStyle' : 'italic',
+                            'hasTs' : True,
+                            'ts' : gp_margin_ts,
+                            'values' : gp_margins
+                        },
+                        'sga' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'SG&A',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'hasTs' : True,
+                            'ts' : sga_ts,
+                            'values': sga['metrics']["sga"]
+                        },
+                        'rnd' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'R&D',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'hasTs' : True,
+                            'ts' : rnd_ts,
+                            'values': rnd['metrics']["rnd"]
+                        },
+                        'other_opex' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Other Opex',
+                            'topDownVisible' : False,
+                            'bottomUpVisible' : True,
+                            'hasTs' : True,
+                            'ts' : other_opex_ts,
+                            'values': other_opex['metrics']["other_opex"]
+                        },                       
+                        'operating_income' : {
+                            'type' : 'absolute', #has an influence if this metric is scaled or not
+                            'label' : 'Op. Income',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'fontStyle' : 'italic',
+                            'hasTs' : True,
+                            'ts' : op_income_ts,
+                            'values': operating_income['metrics']["operating_income"]
+                        },
+                        'op_margins' : {
+                            'type' : 'perc',  #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Op. Margins',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'fontStyle' : 'italic',
+                            'hasTs' : True,
+                            'ts' : op_margin_ts,
+                            'values' : op_margins
+                        },
+                        'income_tax' : {
+                            'type': 'absolute',
+                            'label' : 'Tax',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'values' : income_tax['metrics']["income_tax"]
+                        },
+                        'eff_tax_rate' : {
+                            'type': 'perc',
+                            'label' : 'Effective Tax Rate',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'values' : effective_tr
+                        },
+                        'NOPAT' : {
+                            'type' : 'absolute',
+                            'label' : 'NOPAT',
+                            'topDownVisible' : True,
+                            'bottomUpVisible' : True,
+                            'values' : nopat
+                        }
+                    },
+                    'metricsNoa' : {
+                        'operatingAssets' : {
+                            'type' : 'absolute',
+                            'label' : 'Op. Assets',
+                            'hasTs' : True,
+                            'ts' : op_assets_ts,
+                            'values' : op_assets['metrics']["operating_assets"]
+                        },
+                        'operatingLiabilities' : {
+                            'type' : 'absolute',
+                            'label' : 'Op. Liabilities',
+                            'hasTs' : True,
+                            'ts' : op_liab_ts,
+                            'values' : op_liab['metrics']["operating_liabilities"]
+                        },
+                        'netOperatingAssets' : {
+                            'type' : 'absolute',
+                            'label' : 'NOA',
+                            'fontStyle' : 'italic',
+                            'hasTs' : True,
+                            'ts' : net_op_assets_ts,
+                            'values' : net_op_assets['metrics']["net_operating_assets"]
+                        },
+                        'bookValue' : {
+                            'type' : 'absolute',
+                            'label' : 'Book Value',
+                            'hasTs' : True,
+                            'ts' : book_value_ts,
+                            'values' : book_value['metrics']["total_equity"]
+                        },
+                       
+                        'debt' : {
+                            'type' : 'absolute',
+                            'label' : 'Total Debt',
+                            'hasTs' : True,
+                            'ts' : debt_ts,
+                            'values' : debt
+                        },
+                        'nrShares' : {
+                            'type' : 'absolute',
+                            'label' : 'Nr. Shares (diluted)',
+                            'hasTs' : True,
+                            'ts' : nr_shares_ts,
+                            'values' : shares_diluted['metrics']["shares_diluted"]
+                        },
+                    },
+                    'metricsValDrivers' : {
+                        'rnoa' : {
+                            'type' : 'perc',
+                            'label' : 'RNOA',
+                            'hasTs' : True,
+                            'ts' : rnoa_ts,
+                            'values' : rnoa
+                        },
+                        'ato' : {
+                            'type' : 'absolute',
+                            'label' : 'Asset Turnover',
+                            'hasTs' : True,
+                            'ts' : ato_ts,
+                            'values' : ato
+                        },
+                        'op_margins' : {
+                            'type' : 'perc',  #percentage type will be scaled by factor 100 on frontend
+                            'label' : 'Op. Margins',
+                            'hasTs' : True,
+                            'ts' : op_margin_ts,
+                            'values' : op_margins
+                        },
+                    },
+                    'valuationDefaults' : {
+                        'revenue' : [bear_rev, base_rev, bull_rev],
+                        'cogs' : [cogs_val_dflt, cogs_val_dflt, cogs_val_dflt],
+                        'gross_profit' : gp_dftl,
+                        'gp_margins' : gp_margin_dftl,
+                        'sga' : [sga_val_dflt, sga_val_dflt, sga_val_dflt],
+                        'rnd' : [rnd_val_dflt, rnd_val_dflt, rnd_val_dflt],
+                        'other_opex' : [other_opex_val_dflt, other_opex_val_dflt, other_opex_val_dflt],
+                        'op_margins' : [bear_op_margin, base_op_margin, bull_op_margin],
+                        'operatingAssets' : [op_assets_dftl, op_assets_dftl, op_assets_dftl],
+                        'operatingLiabilities' : [op_liab_dftl, op_liab_dftl, op_liab_dftl],
+                        'netOperatingAssets' : [op_net_assets_dftl, op_net_assets_dftl, op_net_assets_dftl],
+                        'bookValue' : [book_value_dftl, book_value_dftl, book_value_dftl]
+                    }
+                    
+                    }
+
+        return Response(response)
 
 class EPVFundamentalsAPIView(APIView):
     def post(self, request):
@@ -2368,6 +3076,9 @@ def computeAssetVal(qfs_symbol):
                     })
             if group_metrics:
                 data[group_name] = group_metrics
+            # handle case where for example no nonCurrentLiabilities are present. We return empty list 
+            else:
+                data[group_name] = []
 
         #get number of shares
         nr_shares = get_nr_diluted_shares(qfs_symbol=qfs_symbol)
@@ -2522,6 +3233,64 @@ class CustomMetricsAPIView(APIView):
         (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)
 
 
+class ValuationModelsAPIView(APIView):
+    def get(self, request):
+        #get qfsSymbol from queryParameters
+        qfs_symbol = request.GET.get('qfsSymbol')
+
+        #filter the ValuationModels based on qfs symbol and user
+        val_models = ValuationModel.objects.filter(qfs_symbol_id = qfs_symbol, user_id = request.user.id)
+
+        serializer = ValuationModelSerizalizer(val_models, many=True)
+
+        return Response(serializer.data)
+
+
+    def put(self, request):
+        #try to extract model id from request; if it does not exist, new entry will be created
+        data = request.data
+        model_id = data.get("id", None)
+
+        if model_id:
+            try:
+                #get existing entry
+                valuation_model = ValuationModel.objects.get(id=request.data.get("id"), user_id=request.user.id)
+            
+                #serialize existing entry with new data
+                serializer = ValuationModelSerizalizer(valuation_model, data=data, partial=True)
+            except ValuationModel.DoesNotExist:
+                return Response({"detail": "Model not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            #create a new entry
+            serializer = ValuationModelSerizalizer(data=data)
+
+        #check if data is valid
+        if serializer.is_valid():
+            serializer.save(user_id = request.user.id)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """
+        Delete valuation model
+        """
+        try:
+            # Step 1: Get the object by its primary key
+            val_model = ValuationModel.objects.get(pk=request.data.get("id"))
+            
+            # Step 2: Delete the object
+            val_model.delete()  
+
+            #get all remaining objects and return
+            val_models = ValuationModel.objects.filter(user_id=request.user.id, qfs_symbol_id = request.data.get('qfsSymbol'))
+            # Serialize the queryset
+            serializer = ValuationModelSerizalizer(val_models, many=True)
+            # Return the serialized data
+            return Response(serializer.data)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
 class FilterViewsAPIView(APIView): 
     def get(self, request):
         user_filter_views = FilterViews.objects.filter(user=request.user)
@@ -2579,15 +3348,10 @@ class FilterViewsAPIView(APIView):
             serializer = FilterViewsSerializer(user_filter_views, many=True)
             # Return the serialized data
             return Response(serializer.data)
-        # except FilterViews.DoesNotExist:
-            # print(f"Object with pk={pk} does not exist.")
-
 
         except Exception as e:
             print(f"An error occurred: {e}")
-        # def put(self, request):
-    #     (employeeProfile, created) = CustomMetrics.objects.get_or_create(user_id = request.user.id)
-
+   
 
 def get_char_fields(model, fields_to_exclude=[]):
     charFields =  [field.name  for field in model._meta.get_fields() if field.is_relation is False and field.get_internal_type() in ("CharField") and field.name not in fields_to_exclude]

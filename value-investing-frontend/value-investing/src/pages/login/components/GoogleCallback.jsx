@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { resetActiveFilters } from "../../../features/stockScreenerSlice";
+import { setUserId } from "src/features/sessionSlice";
 
 function GoogleCallback() {
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ function GoogleCallback() {
         .then((response) => {
           //reset activ filters in stock screener
           dispatch(resetActiveFilters());
+          console.log("response.data from auth: ", response.data);
+          dispatch(setUserId(response.data.user.pk));
           setCookie("access_token", response.data.access, {
             path: "/",
             // secure: true, //only send via HTTPS

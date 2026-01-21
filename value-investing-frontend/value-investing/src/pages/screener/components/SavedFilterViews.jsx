@@ -18,6 +18,9 @@ import Tooltip from "@mui/material/Tooltip";
 import { ListItemText } from "@mui/material";
 import useAxiosWithAuth from "../../../axios/useAxiosWithAuth";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+
+
 function SavedFilterViews() {
   const screenerState = useSelector((state) => state.stockscrenner);
   const dispatch = useDispatch();
@@ -25,14 +28,9 @@ function SavedFilterViews() {
 
   const handleChange = (e) => {
     dispatch(setCurrentFilterView(e.target.value));
-    console.log("filter view we set: ", e.target.value);
     if (
-      // typeof e.target.value === "string" ||
-      // e.target.value instanceof String ||
       e.target.value === "newView"
     ) {
-      console.log("we reinitialize selected filters");
-      // dispatch(initializeActivFilters([]));
       dispatch(initializeSelectedFilters([]));
       dispatch(setViewName(""));
       dispatch(setViewDescription(""));
@@ -52,7 +50,6 @@ function SavedFilterViews() {
   };
 
   const handleDeleteFilterView = (e, id) => {
-    console.log("we clicked button, e.target.value: ", id);
     e.stopPropagation();
 
     axiosInstanceAuth
@@ -98,8 +95,6 @@ function SavedFilterViews() {
         value={screenerState.currentFilterView}
         label="Saved Screener Templates"
         renderValue={(selected) => {
-          console.log("selected: ", selected);
-
           //if selected is string then a new filter will be created
           if (typeof selected === "string") {
             return "Create new Filter View";

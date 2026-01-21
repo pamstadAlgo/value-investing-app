@@ -46,23 +46,7 @@ function EPVBodyTableRow({
 
   const handleChange = (e, metricName, caseIndex) => {
     const val = e.target.value;
-    // const val = e.target.valueAsNumber;
 
-    console.log("e.target.value: ", e.target.value);
-    console.log("e.target.valueAsNumber: ", e.target.valueAsNumber);
-
-    console.log("metricName: ", metricName);
-    console.log("caseIndex: ", caseIndex);
-
-    // Allow empty input or valid decimal numbers
-    // if (
-    //   val === "" ||
-    //   /^-?$/.test(val) || // just "-" is fine
-    //   /^-?\d+\.?\d*$/.test(val) || // digits, optional dot, then more digits
-    //   /^-?\d*\.$/.test(val) // "1." or "-1." (user might still type decimals)
-    // ) {
-    // setValue(val);
-    // if (!isNaN(Number(e.target.valueAsNumber))) {
     dispatch(
       updateEPVValuationData({
         newValue: val,
@@ -71,7 +55,6 @@ function EPVBodyTableRow({
         caseIndex: caseIndex,
       })
     );
-    // } else {
 
     if (isNaN(Number(e.target.valueAsNumber))) {
       // check which error to set
@@ -89,11 +72,6 @@ function EPVBodyTableRow({
           console.log("we set error bull case");
           break;
       }
-
-      //   console.log(
-      //     "error with e.target.valueAsNumber: ",
-      //     e.target.valueAsNumber
-      //   );
     } else {
       switch (caseIndex) {
         case 0:
@@ -110,12 +88,6 @@ function EPVBodyTableRow({
           break;
       }
     }
-    // }
-    // setError(false);
-    // } else {
-    //   // Invalid input: show error
-    //   setError(true);
-    // }
   };
 
   const handleBlur = (e, metricName, caseIndex) => {
@@ -147,14 +119,6 @@ function EPVBodyTableRow({
     // setFocusedValue(e.target.value);
   };
 
-  //   useEffect(() => {
-  //     if (open) {
-  //       const t = setTimeout(() => {
-  //         window.dispatchEvent(new Event("resize"));
-  //       }, 1000); // small delay; adjust 0..200ms if needed
-  //       return () => clearTimeout(t);
-  //     }
-  //   }, [open]);
 
   return (
     <TableRow
@@ -186,21 +150,10 @@ function EPVBodyTableRow({
               <PollOutlinedIcon className="custom-icon-table" />{" "}
               <Popper
                 className="custom-popover-charts"
-                // id="mouse-over-popover"
-                // sx={{ pointerEvents: "none" }}
                 open={open}
                 anchorEl={anchorEl}
                 placement="right-start"
-                // anchorOrigin={{
-                //   vertical: "bottom",
-                //   horizontal: "left",
-                // }}
-                // transformOrigin={{
-                //   vertical: "top",
-                //   horizontal: "left",
-                // }}
                 onClose={handlePopoverClose}
-                //   disableRestoreFocus
               >
                 {/* <Typography sx={{ p: 1 }}>I use Popover.</Typography> */}
                 <BarChartNivo
@@ -231,7 +184,6 @@ function EPVBodyTableRow({
               size="small"
               className="custom-input-valuation-table"
               onChange={(e) => {
-                console.log("this is number(bear): ", Number(bear));
                 handleChange(e, metricName, 0);
               }}
             />

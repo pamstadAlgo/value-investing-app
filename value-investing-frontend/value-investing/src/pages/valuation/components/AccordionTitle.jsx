@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { computeEpvPerShare, computeEquityPerShare } from "./selectorFunctions";
 
-function useLastClosePrice(qfsSymbol, axiosInstance) {
+export function useLastClosePrice(qfsSymbol, axiosInstance) {
   return useQuery({
     queryKey: ["lastClosePrice", qfsSymbol],
     queryFn: async () => {

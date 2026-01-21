@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import NavBar from "../GlobalComponents/NavBar";
+import Layout from "../GlobalComponents/Layout";
 import ScreenerTemplates from "./components/ScreenerTemplates";
 import Screener from "./components/Screener";
 import useAxiosWithAuth from "../../axios/useAxiosWithAuth";
@@ -13,6 +13,8 @@ import {
 import FiltersCard from "./components/FiltersCard";
 import CustomMetricsCard from "./components/CustomMetricsCard";
 import ScreenerResults from "./components/ScreenerResults";
+import FinancialScatterPlot from "./components/FinancialScatterPlot";
+import { fetchWatchlists } from "src/features/watchlistSlice";
 
 function ContentScreenerPageNew() {
   const screenerState = useSelector((state) => state.stockscrenner);
@@ -62,27 +64,33 @@ function ContentScreenerPageNew() {
       });
   }, []);
 
+  useEffect(() => {
+    dispatch(fetchWatchlists());
+  }, []);
+
   return (
     <>
-      <NavBar />
-      <main className="main-content-wrapper relative-position">
-        <div className="flex-wrapper-main-content">
-          <div className="title-section" style={{ marginBottom: "3rem" }}>
-            <div className="title">Stock Screener</div>
-            <div className="sub-title" style={{ marginTop: "6px" }}>
-              Filter stocks to find your next winning investment.
+      <Layout>
+        <main className="main-content-wrapper relative-position">
+          <div className="flex-wrapper-main-content">
+            <div className="title-section" style={{ marginBottom: "3rem" }}>
+              <div className="title">Stock Screener</div>
+              <div className="sub-title" style={{ marginTop: "6px" }}>
+                Investment Idea Generation Box
+              </div>
             </div>
-          </div>
-          <div className="grid-wrapper-template-filter-custom">
-            <FiltersCard />
-            <div className="screener-templates-grid-item">
-              <ScreenerTemplates />
-              <CustomMetricsCard />
+            <div className="grid-wrapper-template-filter-custom">
+              <FiltersCard />
+              <div className="screener-templates-grid-item">
+                <ScreenerTemplates />
+                <CustomMetricsCard />
+              </div>
             </div>
+              <FinancialScatterPlot />
+            <ScreenerResults />
           </div>
-          <ScreenerResults />
-        </div>
-      </main>
+        </main>
+      </Layout>
     </>
   );
 }

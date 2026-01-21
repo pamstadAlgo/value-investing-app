@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import Layout from "../GlobalComponents/Layout";
 import "./styles.css";
-import NavBar from "../GlobalComponents/NavBar";
 import TickerAutoComplete from "./components/TickerAutoComplete";
 import ValuationForm from "./components/ValuationForm";
 import ValuationCard from "./components/ValuationCard";
@@ -14,7 +14,7 @@ function ContentValuationPage() {
 
   return (
     <>
-      <NavBar />
+      <Layout>
       <main className="main-content-wrapper relative-position">
         <div className="flex-wrapper-main-content">
           <div className="title-section" style={{ marginBottom: "3rem" }}>
@@ -71,6 +71,7 @@ function ContentValuationPage() {
           })}
         </div>
       </div> */}
+      </ Layout>
     </>
   );
 }

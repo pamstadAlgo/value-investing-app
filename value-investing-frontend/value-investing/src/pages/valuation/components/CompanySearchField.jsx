@@ -83,13 +83,10 @@ function CompanySearchField() {
             .post("/screener/asset-val-fundamentals/", requestBody)
             .then((response) => {
               dispatch(initializeAssetValuations(response.data));
-              // setLoading(false);
             })
             .catch((error) => {
               showMessage(`Error computing asset val ${error}`, "error");
-              // setLoading(false);
 
-              // setBackdropOpen(false);
               console.error(
                 "ERROR: POST /screener/asset-val-fundamentals/: ",
                 error

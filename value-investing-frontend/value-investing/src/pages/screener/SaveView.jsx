@@ -198,15 +198,6 @@ function SaveView() {
                 />
               </div>
               <div className="flexbox-save-filter-button">
-                {/* <button
-                  type="submit"
-                  onClick={(e) => {
-                    console.log("button clicked");
-                    e.stopPropagation(); // still stops the click event bubbling
-                  }}>
-                  {" "}
-                  Save Filter View
-                </button> */}
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();

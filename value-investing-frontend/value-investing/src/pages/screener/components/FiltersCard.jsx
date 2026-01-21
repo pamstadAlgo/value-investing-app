@@ -94,31 +94,11 @@ function FiltersCard() {
       "newValue transformed: ",
       `(${newValue.map((item) => `'${item}'`).join(", ")})`
     );
-
-    // dispatch(
-    //   updateActiveFilter({
-    //     newValue: {
-    //       id: filter.id,
-    //       qty: `(${newValue.map((item) => `'${item}'`).join(", ")})`,
-    //     },
-    //     oldValue: {
-    //       id: filter.id,
-    //       qty: `(${oldValue.map((item) => `'${item}'`).join(", ")})`,
-    //     },
-    //   })
-    // );
   };
 
   const handleNumberChange = (values, formik) => {
     const { formattedValue, value, floatValue } = values;
-    // setQty(floatValue);
-
-    //update activFilter state; note that filter is passed in order to find the correct filter in the array to update
-    //dispatch(updateQtyActiveFilter({ qty: floatValue, filter: filter }));
     formik.setFieldValue("qty", floatValue);
-    // console.log("Formatted Value:", formattedValue); // E.g., 600'000'000
-    // console.log("Raw String Value:", value); // E.g., 600000000
-    // console.log("Float Value:", floatValue); // E.g., 600000000 as a n  };
   };
 
   return (
@@ -138,10 +118,6 @@ function FiltersCard() {
           enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={(values, { resetForm }) => {
-            console.log(
-              "we submit formik values filter criteria: We would add to active filters ",
-              values
-            );
             //flatten the values object
             var filter = {
               ...values.filter,
@@ -154,17 +130,6 @@ function FiltersCard() {
             setFieldType("");
             setValue(null);
             // here we need to more filter, qty, comparison and add to active filters
-
-            // //post filter quantities to endpoint
-            // axiosInstanceAuth
-            //   .post("/screener/filter-query/", screenerState.activFilters)
-            //   .then((response) => {
-            //     console.log("response of filter query: ", response.data);
-            //     dispatch(setQueryResult(response.data?.queryResult));
-            //   })
-            //   .catch((error) => {
-            //     console.error("ERROR: POST /screener/filter-query/: ", error);
-            //   });
           }}>
           {(formik) => (
             <form onSubmit={formik.handleSubmit}>
@@ -172,6 +137,12 @@ function FiltersCard() {
                 {/* add fields for validation */}
                 <div className="flex-item-filter-field">
                   <Autocomplete
+                    slotProps={{
+                      popper: {
+                        className: "autocomplete-filter-metric",
+                      },
+                    }}
+                    // className="autocomplete-filter-metric"
                     clearOnEscape
                     value={value}
                     onChange={(e, newValue) =>
@@ -201,7 +172,6 @@ function FiltersCard() {
                       />
                     )}
                     renderGroup={(params) => {
-                      console.log("params: ", params);
                       return (
                         <li key={params.key}>
                           <div className="group-header-autocomplete">
