@@ -402,6 +402,12 @@ background-color: var(--background-color-mui-backdrop);
   color: var(--border-input-fields);
 }
 
+.title-watch-list-items{
+  padding: 8px 16px;
+  margin-top: 8px;
+  color: var(--text-color-grey-scale)
+}
+
 .custom-fieldset legend {
   padding: 0 4px;
   font-size: 0.9em;

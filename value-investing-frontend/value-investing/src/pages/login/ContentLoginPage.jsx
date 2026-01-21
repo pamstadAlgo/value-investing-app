@@ -9,9 +9,6 @@ function ContentLoginPage() {
     let googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     let googleCallbackURI = process.env.REACT_APP_GOOGLE_CALLBACK_URI;
 
-    console.log("googleCallbackURI react frontend: ", googleCallbackURI);
-    console.log("googleClientId react frontend: ", googleClientId);
-
     try {
       //replace current url with the google auth URL; this will direct you to the google login form
       window.location.replace(
