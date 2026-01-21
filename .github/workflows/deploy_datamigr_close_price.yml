@@ -1,4 +1,4 @@
-name: Deploy Data migration job
+name: Deploy Data migration job (close prices)
 
 on:
     push:
