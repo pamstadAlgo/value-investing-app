@@ -20,4 +20,3 @@ jobs:
             DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             DOCKER_PWD: ${{ secrets.DOCKER_PWD }}
             RAILWAY_SVC_ID: ${{ secrets.RAILWAY_DATAMIGR_SVC_ID }}
-            RAILWAY_ENV_ID: ${{ secrets.RAILWAY_ENV_ID }}
