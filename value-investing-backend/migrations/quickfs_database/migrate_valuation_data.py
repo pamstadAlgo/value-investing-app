@@ -258,10 +258,12 @@ def equity_val_penman(conn, qfs_symbol, nr_years_avg_rev=3, nr_years_avg_op_marg
             THEN equity_val_total / (SELECT shares_diluted FROM shares)
             ELSE -1
         END AS equity_val_per_share,
-        equity_val_total,
-        implied_growth,
-        rnoa
-    FROM equity_calc, implied, rnoa;
+        ec.equity_val_total,
+        i.implied_growth,
+        r.rnoa
+    FROM equity_calc ec
+    CROSS JOIN rnoa r
+    LEFT JOIN implied i ON true;
     """
     with conn.cursor() as cur:
         cur.execute(query, (qfs_symbol, tax_rate, wacc, nr_years_avg_rev, nr_years_avg_op_margin))
@@ -363,10 +365,12 @@ def equity_val_penman_ttm(conn, qfs_symbol, nr_years_avg_rev=3, nr_years_avg_op_
             THEN equity_val_total / (SELECT shares_diluted FROM shares)
             ELSE -1
         END AS equity_val_per_share,
-        equity_val_total,
-        implied_growth,
-        rnoa
-    FROM equity_calc, implied, rnoa;
+        ec.equity_val_total,
+        i.implied_growth,
+        r.rnoa
+    FROM equity_calc ec
+    CROSS JOIN rnoa r
+    LEFT JOIN implied i ON true;
     """
     with conn.cursor() as cur:
         cur.execute(query, (qfs_symbol, tax_rate, wacc))
