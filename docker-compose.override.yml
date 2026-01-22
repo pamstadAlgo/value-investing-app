@@ -19,6 +19,10 @@ services:
       - value_investing_app_ntw
     depends_on:
       - db
+    
+  db:
+    ports:
+      - "5433:5432"
 
   frontend:
     build:
