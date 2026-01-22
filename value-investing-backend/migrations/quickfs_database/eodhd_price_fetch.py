@@ -266,12 +266,3 @@ def update_close_prices_via_eodhd_bulk(
         if conn:
             conn.close()
 
-update_close_prices_via_eodhd_bulk(
-    dbname=os.environ["POSTGRES_DB"],
-    user=os.environ["POSTGRES_USER"],
-    password=os.environ["POSTGRES_PASSWORD"],
-    host="localhost",
-    port=int(5433),
-    eodhd_api_token=os.environ["EODHD_API_TOKEN"],
-    db_update_chunk_size=3000,
-)

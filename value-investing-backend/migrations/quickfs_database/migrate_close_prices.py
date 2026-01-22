@@ -5,6 +5,7 @@ load_dotenv()
 import requests
 import psycopg2
 from psycopg2.extras import execute_values
+from eodhd_price_fetch import update_close_prices_via_eodhd_bulk
 countries = ["EUROPE", "AU", "US", "US/OTC"]
 
 def fetch_close_price_data(url: str):
@@ -21,14 +22,23 @@ def fetch_close_price_data(url: str):
 
 def fetch_missing_symbols(conn):
     # If your column is qfs_symbol_id instead of qfs_symbol, change it here and in UPDATE below.
+    # in quickfs companies which went bankrupt/are no longer publicly listed are still kept in the database. Makes no sense to try to fetch last close price for these. We only fetch data for companies for which the latest quarterly filling is not older than 9months
     sql = """
-        SELECT qfs_symbol
-        FROM quickfs_dj_tradedcompanies
-        WHERE last_close_price IS NULL
-          AND qfs_symbol IS NOT NULL
+        SELECT c.qfs_symbol
+        FROM quickfs_dj_tradedcompanies c
+        JOIN (
+          SELECT
+            qfs_symbol_id,
+            MAX(period_end_date) AS max_period_end_date
+          FROM quickfs_dj_incomestatementquarter
+          GROUP BY qfs_symbol_id
+        ) iq
+          ON iq.qfs_symbol_id = c.qfs_symbol
+        WHERE c.last_close_price IS NULL
+          AND c.qfs_symbol IS NOT NULL
+          AND iq.max_period_end_date >= (CURRENT_DATE - INTERVAL '9 months');
     """
 
-    #fetch all tickers that have close price null
     with conn.cursor() as cur:
         cur.execute(sql)
         return [r[0] for r in cur.fetchall()]
@@ -205,13 +215,31 @@ for country in countries:
     url = f"https://public-api.quickfs.net/v1/market-data/last-close/{country}?api_key={os.environ['QUICKFS_API_KEY']}"
 
     #this makes use of the bulk endpoint --> does not contain all symbols
-   # migrate_close_prices(url,os.environ['POSTGRES_DB'],os.environ['POSTGRES_USER'],os.environ['POSTGRES_PASSWORD'],os.environ['DB_HOST'],int(os.environ['DB_PORT']))
+    migrate_close_prices(url,os.environ['POSTGRES_DB'],os.environ['POSTGRES_USER'],os.environ['POSTGRES_PASSWORD'],os.environ['DB_HOST'],int(os.environ['DB_PORT']))
     
 
-    
+print("#######################################")
+print("Start migrating close prices EODHD")
+print("#######################################\n\n\n")
+# update prices which are missing in qfsy enpoint via eodh endpoint
+update_close_prices_via_eodhd_bulk(
+    dbname=os.environ["POSTGRES_DB"],
+    user=os.environ["POSTGRES_USER"],
+    password=os.environ["POSTGRES_PASSWORD"],
+    host=os.environ["DB_HOST"],
+    port=int(os.environ["DB_PORT"]),
+    eodhd_api_token=os.environ["EODHD_API_TOKEN"],
+    db_update_chunk_size=3000,
+)
+print("#######################################")
+print("END migrating close prices EODHD")
+print("#######################################\n\n\n")
 
 
-#fetches the missing symbols
+print("#######################################")
+print("START migrating close prices QUICKFS single")
+print("#######################################\n\n\n")
+#fetches the missing symbols from individual quickfs endpoint
 backfill_missing_close_prices(
     dbname=os.environ["POSTGRES_DB"],
     user=os.environ["POSTGRES_USER"],
@@ -222,6 +250,9 @@ backfill_missing_close_prices(
     fetch_chunk_size=500,
     db_chunk_size=3000,
 )
+print("#######################################")
+print("END migrating close prices QUICKFS single")
+print("#######################################\n\n\n")
 
 print("#######################################")
 print("End migrating close prices")
