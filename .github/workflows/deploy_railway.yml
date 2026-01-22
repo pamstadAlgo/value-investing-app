@@ -22,6 +22,8 @@ on:
         required: true
       RAILWAY_SVC_ID:
         required: true
+      RAILWAY_ENV_ID:
+        required: true      
       RAILWAY_SVC2_ID:
         required: false
       # AWS_ACCESS_KEY_ID:
@@ -66,13 +68,20 @@ jobs:
     container: ghcr.io/railwayapp/cli:latest
 
     steps:
-      - name: Redeploy Railway service
-        run: |
-          railway redeploy --service=${{ secrets.RAILWAY_SVC_ID }} --yes
-          # Redeploy second service if provided
-          if [ -n "${{ secrets.RAILWAY_SVC2_ID }}" ]; then
-            echo "RAILWAY_SVC2_ID is set, redeploying second service..."
-            railway redeploy --service=${{ secrets.RAILWAY_SVC2_ID }} --yes
-          fi
+      - name: Trigger Railway deploy (new deployment)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SVC_ID: ${{ secrets.RAILWAY_SVC_ID }}
+          RAILWAY_ENV_ID: ${{ secrets.RAILWAY_ENV_ID }}
+        run: |
+          curl https://backboard.railway.app/graphql/v2 \
+            -X POST \
+            -H "Authorization: Bearer ${RAILWAY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "query": "mutation ($serviceId: String!, $environmentId: String!) { serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId) }",
+              "variables": {
+                "serviceId": "'"${RAILWAY_SVC_ID}"'",
+                "environmentId": "'"${RAILWAY_ENV_ID}"'"
+              }
+            }'
