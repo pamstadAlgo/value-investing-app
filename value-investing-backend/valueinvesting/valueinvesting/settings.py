@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'watchlist',
     'valuation_history',
     'django_celery_results',
+    'analyst_reports',
 ]
 
 SITE_ID = 1
@@ -234,6 +235,12 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# AWS S3
+AWS_ACCESS_KEY_ID = os.environ.get("ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.environ.get("SECRET_ACCESS_KEY")
+AWS_S3_REGION_NAME = os.environ.get("AWS_REGION")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
 # Celery
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")

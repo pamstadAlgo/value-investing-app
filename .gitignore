@@ -6,3 +6,5 @@ value-investing-backend/migrations/quickfs_database/.venv/
 value-investing-backend/migrations/quickfs_database/.env
 value-investing-backend/migrations/quickfs_database/.env.local
 value-investing-backend/migrations/quickfs_database/.env.prd
+value-investing-backend/valueinvesting/.env
+value-investing-backend/valueinvesting/.env.prod
