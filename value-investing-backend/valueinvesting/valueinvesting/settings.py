@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "quickfs_dj", #quickfs_dj stands for quickfs_django; still name was chosen because of the collision with the offical quickfs python package
     'watchlist',
     'valuation_history',
+    'django_celery_results',
 ]
 
 SITE_ID = 1
@@ -233,3 +234,12 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_TASK_TRACK_STARTED = True
