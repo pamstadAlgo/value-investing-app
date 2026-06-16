@@ -2,3 +2,7 @@ value-investing-frontend/value-investing/node_modules/
 value-investing-frontend/.DS_Store
 value-investing-frontend/value-investing/.DS_Store
 value-investing-frontend/node_modules/
+value-investing-backend/migrations/quickfs_database/.venv/
+value-investing-backend/migrations/quickfs_database/.env
+value-investing-backend/migrations/quickfs_database/.env.local
+value-investing-backend/migrations/quickfs_database/.env.prd

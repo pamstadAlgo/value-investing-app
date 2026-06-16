@@ -1283,7 +1283,7 @@ def get_rnoa_cases(qfs_symbol, n=6, tax_rate = 0.3):
         print('income.net_operating_assets: ', balance_t_1.net_operating_assets)
 
         # avoid none or zero division
-        if balance_t_1.net_operating_assets is None or balance_t_1.net_operating_assets == 0:
+        if balance_t_1.net_operating_assets is None or balance_t_1.net_operating_assets == 0 or income_t.operating_income is None:
             continue
 
         rnoa = income_t.operating_income*(1-tax_rate)/balance_t_1.net_operating_assets
@@ -1323,8 +1323,8 @@ def get_rnoa_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=100):
         income_t = incomes[i]
         noa_prev = balances[i-1].net_operating_assets
 
-        if noa_prev == 0:
-            continue  # avoid division by zero
+        if noa_prev is None or noa_prev == 0 or income_t.operating_income is None:
+            continue
 
         rnoa = income_t.operating_income * (1 - tax_rate) / noa_prev
         year = income_t.period_end_date.year
@@ -1363,10 +1363,10 @@ def get_ato_ts(qfs_symbol, n = 10, tax_rate = 0.3, scaleFactor=1):
         income_t = incomes[i]
         noa_prev = balances[i-1].net_operating_assets
 
-        if noa_prev == 0:
-            continue  # avoid division by zero
+        if noa_prev is None or noa_prev == 0 or income_t.revenue is None:
+            continue
 
-        ato = income_t.revenue  / noa_prev
+        ato = income_t.revenue / noa_prev
         year = income_t.period_end_date.year
         ato_series.append({'year': str(year), 'value': ato*scaleFactor})
 
@@ -1524,7 +1524,7 @@ def get_rnoa(qfs_symbol, years: int = 5, include_ttm: bool = True, precision: in
         noa_t_minus_1 = balances[i-1].net_operating_assets
 
         # avoid invalid denominator
-        if noa_t_minus_1 in (None, 0):
+        if noa_t_minus_1 in (None, 0) or op_income_t is None:
             rnoa[year_t] = 0
             continue
 
@@ -1592,7 +1592,7 @@ def get_asset_turnover(qfs_symbol, years: int = 5, include_ttm: bool = True, pre
         noa_t_minus_1 = balances[i-1].net_operating_assets
 
         # avoid invalid denominator
-        if noa_t_minus_1 in (None, 0):
+        if noa_t_minus_1 in (None, 0) or revenue_t is None:
             ato[year_t] = 0
             continue
 
@@ -1728,7 +1728,7 @@ def get_effective_tax_rates(qfs_symbol, years: int=5, include_ttm: bool = True, 
 
     #compute effective tax rate
     for i, stmt in enumerate(reversed(ins)):
-        effective_tr[stmt.get('year', 0)] = round(stmt['income_tax']/stmt['pretax_income'],precision) if stmt['pretax_income'] not in (None, 0) else 0
+        effective_tr[stmt.get('year', 0)] = round(stmt['income_tax']/stmt['pretax_income'],precision) if stmt['pretax_income'] not in (None, 0) and stmt['income_tax'] is not None else 0
 
     #compute ttm
     #include ttm values
@@ -1987,7 +1987,7 @@ def get_financials_ts(qfs_symbol: str, model, metric: str, years: int = 10, scal
     
     #we will sort data from oldest to newest (2019, 2020, 2021)
     ts = [
-        {'year': str(record['year']), 'value': record[metric]*scale_factor}
+        {'year': str(record['year']), 'value': record[metric] * scale_factor if record[metric] is not None else None}
         for record in sorted(last_records, key=lambda x: x['year'])
     ]
 

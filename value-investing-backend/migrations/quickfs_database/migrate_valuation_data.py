@@ -84,7 +84,7 @@ def compute_epv(conn, qfs_symbol, nr_years_avg_rev=4, nr_years_avg_op_margin=4, 
         cur.execute(query, (qfs_symbol, tax_rate, wacc, nr_years_avg_rev, nr_years_avg_op_margin))
         result = cur.fetchone()
         conn.commit()
-        return result
+        return result if result is not None else (-1, -1)
 
 
 def compute_epv_ttm(conn, qfs_symbol, wacc=0.1, tax_rate=0.3):
@@ -151,8 +151,8 @@ def compute_epv_ttm(conn, qfs_symbol, wacc=0.1, tax_rate=0.3):
         cur.execute(query, (qfs_symbol, tax_rate, wacc))
         result = cur.fetchone()
         conn.commit()
-        return result
-    
+        return result if result is not None else (-1, -1)
+
 def equity_val_penman(conn, qfs_symbol, nr_years_avg_rev=3, nr_years_avg_op_margin=3, wacc=0.1, tax_rate=0.3):
     """
     Computes the equity value of a company according to Stephan Penman's book
