@@ -1,0 +1,8 @@
+1. New tab: Analyst report
+2. Dropzone to upload files
+ 2.1 Uploads table with FK user and company
+3.0 Processing uploaded files (restrict to pdf in the beginning)
+ 3.1 Celery backend pipeline with mineru + structured output
+ 3.11 Create table to store structured output
+ 3.2 Define structured output + report sections
+ 3.3 Prompt + injection of information

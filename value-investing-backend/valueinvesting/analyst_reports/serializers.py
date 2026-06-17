@@ -5,5 +5,5 @@ from .models import UserUpload
 class UserUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserUpload
-        fields = ["id", "s3_key", "file_name", "file_type", "uploaded_at", "status"]
-        read_only_fields = ["id", "uploaded_at", "status"]
+        fields = ["id", "s3_key", "file_name", "file_type", "uploaded_at", "status", "ocr_s3_key"]
+        read_only_fields = ["id", "uploaded_at", "status", "ocr_s3_key"]

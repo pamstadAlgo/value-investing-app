@@ -7,6 +7,7 @@ from rest_framework import status
 from quickfs_dj.models import TradedCompanies
 from .models import UserUpload
 from .serializers import UserUploadSerializer
+from .tasks import process_uploaded_file
 
 
 class PresignedUploadURLView(APIView):
@@ -53,6 +54,8 @@ class ConfirmUploadView(APIView):
             file_name=file_name,
             file_type=file_type,
         )
+
+        process_uploaded_file.delay(upload.pk)
 
         serializer = UserUploadSerializer(upload)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

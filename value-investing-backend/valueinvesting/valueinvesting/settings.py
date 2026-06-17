@@ -242,6 +242,11 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("SECRET_ACCESS_KEY")
 AWS_S3_REGION_NAME = os.environ.get("AWS_REGION")
 AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
+# MinerU OCR
+MINERU_API_URL = os.environ.get("MINERU_API_URL")
+MODAL_KEY = os.environ.get("MODAL_KEY")
+MODAL_SECRET = os.environ.get("MODAL_SECRET")
+
 # Celery
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = "django-db"

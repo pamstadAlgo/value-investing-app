@@ -18,6 +18,7 @@ class UserUpload(models.Model):
     file_type = models.CharField(max_length=100)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.UPLOADED)
+    ocr_s3_key = models.CharField(max_length=500, null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "s3_key")

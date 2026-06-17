@@ -36,6 +36,14 @@ function AnalystReport() {
     fetchUploadedFiles();
   }, [fetchUploadedFiles]);
 
+  useEffect(() => {
+    const hasProcessing = uploadedFiles.some((f) => f.status === "processing");
+    if (!hasProcessing) return;
+
+    const interval = setInterval(fetchUploadedFiles, 3000);
+    return () => clearInterval(interval);
+  }, [uploadedFiles, fetchUploadedFiles]);
+
   const handleFilesAdded = async (newFiles) => {
     const existingNames = new Set(stagedFiles.map((f) => f.name));
     const accepted = newFiles.filter((f) => !existingNames.has(f.name));
