@@ -242,6 +242,11 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("SECRET_ACCESS_KEY")
 AWS_S3_REGION_NAME = os.environ.get("AWS_REGION")
 AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
+# Gemini LLM
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "gemini")
+
 # MinerU OCR
 MINERU_API_URL = os.environ.get("MINERU_API_URL")
 MODAL_KEY = os.environ.get("MODAL_KEY")

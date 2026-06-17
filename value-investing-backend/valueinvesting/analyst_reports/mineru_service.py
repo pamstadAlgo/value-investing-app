@@ -32,13 +32,23 @@ async def _submit_task(tmp_path: str) -> str:
     return response.json()["task_id"]
 
 
+_MAX_NOT_FOUND_RETRIES = 10
+
+
 async def _poll_until_done(task_id: str) -> None:
+    not_found_attempts = 0
     async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
         while True:
             response = await client.get(
                 f"{settings.MINERU_API_URL}/tasks/{task_id}",
                 headers=_headers(),
             )
+            if response.status_code == 404:
+                not_found_attempts += 1
+                if not_found_attempts >= _MAX_NOT_FOUND_RETRIES:
+                    raise RuntimeError(f"MinerU task {task_id} not found after {_MAX_NOT_FOUND_RETRIES} retries")
+                await asyncio.sleep(2)
+                continue
             response.raise_for_status()
             status = response.json()["status"]
 
@@ -47,7 +57,7 @@ async def _poll_until_done(task_id: str) -> None:
             if status == "failed":
                 raise RuntimeError(f"MinerU task failed: {task_id}")
 
-            await asyncio.sleep(4)
+            await asyncio.sleep(2)
 
 
 async def _fetch_result(task_id: str) -> dict:

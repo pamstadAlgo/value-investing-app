@@ -37,8 +37,8 @@ function AnalystReport() {
   }, [fetchUploadedFiles]);
 
   useEffect(() => {
-    const hasProcessing = uploadedFiles.some((f) => f.status === "processing");
-    if (!hasProcessing) return;
+    const shouldPoll = uploadedFiles.some((f) => ["uploaded", "scanning", "extracting"].includes(f.status));
+    if (!shouldPoll) return;
 
     const interval = setInterval(fetchUploadedFiles, 3000);
     return () => clearInterval(interval);
@@ -66,6 +66,15 @@ function AnalystReport() {
     const updated = stagedFiles.filter((f) => f.id !== id);
     setStagedFiles(updated);
     await saveStagedFiles(updated);
+  };
+
+  const handleRetry = async (uploadId) => {
+    try {
+      await axiosInstance.post(`/analyst-reports/retry/${uploadId}/`);
+      await fetchUploadedFiles();
+    } catch (err) {
+      showMessage(err.response?.data?.error || "Retry failed.", "error");
+    }
   };
 
   const handleProcessFiles = async () => {
@@ -125,7 +134,7 @@ function AnalystReport() {
 
       <StagedFilesList files={stagedFiles} onRemove={handleRemove} />
 
-      <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2 }}>
+      <Box sx={{ mt: "12px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
         <Button
           variant="contained"
           disabled={stagedFiles.length === 0 || processing}
@@ -136,7 +145,7 @@ function AnalystReport() {
         {processing && <CircularProgress className="custom-circular-progress" />}
       </Box>
 
-      <UploadedFilesList files={uploadedFiles} />
+      <UploadedFilesList files={uploadedFiles} onRetry={handleRetry} />
     </Box>
   );
 }

@@ -69,3 +69,26 @@ class UserUploadsView(APIView):
         )
         serializer = UserUploadSerializer(uploads, many=True)
         return Response(serializer.data)
+
+
+class RetryUploadView(APIView):
+    def post(self, request, upload_id):
+        try:
+            upload = UserUpload.objects.get(pk=upload_id, user=request.user)
+        except UserUpload.DoesNotExist:
+            return Response({"error": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if upload.status != UserUpload.Status.FAILED:
+            return Response({"error": "File is not in failed state."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if upload.retry_count >= 3:
+            return Response({"error": "Max retries reached."}, status=status.HTTP_400_BAD_REQUEST)
+
+        upload.retry_count += 1
+        upload.status = UserUpload.Status.UPLOADED
+        upload.save()
+
+        process_uploaded_file.delay(upload.pk)
+
+        serializer = UserUploadSerializer(upload)
+        return Response(serializer.data)

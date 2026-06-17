@@ -12,6 +12,7 @@ app = modal.App("mineru")
     image=image,
     timeout=600,
     scaledown_window=300,
+    max_containers=1,
 )
 # @modal.web_server(port=8000, startup_timeout=300, requires_proxy_auth=True)
 @modal.web_server(port=8000, startup_timeout=300)
