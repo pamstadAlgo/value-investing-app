@@ -34,40 +34,39 @@ class GeminiStructuredOutput(LLMProvider):
         self.model = getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash")
 
     def extract(self, md_content: str) -> dict:
-        return self._gemini_call(md_content)
+        prompt = f"Extract structured information from the following document:\n\n{md_content}"
+        return self.run_agent(prompt, SYSTEM_PROMPT, DocumentExtraction)
 
-    def _gemini_call(self, doc_text: str) -> dict:
+    def run_agent(self, user_message: str, system_prompt: str, schema: type) -> dict:
         """
-        Sync Gemini call.
+        Generic structured Gemini call used by all report agents.
 
         Tries constrained decoding first (response_schema). If Gemini rejects
         the schema as too complex, falls back to free-form JSON with the schema
         embedded in the prompt.
         """
-        prompt = f"Extract structured information from the following document:\n\n{doc_text}"
-
         try:
             response = self.client.models.generate_content(
                 model=self.model,
-                contents=prompt,
+                contents=user_message,
                 config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
+                    system_instruction=system_prompt,
                     response_mime_type="application/json",
-                    response_schema=DocumentExtraction,
+                    response_schema=schema,
                 ),
             )
         except Exception as e:
             if "too many states" in str(e).lower() or "INVALID_ARGUMENT" in str(e):
                 logger.warning("Gemini rejected schema — falling back to prompt-embedded JSON")
-                schema_json = json.dumps(DocumentExtraction.model_json_schema(), indent=2)
+                schema_json = json.dumps(schema.model_json_schema(), indent=2)
                 response = self.client.models.generate_content(
                     model=self.model,
                     contents=(
-                        f"{prompt}\n\n"
+                        f"{user_message}\n\n"
                         f"Respond with a single JSON object matching this schema:\n{schema_json}"
                     ),
                     config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_PROMPT,
+                        system_instruction=system_prompt,
                         response_mime_type="application/json",
                     ),
                 )
@@ -77,4 +76,4 @@ class GeminiStructuredOutput(LLMProvider):
         if not response.text:
             raise ValueError("Empty response from Gemini")
 
-        return DocumentExtraction.model_validate_json(response.text).model_dump()
+        return schema.model_validate_json(response.text).model_dump()

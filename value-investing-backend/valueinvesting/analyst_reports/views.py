@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from quickfs_dj.models import TradedCompanies
-from .models import UserUpload
-from .serializers import UserUploadSerializer
-from .tasks import process_uploaded_file
+from .models import UserUpload, AnalystReport
+from .serializers import UserUploadSerializer, AnalystReportSerializer
+from .tasks import process_uploaded_file, generate_analyst_report
 
 
 class PresignedUploadURLView(APIView):
@@ -92,3 +92,41 @@ class RetryUploadView(APIView):
 
         serializer = UserUploadSerializer(upload)
         return Response(serializer.data)
+
+
+class GenerateAnalystReportView(APIView):
+    def post(self, request, qfs_symbol):
+        company = TradedCompanies.objects.get(qfs_symbol=qfs_symbol)
+
+        in_flight = AnalystReport.objects.filter(
+            user=request.user,
+            qfs_symbol=company,
+            status__in=[AnalystReport.Status.PENDING, AnalystReport.Status.GENERATING],
+        ).exists()
+        if in_flight:
+            return Response(
+                {"detail": "A report is already being generated for this company."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        report = AnalystReport.objects.create(user=request.user, qfs_symbol=company)
+        generate_analyst_report.delay(report.pk)
+        return Response(AnalystReportSerializer(report).data, status=status.HTTP_202_ACCEPTED)
+
+
+class GetAnalystReportView(APIView):
+    def get(self, request, qfs_symbol):
+        reports = AnalystReport.objects.filter(
+            user=request.user,
+            qfs_symbol__qfs_symbol=qfs_symbol,
+        )
+        return Response(AnalystReportSerializer(reports, many=True).data)
+
+
+class AnalystReportDetailView(APIView):
+    def get(self, request, report_pk):
+        try:
+            report = AnalystReport.objects.get(pk=report_pk, user=request.user)
+        except AnalystReport.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(AnalystReportSerializer(report).data)

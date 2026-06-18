@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Box, Button, Typography, CircularProgress } from "@mui/material";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Box, Button, Typography, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
+} from "@mui/material";
 import { useSelector } from "react-redux";
 import DropZone from "./DropZone";
 import StagedFilesList from "./StagedFilesList";
@@ -14,9 +16,18 @@ function AnalystReport() {
   const [duplicateNames, setDuplicateNames] = useState([]);
   const [processing, setProcessing] = useState(false);
 
+  const [reports, setReports]                   = useState([]);
+  const [currentReportPk, setCurrentReportPk]   = useState(null);
+  const [showWarningModal, setShowWarningModal]  = useState(false);
+  const [generatingReport, setGeneratingReport]  = useState(false);
+  const reportPollRef = useRef(null);
+
   const { showMessage } = useSnackbar();
   const analysisState = useSelector((state) => state.analysis);
   const qfs_symbol = analysisState?.selectedTickerSymbol?.qfs_symbol;
+
+  const currentReport = reports.find((r) => r.id === currentReportPk) ?? null;
+  const currentStatus = currentReport?.status ?? null;
 
   const fetchUploadedFiles = useCallback(async () => {
     if (!qfs_symbol) return;
@@ -43,6 +54,35 @@ function AnalystReport() {
     const interval = setInterval(fetchUploadedFiles, 3000);
     return () => clearInterval(interval);
   }, [uploadedFiles, fetchUploadedFiles]);
+
+  // Load all reports for this symbol on mount
+  useEffect(() => {
+    if (!qfs_symbol) return;
+    axiosInstance.get(`/analyst-reports/${qfs_symbol}/reports/`)
+      .then(({ data }) => {
+        setReports(data);
+        const latest = data[0] ?? null;
+        if (latest) setCurrentReportPk(latest.id);
+      })
+      .catch(() => {});
+  }, [qfs_symbol]);
+
+  const fetchReportStatus = useCallback(async () => {
+    if (!currentReportPk) return;
+    try {
+      const { data } = await axiosInstance.get(`/analyst-reports/reports/${currentReportPk}/`);
+      setReports((prev) => prev.map((r) => r.id === currentReportPk ? data : r));
+    } catch {}
+  }, [currentReportPk]);
+
+  // Only poll while the current report is actively in-flight
+  useEffect(() => {
+    if (!currentReportPk) return;
+    if (currentStatus !== "pending" && currentStatus !== "generating") return;
+
+    reportPollRef.current = setInterval(fetchReportStatus, 4000);
+    return () => clearInterval(reportPollRef.current);
+  }, [currentStatus, currentReportPk, fetchReportStatus]);
 
   const handleFilesAdded = async (newFiles) => {
     const existingNames = new Set(stagedFiles.map((f) => f.name));
@@ -74,6 +114,32 @@ function AnalystReport() {
       await fetchUploadedFiles();
     } catch (err) {
       showMessage(err.response?.data?.error || "Retry failed.", "error");
+    }
+  };
+
+  const triggerReportGeneration = async () => {
+    setShowWarningModal(false);
+    setGeneratingReport(true);
+    try {
+      const { data } = await axiosInstance.post(`/analyst-reports/${qfs_symbol}/generate/`);
+      // Prepend the new pending report to the list and start polling it
+      setReports((prev) => [{ id: data.report_id, status: "pending", created_at: new Date().toISOString(), presigned_url: null }, ...prev]);
+      setCurrentReportPk(data.report_id);
+    } catch (err) {
+      showMessage(err.response?.data?.error || "Failed to start report generation.", "error");
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const handleCreateReport = () => {
+    const hasProcessing = uploadedFiles.some((f) =>
+      ["uploaded", "scanning", "extracting"].includes(f.status)
+    );
+    if (hasProcessing) {
+      setShowWarningModal(true);
+    } else {
+      triggerReportGeneration();
     }
   };
 
@@ -130,6 +196,44 @@ function AnalystReport() {
         Upload documents to be extracted and included in the analyst report.
       </Typography>
 
+      {/* Report history list */}
+      {reports.length > 0 && (
+        <Box sx={{ mb: 3, display: "flex", flexDirection: "column", gap: 1 }}>
+          {reports.map((r) => (
+            <Box
+              key={r.id}
+              sx={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                px: 2, py: 1.5, borderRadius: 1,
+                border: "1px solid var(--border-color)",
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "var(--text-color-grey-scale)" }}>
+                {new Date(r.created_at).toLocaleString()}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                {(r.status === "pending" || r.status === "generating") && (
+                  <>
+                    <CircularProgress size={14} className="custom-circular-progress" />
+                    <Typography variant="body2" sx={{ color: "var(--text-color-grey-scale)" }}>
+                      {r.status === "pending" ? "Queued" : "Generating..."}
+                    </Typography>
+                  </>
+                )}
+                {r.status === "failed" && (
+                  <Typography variant="body2" color="error">Failed</Typography>
+                )}
+                {r.status === "done" && r.presigned_url && (
+                  <Button size="small" variant="outlined" href={r.presigned_url} target="_blank" rel="noopener noreferrer">
+                    Download
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+
       <DropZone onFilesAdded={handleFilesAdded} />
 
       <StagedFilesList files={stagedFiles} onRemove={handleRemove} />
@@ -146,6 +250,40 @@ function AnalystReport() {
       </Box>
 
       <UploadedFilesList files={uploadedFiles} onRetry={handleRetry} />
+
+      {/* Create Analyst Report button */}
+      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          className="contained-custom-button"
+          disabled={
+            uploadedFiles.filter((f) => f.status === "done").length === 0 ||
+            generatingReport ||
+            currentStatus === "pending" ||
+            currentStatus === "generating"
+          }
+          onClick={handleCreateReport}>
+          Create Analyst Report
+        </Button>
+      </Box>
+
+      {/* Warning modal — some files still processing */}
+      <Dialog open={showWarningModal} onClose={() => setShowWarningModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Some files are still processing</DialogTitle>
+        <DialogContent>
+          <DialogContentText>These files haven't finished yet and won't be included in the report:</DialogContentText>
+          <Box component="ul" sx={{ mt: 1 }}>
+            {uploadedFiles
+              .filter((f) => ["uploaded", "scanning", "extracting"].includes(f.status))
+              .map((f) => <li key={f.id}><Typography variant="body2">{f.file_name}</Typography></li>)
+            }
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowWarningModal(false)}>Cancel</Button>
+          <Button variant="contained" onClick={triggerReportGeneration}>Generate Anyway</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
