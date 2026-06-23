@@ -1,7 +1,10 @@
-import React from "react";
-import { Box, List, ListItem, ListItemText, Typography, Chip, Divider, IconButton, Tooltip, LinearProgress } from "@mui/material";
+import React, { useState } from "react";
+import { Box, List, ListItem, ListItemText, Typography, Chip, Divider, IconButton, Tooltip, LinearProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, Button,
+} from "@mui/material";
 import PictureAsPdfOutlinedIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LoadingDots from "../../../GlobalComponents/LoadingDots";
 
 const STATUS_STYLES = {
@@ -47,8 +50,12 @@ function LinearProgressWithLabel({ value }) {
   );
 }
 
-function UploadedFilesList({ files, onRetry }) {
+function UploadedFilesList({ files, onRetry, onDelete }) {
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
   if (files.length === 0) return null;
+
+  const fileToDelete = files.find((f) => f.id === pendingDeleteId);
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -58,6 +65,7 @@ function UploadedFilesList({ files, onRetry }) {
       <List disablePadding>
         {files.map((file, index) => {
           const style = STATUS_STYLES[file.status] ?? STATUS_STYLES.done;
+          const canDelete = file.status === "done" || file.status === "failed";
           return (
             <React.Fragment key={file.id}>
               <ListItem disablePadding sx={{ py: 1, flexDirection: "column", alignItems: "stretch" }}>
@@ -140,18 +148,51 @@ function UploadedFilesList({ files, onRetry }) {
                       variant="outlined"
                     />
                   )}
+                  {canDelete && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setPendingDeleteId(file.id)}
+                      sx={{ color: "var(--error-red)", ml: 1 }}
+                    >
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </Box>
                 {file.status in PROGRESS_VALUES && (
                   <LinearProgressWithLabel value={PROGRESS_VALUES[file.status]} />
                 )}
               </ListItem>
-              {/* {index < files.length - 1 && (
-                <Divider sx={{ borderColor: "var(--border-glass-card)" }} />
-              )} */}
             </React.Fragment>
           );
         })}
       </List>
+
+      <Dialog
+        open={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { backgroundColor: "var(--background-glass-card-less-transparent)", backdropFilter: "var(--backdrop-filter-glass-card)" } }}
+      >
+        <DialogTitle>Delete file?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <strong>{fileToDelete?.file_name}</strong> will be permanently deleted from storage. This cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            className="contained-custom-button"
+            onClick={() => {
+              onDelete(pendingDeleteId);
+              setPendingDeleteId(null);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

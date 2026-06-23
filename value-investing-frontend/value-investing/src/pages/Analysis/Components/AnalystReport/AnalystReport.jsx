@@ -117,6 +117,16 @@ function AnalystReport() {
     }
   };
 
+  const handleDeleteUpload = async (uploadId) => {
+    try {
+      await axiosInstance.delete(`/analyst-reports/uploads/${uploadId}/`);
+      setUploadedFiles((prev) => prev.filter((f) => f.id !== uploadId));
+      showMessage("File deleted successfully.", "success");
+    } catch (err) {
+      showMessage(err.response?.data?.detail || "Delete failed.", "error");
+    }
+  };
+
   const triggerReportGeneration = async () => {
     setShowWarningModal(false);
     setGeneratingReport(true);
@@ -249,7 +259,7 @@ function AnalystReport() {
         {processing && <CircularProgress className="custom-circular-progress" />}
       </Box>
 
-      <UploadedFilesList files={uploadedFiles} onRetry={handleRetry} />
+      <UploadedFilesList files={uploadedFiles} onRetry={handleRetry} onDelete={handleDeleteUpload} />
 
       {/* Create Analyst Report button */}
       <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>

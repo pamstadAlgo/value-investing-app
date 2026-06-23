@@ -98,6 +98,7 @@ class GenerateAnalystReportView(APIView):
     def post(self, request, qfs_symbol):
         company = TradedCompanies.objects.get(qfs_symbol=qfs_symbol)
 
+        # check if there is already an analyst report in progress
         in_flight = AnalystReport.objects.filter(
             user=request.user,
             qfs_symbol=company,
@@ -110,6 +111,8 @@ class GenerateAnalystReportView(APIView):
             )
 
         report = AnalystReport.objects.create(user=request.user, qfs_symbol=company)
+        
+        # hand off report generation to celery queue
         generate_analyst_report.delay(report.pk)
         return Response(AnalystReportSerializer(report).data, status=status.HTTP_202_ACCEPTED)
 
@@ -121,6 +124,53 @@ class GetAnalystReportView(APIView):
             qfs_symbol__qfs_symbol=qfs_symbol,
         )
         return Response(AnalystReportSerializer(reports, many=True).data)
+
+
+class DeleteUploadView(APIView):
+    IN_FLIGHT_STATUSES = {
+        UserUpload.Status.UPLOADED,
+        UserUpload.Status.SCANNING,
+        UserUpload.Status.EXTRACTING,
+    }
+
+    def delete(self, request, upload_id):
+        try:
+            upload = UserUpload.objects.get(pk=upload_id, user=request.user)
+        except UserUpload.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if upload.status in self.IN_FLIGHT_STATUSES:
+            return Response(
+                {"detail": "Cannot delete a file that is currently being processed."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        report_in_flight = AnalystReport.objects.filter(
+            user=request.user,
+            status__in=[AnalystReport.Status.PENDING, AnalystReport.Status.GENERATING],
+            source_uploads=upload,
+        ).exists()
+        if report_in_flight:
+            return Response(
+                {"detail": "Cannot delete a file while an analyst report using it is being generated."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_S3_REGION_NAME,
+        )
+        keys_to_delete = [k for k in [upload.s3_key, upload.ocr_s3_key, upload.llm_s3_key] if k]
+        if keys_to_delete:
+            s3_client.delete_objects(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                Delete={"Objects": [{"Key": k} for k in keys_to_delete]},
+            )
+
+        upload.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AnalystReportDetailView(APIView):
