@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box, Button, Typography, CircularProgress,
+import { Box, Button, Typography, CircularProgress, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
 } from "@mui/material";
 import { useSelector } from "react-redux";
@@ -259,23 +259,38 @@ function AnalystReport() {
         {processing && <CircularProgress className="custom-circular-progress" />}
       </Box>
 
-      <UploadedFilesList files={uploadedFiles} onRetry={handleRetry} onDelete={handleDeleteUpload} />
+      <UploadedFilesList
+        files={uploadedFiles}
+        onRetry={handleRetry}
+        onDelete={handleDeleteUpload}
+        reportInFlight={currentStatus === "pending" || currentStatus === "generating"}
+      />
 
       {/* Create Analyst Report button */}
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          variant="contained"
-          className="contained-custom-button"
-          disabled={
-            uploadedFiles.filter((f) => f.status === "done").length === 0 ||
-            generatingReport ||
-            currentStatus === "pending" ||
-            currentStatus === "generating"
-          }
-          onClick={handleCreateReport}>
-          Create Analyst Report
-        </Button>
-      </Box>
+      {(() => {
+        const noDoneFiles = uploadedFiles.filter((f) => f.status === "done").length === 0;
+        const disabledReason =
+          currentStatus === "pending"   ? "A report is already queued." :
+          currentStatus === "generating" ? "A report is already being generated." :
+          generatingReport               ? "Starting report generation…" :
+          noDoneFiles                    ? "Upload and process at least one file first." :
+          null;
+        return (
+          <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+            <Tooltip title={disabledReason ?? ""} arrow disableHoverListener={!disabledReason}>
+              <span>
+                <Button
+                  variant="contained"
+                  className="contained-custom-button"
+                  disabled={!!disabledReason}
+                  onClick={handleCreateReport}>
+                  Create Analyst Report
+                </Button>
+              </span>
+            </Tooltip>
+          </Box>
+        );
+      })()}
 
       {/* Warning modal — some files still processing */}
       <Dialog open={showWarningModal} onClose={() => setShowWarningModal(false)} maxWidth="sm" fullWidth>

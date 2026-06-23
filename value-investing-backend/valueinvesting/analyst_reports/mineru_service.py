@@ -12,8 +12,20 @@ def _headers() -> dict:
     }
 
 
+# Uploading a large PDF can be slow — give write/read plenty of room.
+_UPLOAD_TIMEOUT = httpx.Timeout(
+    connect=30,   # TCP handshake
+    write=120,    # time to finish sending the PDF body
+    read=600,     # time to receive the server's response (accounts for Modal cold start + processing)
+    pool=10,      # time to acquire a connection from the pool
+)
+
+# Result payload can be large (full markdown + JSON) — long read, tiny write.
+_RESULT_TIMEOUT = httpx.Timeout(connect=30, write=10, read=600, pool=10)
+
+
 async def _submit_task(tmp_path: str) -> str:
-    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+    async with httpx.AsyncClient(timeout=_UPLOAD_TIMEOUT, follow_redirects=True) as client:
         response = await client.post(
             f"{settings.MINERU_API_URL}/tasks",
             headers=_headers(),
@@ -61,7 +73,7 @@ async def _poll_until_done(task_id: str) -> None:
 
 
 async def _fetch_result(task_id: str) -> dict:
-    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+    async with httpx.AsyncClient(timeout=_RESULT_TIMEOUT, follow_redirects=True) as client:
         response = await client.get(
             f"{settings.MINERU_API_URL}/tasks/{task_id}/result",
             headers=_headers(),

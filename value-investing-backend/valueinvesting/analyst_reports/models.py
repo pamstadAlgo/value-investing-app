@@ -33,6 +33,7 @@ class UserUpload(models.Model):
     ocr_s3_key = models.CharField(max_length=500, null=True, blank=True)
     llm_s3_key = models.CharField(max_length=500, null=True, blank=True)
     retry_count   = models.PositiveSmallIntegerField(default=0)
+    error_message = models.TextField(null=True, blank=True)
     document_type = models.CharField(
         max_length=50, choices=DocumentType.choices, null=True, blank=True
     )

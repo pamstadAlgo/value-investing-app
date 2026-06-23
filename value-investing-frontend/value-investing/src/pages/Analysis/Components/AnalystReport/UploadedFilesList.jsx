@@ -50,7 +50,7 @@ function LinearProgressWithLabel({ value }) {
   );
 }
 
-function UploadedFilesList({ files, onRetry, onDelete }) {
+function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   if (files.length === 0) return null;
@@ -65,7 +65,7 @@ function UploadedFilesList({ files, onRetry, onDelete }) {
       <List disablePadding>
         {files.map((file, index) => {
           const style = STATUS_STYLES[file.status] ?? STATUS_STYLES.done;
-          const canDelete = file.status === "done" || file.status === "failed";
+          const isInFlight = file.status in LOADING_LABELS;
           return (
             <React.Fragment key={file.id}>
               <ListItem disablePadding sx={{ py: 1, flexDirection: "column", alignItems: "stretch" }}>
@@ -116,19 +116,22 @@ function UploadedFilesList({ files, onRetry, onDelete }) {
                           </IconButton>
                         </span>
                       </Tooltip>
-                      <Chip
-                        label="Failed"
-                        size="small"
-                        sx={{
-                          color: "var(--error-red)",
-                          borderColor: "var(--error-red)",
-                          backgroundColor: "transparent",
-                          fontFamily: "var(--font-family)",
-                          fontSize: "0.7rem",
-                          borderRadius: "var(--var-border-radius)",
-                        }}
-                        variant="outlined"
-                      />
+                      <Tooltip title={file.error_message ?? ""} arrow disableHoverListener={!file.error_message}>
+                        <Chip
+                          label="Failed"
+                          size="small"
+                          sx={{
+                            color: "var(--error-red)",
+                            borderColor: "var(--error-red)",
+                            backgroundColor: "transparent",
+                            fontFamily: "var(--font-family)",
+                            fontSize: "0.7rem",
+                            borderRadius: "var(--var-border-radius)",
+                            cursor: file.error_message ? "help" : "default",
+                          }}
+                          variant="outlined"
+                        />
+                      </Tooltip>
                       <Typography sx={{ fontSize: "0.7rem", color: "var(--text-color-grey-scale)" }}>
                         {file.retry_count}/3
                       </Typography>
@@ -148,15 +151,22 @@ function UploadedFilesList({ files, onRetry, onDelete }) {
                       variant="outlined"
                     />
                   )}
-                  {canDelete && (
-                    <IconButton
-                      size="small"
-                      onClick={() => setPendingDeleteId(file.id)}
-                      sx={{ color: "var(--error-red)", ml: 1 }}
-                    >
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  )}
+                  <Tooltip
+                    title={reportInFlight ? "Cannot delete files while an analyst report is being generated." : ""}
+                    arrow
+                    disableHoverListener={!reportInFlight}
+                  >
+                    <span>
+                      <IconButton
+                        size="small"
+                        disabled={reportInFlight}
+                        onClick={() => setPendingDeleteId(file.id)}
+                        sx={{ color: "var(--error-red)", ml: 1, "&.Mui-disabled": { color: "var(--text-color-grey-scale)" } }}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 </Box>
                 {file.status in PROGRESS_VALUES && (
                   <LinearProgressWithLabel value={PROGRESS_VALUES[file.status]} />
@@ -177,7 +187,10 @@ function UploadedFilesList({ files, onRetry, onDelete }) {
         <DialogTitle>Delete file?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <strong>{fileToDelete?.file_name}</strong> will be permanently deleted from storage. This cannot be undone.
+            {fileToDelete && fileToDelete.status in LOADING_LABELS
+              ? <>This file is currently being processed. Deleting <strong>{fileToDelete.file_name}</strong> will cancel processing and permanently remove it from storage.</>
+              : <><strong>{fileToDelete?.file_name}</strong> will be permanently deleted from storage. This cannot be undone.</>
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>

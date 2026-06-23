@@ -12,7 +12,14 @@ from . import s3_service, mineru_service, llm
 
 @shared_task
 def process_uploaded_file(upload_id):
-    upload = UserUpload.objects.get(pk=upload_id)
+    try:
+        upload = UserUpload.objects.get(pk=upload_id)
+    except UserUpload.DoesNotExist:
+        return  # deleted before the task ran
+
+    if upload.status == UserUpload.Status.DONE:
+        return  # redelivered after worker restart — already complete
+
     upload.status = UserUpload.Status.SCANNING
     upload.save()
 
@@ -60,9 +67,13 @@ def process_uploaded_file(upload_id):
         upload.status = UserUpload.Status.DONE
         upload.save()
 
-    except Exception:
-        upload.status = UserUpload.Status.FAILED
-        upload.save()
+    except Exception as e:
+        try:
+            upload.status = UserUpload.Status.FAILED
+            upload.error_message = str(e)
+            upload.save()
+        except Exception:
+            pass  # upload was deleted mid-task — nothing to update
         raise
 
     finally:

@@ -86,6 +86,7 @@ class RetryUploadView(APIView):
 
         upload.retry_count += 1
         upload.status = UserUpload.Status.UPLOADED
+        upload.error_message = None
         upload.save()
 
         process_uploaded_file.delay(upload.pk)
@@ -127,23 +128,11 @@ class GetAnalystReportView(APIView):
 
 
 class DeleteUploadView(APIView):
-    IN_FLIGHT_STATUSES = {
-        UserUpload.Status.UPLOADED,
-        UserUpload.Status.SCANNING,
-        UserUpload.Status.EXTRACTING,
-    }
-
     def delete(self, request, upload_id):
         try:
             upload = UserUpload.objects.get(pk=upload_id, user=request.user)
         except UserUpload.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if upload.status in self.IN_FLIGHT_STATUSES:
-            return Response(
-                {"detail": "Cannot delete a file that is currently being processed."},
-                status=status.HTTP_409_CONFLICT,
-            )
 
         report_in_flight = AnalystReport.objects.filter(
             user=request.user,

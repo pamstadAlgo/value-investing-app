@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 from django.conf import settings
 from google import genai
@@ -37,16 +38,17 @@ class GeminiStructuredOutput(LLMProvider):
         prompt = f"Extract structured information from the following document:\n\n{md_content}"
         return self.run_agent(prompt, SYSTEM_PROMPT, DocumentExtraction)
 
-    def run_agent(self, user_message: str, system_prompt: str, schema: type) -> dict:
-        """
-        Generic structured Gemini call used by all report agents.
+    _MAX_RETRIES = 3
 
-        Tries constrained decoding first (response_schema). If Gemini rejects
-        the schema as too complex, falls back to free-form JSON with the schema
-        embedded in the prompt.
-        """
+    @staticmethod
+    def _is_transient(exc: Exception) -> bool:
+        """True for temporary server errors (503/UNAVAILABLE) that are worth retrying."""
+        return "503" in str(exc) or "UNAVAILABLE" in str(exc)
+
+    def _generate(self, user_message: str, system_prompt: str, schema: type):
+        """Single Gemini call with schema-rejection fallback."""
         try:
-            response = self.client.models.generate_content(
+            return self.client.models.generate_content(
                 model=self.model,
                 contents=user_message,
                 config=types.GenerateContentConfig(
@@ -59,7 +61,7 @@ class GeminiStructuredOutput(LLMProvider):
             if "too many states" in str(e).lower() or "INVALID_ARGUMENT" in str(e):
                 logger.warning("Gemini rejected schema — falling back to prompt-embedded JSON")
                 schema_json = json.dumps(schema.model_json_schema(), indent=2)
-                response = self.client.models.generate_content(
+                return self.client.models.generate_content(
                     model=self.model,
                     contents=(
                         f"{user_message}\n\n"
@@ -70,8 +72,26 @@ class GeminiStructuredOutput(LLMProvider):
                         response_mime_type="application/json",
                     ),
                 )
-            else:
-                raise
+            raise
+
+    def run_agent(self, user_message: str, system_prompt: str, schema: type) -> dict:
+        """
+        Generic structured Gemini call used by all report agents.
+
+        Retries up to _MAX_RETRIES times on transient 503 errors with
+        exponential backoff (10 s, 20 s, 40 s) before giving up.
+        """
+        for attempt in range(self._MAX_RETRIES + 1):
+            try:
+                response = self._generate(user_message, system_prompt, schema)
+                break
+            except Exception as e:
+                if self._is_transient(e) and attempt < self._MAX_RETRIES:
+                    delay = 10 * (2 ** attempt)
+                    logger.warning("Gemini 503 — retrying in %ss (attempt %s/%s)", delay, attempt + 1, self._MAX_RETRIES)
+                    time.sleep(delay)
+                else:
+                    raise
 
         if not response.text:
             raise ValueError("Empty response from Gemini")
