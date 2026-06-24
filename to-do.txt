@@ -1,8 +1,17 @@
+
+NEXT STEPS:
+1. make e2e test to see if simple pdf is created
+1.1 Add document_type field on the frontend and allow user to make changes to document type
+2. Double check first structure output schema: does it make sense? Do we loose too much information?
+2.1 Work on the different agents and their prompts 
+
+
+
 1. New tab: Analyst report
 2. Dropzone to upload files --> DONE
  2.1 Uploads table with FK user and company --> DONE
 3.0 Processing uploaded files (restrict to pdf in the beginning)
- 3.1 Celery backend pipeline with mineru + structured output --> 
- 3.11 Create table to store structured output
- 3.2 Define structured output + report sections
+ 3.1 Celery backend pipeline with mineru + structured output --> DONE
+ 3.11 Create table to store structured output 
+ 3.2 Define structured output + report sections 
  3.3 Prompt + injection of information
