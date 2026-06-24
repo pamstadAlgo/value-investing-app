@@ -54,7 +54,7 @@ def process_uploaded_file(upload_id):
         # 4. Run LLM structured extraction
         upload.status = UserUpload.Status.EXTRACTING
         upload.save()
-        structured_data = llm.structure(md_content)
+        structured_data = llm.structure(md_content, document_type=upload.document_type)
         llm_s3_key = f"{folder}/llm/{base_name}.json"
         s3_service.upload_text(
             content=json.dumps(structured_data, indent=2),
@@ -63,7 +63,8 @@ def process_uploaded_file(upload_id):
         )
 
         upload.llm_s3_key = llm_s3_key
-        upload.document_type = structured_data.get("document_type")
+        if not upload.document_type:
+            upload.document_type = structured_data.get("document_type")
         upload.status = UserUpload.Status.DONE
         upload.save()
 

@@ -11,9 +11,7 @@ class UserUpload(models.Model):
         EARNINGS_CALL         = "earnings_call",         "Earnings Call"
         INVESTOR_PRESENTATION = "investor_presentation", "Investor Presentation"
         ANALYST_REPORT        = "analyst_report",        "Analyst Report"
-        PROXY_STATEMENT       = "proxy_statement",       "Proxy Statement"
         NEWS_ARTICLE          = "news_article",          "News Article"
-        FILING                = "filing",                "Filing"
         OTHER                 = "other",                 "Other"
 
     class Status(models.TextChoices):

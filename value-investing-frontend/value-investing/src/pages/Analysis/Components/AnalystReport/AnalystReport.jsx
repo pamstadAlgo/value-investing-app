@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box, Button, Typography, CircularProgress, Tooltip,
+import { Box, Button, Typography, CircularProgress, Tooltip, Chip, Divider, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
 } from "@mui/material";
 import { useSelector } from "react-redux";
+import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import DropZone from "./DropZone";
 import StagedFilesList from "./StagedFilesList";
 import UploadedFilesList from "./UploadedFilesList";
+import LoadingDots from "../../../GlobalComponents/LoadingDots";
 import { loadStagedFiles, saveStagedFiles } from "./fileStorageService";
 import axiosInstance from "../../../../axios/axiosConfig";
 import { useSnackbar } from "../../../GlobalComponents/SnackbarProvider";
 
 function AnalystReport() {
   const [stagedFiles, setStagedFiles] = useState([]);
+  const [documentTypes, setDocumentTypes] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [duplicateNames, setDuplicateNames] = useState([]);
   const [processing, setProcessing] = useState(false);
@@ -106,6 +111,15 @@ function AnalystReport() {
     const updated = stagedFiles.filter((f) => f.id !== id);
     setStagedFiles(updated);
     await saveStagedFiles(updated);
+    setDocumentTypes((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const handleTypeChange = (id, value) => {
+    setDocumentTypes((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleRetry = async (uploadId) => {
@@ -124,6 +138,18 @@ function AnalystReport() {
       showMessage("File deleted successfully.", "success");
     } catch (err) {
       showMessage(err.response?.data?.detail || "Delete failed.", "error");
+    }
+  };
+
+  const handleUpdateDocumentType = async (uploadId, newType) => {
+    try {
+      const { data } = await axiosInstance.patch(
+        `/analyst-reports/uploads/${uploadId}/document-type/`,
+        { document_type: newType }
+      );
+      setUploadedFiles((prev) => prev.map((f) => (f.id === uploadId ? data : f)));
+    } catch (err) {
+      showMessage(err.response?.data?.error || "Failed to update document type.", "error");
     }
   };
 
@@ -181,12 +207,14 @@ function AnalystReport() {
           s3_key,
           file_name: file.name,
           file_type: file.type,
+          document_type: documentTypes[file.id] && documentTypes[file.id] !== "auto" ? documentTypes[file.id] : null,
         });
       }
 
       // 4. Clear staged files and refresh the uploaded list
       await saveStagedFiles([]);
       setStagedFiles([]);
+      setDocumentTypes({});
       setDuplicateNames([]);
       await fetchUploadedFiles();
       showMessage("Files uploaded successfully.", "success");
@@ -197,100 +225,147 @@ function AnalystReport() {
     }
   };
 
+  const noDoneFiles = uploadedFiles.filter((f) => f.status === "done").length === 0;
+  const disabledReason =
+    currentStatus === "pending"    ? "A report is already queued." :
+    currentStatus === "generating" ? "A report is already being generated." :
+    generatingReport               ? "Starting report generation…" :
+    noDoneFiles                    ? "Upload and process at least one file first." :
+    null;
+
   return (
     <Box sx={{ mt: 4 }}>
-      <Typography className="title-mid-size" sx={{ mb: 1 }}>
-        Analyst Report
-      </Typography>
-      <Typography sx={{ color: "var(--text-color-grey-scale)", fontSize: "0.85rem", mb: 3 }}>
-        Upload documents to be extracted and included in the analyst report.
-      </Typography>
 
-      {/* Report history list */}
-      {reports.length > 0 && (
-        <Box sx={{ mb: 3, display: "flex", flexDirection: "column", gap: 1 }}>
-          {reports.map((r) => (
-            <Box
-              key={r.id}
-              sx={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                px: 2, py: 1.5, borderRadius: 1,
-                border: "1px solid var(--border-color)",
-              }}
-            >
-              <Typography variant="body2" sx={{ color: "var(--text-color-grey-scale)" }}>
-                {new Date(r.created_at).toLocaleString()}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                {(r.status === "pending" || r.status === "generating") && (
-                  <>
-                    <CircularProgress size={14} className="custom-circular-progress" />
-                    <Typography variant="body2" sx={{ color: "var(--text-color-grey-scale)" }}>
-                      {r.status === "pending" ? "Queued" : "Generating..."}
-                    </Typography>
-                  </>
-                )}
-                {r.status === "failed" && (
-                  <Typography variant="body2" color="error">Failed</Typography>
-                )}
-                {r.status === "done" && r.presigned_url && (
-                  <Button size="small" variant="outlined" href={r.presigned_url} target="_blank" rel="noopener noreferrer">
-                    Download
-                  </Button>
-                )}
+      {/* Card 1: Generated Reports */}
+      <div className="glass-card" style={{ marginTop: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+          <div className="title-mid-size">Generated Reports</div>
+          <Tooltip title={disabledReason ?? ""} arrow disableHoverListener={!disabledReason}>
+            <span>
+              <Button
+                variant="contained"
+                className="contained-custom-button"
+                startIcon={<AssessmentOutlinedIcon className="button-icon" />}
+                disabled={!!disabledReason}
+                onClick={handleCreateReport}>
+                Create Analyst Report
+              </Button>
+            </span>
+          </Tooltip>
+        </div>
+
+        {reports.length === 0 ? (
+          <Typography sx={{ color: "var(--text-color-grey-scale)", fontSize: "0.85rem" }}>
+            No reports generated yet.
+          </Typography>
+        ) : (
+          reports.map((r, index) => (
+            <React.Fragment key={r.id}>
+              <Box sx={{ display: "flex", alignItems: "center", py: 1, gap: 1 }}>
+                <ArticleOutlinedIcon sx={{ color: "var(--text-color-grey-scale)", flexShrink: 0 }} />
+                <Typography sx={{ color: "var(--header-color)", fontSize: "0.9rem", flex: 1 }}>
+                  Analyst Report {qfs_symbol} 
+                     <span
+                                className="title-last-close-price"
+                                style={{ fontSize: "11px", marginLeft: "12px" }}>
+                                ({new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })})
+                              </span>
+                  
+                   {/* &mdash; Created at {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })} */}
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {(r.status === "pending" || r.status === "generating") && (
+                    <>
+                      <LoadingDots />
+                      <Chip
+                        label={r.status === "pending" ? "Queued" : "Generating..."}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          color: "var(--action-color)",
+                          borderColor: "var(--action-color)",
+                          backgroundColor: "transparent",
+                          fontFamily: "var(--font-family)",
+                          fontSize: "0.7rem",
+                          borderRadius: "var(--var-border-radius)",
+                        }}
+                      />
+                    </>
+                  )}
+                  {r.status === "failed" && (
+                    <Chip
+                      label="Failed"
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        color: "var(--error-red)",
+                        borderColor: "var(--error-red)",
+                        backgroundColor: "transparent",
+                        fontFamily: "var(--font-family)",
+                        fontSize: "0.7rem",
+                        borderRadius: "var(--var-border-radius)",
+                      }}
+                    />
+                  )}
+                  {r.status === "done" && r.presigned_url && (
+                    <Tooltip title="Download report" arrow>
+                      <IconButton
+                        component="a"
+                        href={r.presigned_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        sx={{ color: "var(--action-color)" }}>
+                        <FileDownloadOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          ))}
+              {index < reports.length - 1 && (
+                <Divider sx={{ borderColor: "var(--border-glass-card)" }} />
+              )}
+            </React.Fragment>
+          ))
+        )}
+      </div>
+
+      {/* Card 2: Documents (upload + processed files) */}
+      <div className="glass-card" style={{ marginTop: "24px" }}>
+        <div className="title-mid-size" style={{ marginBottom: "20px" }}>Documents</div>
+
+
+
+        <DropZone onFilesAdded={handleFilesAdded} />
+
+
+
+        <StagedFilesList
+          files={stagedFiles}
+          onRemove={handleRemove}
+          documentTypes={documentTypes}
+          onTypeChange={handleTypeChange}
+        />
+
+        <Box sx={{ mt: "12px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
+          <Button
+            variant="contained"
+            disabled={stagedFiles.length === 0 || processing}
+            className="contained-custom-button"
+            onClick={handleProcessFiles}>
+            {processing ? "Uploading..." : "Process Files"}
+          </Button>
+          {processing && <CircularProgress className="custom-circular-progress" />}
         </Box>
-      )}
 
-      <DropZone onFilesAdded={handleFilesAdded} />
-
-      <StagedFilesList files={stagedFiles} onRemove={handleRemove} />
-
-      <Box sx={{ mt: "12px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
-        <Button
-          variant="contained"
-          disabled={stagedFiles.length === 0 || processing}
-          className="contained-custom-button"
-          onClick={handleProcessFiles}>
-          {processing ? "Uploading..." : "Process Files"}
-        </Button>
-        {processing && <CircularProgress className="custom-circular-progress" />}
-      </Box>
-
-      <UploadedFilesList
-        files={uploadedFiles}
-        onRetry={handleRetry}
-        onDelete={handleDeleteUpload}
-        reportInFlight={currentStatus === "pending" || currentStatus === "generating"}
-      />
-
-      {/* Create Analyst Report button */}
-      {(() => {
-        const noDoneFiles = uploadedFiles.filter((f) => f.status === "done").length === 0;
-        const disabledReason =
-          currentStatus === "pending"   ? "A report is already queued." :
-          currentStatus === "generating" ? "A report is already being generated." :
-          generatingReport               ? "Starting report generation…" :
-          noDoneFiles                    ? "Upload and process at least one file first." :
-          null;
-        return (
-          <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-            <Tooltip title={disabledReason ?? ""} arrow disableHoverListener={!disabledReason}>
-              <span>
-                <Button
-                  variant="contained"
-                  className="contained-custom-button"
-                  disabled={!!disabledReason}
-                  onClick={handleCreateReport}>
-                  Create Analyst Report
-                </Button>
-              </span>
-            </Tooltip>
-          </Box>
-        );
-      })()}
+        <UploadedFilesList
+          files={uploadedFiles}
+          onRetry={handleRetry}
+          onDelete={handleDeleteUpload}
+          onTypeUpdate={handleUpdateDocumentType}
+          reportInFlight={currentStatus === "pending" || currentStatus === "generating"}
+        />
+      </div>
 
       {/* Warning modal — some files still processing */}
       <Dialog open={showWarningModal} onClose={() => setShowWarningModal(false)} maxWidth="sm" fullWidth>

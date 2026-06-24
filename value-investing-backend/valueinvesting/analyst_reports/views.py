@@ -44,6 +44,10 @@ class ConfirmUploadView(APIView):
         s3_key = request.data.get("s3_key")
         file_name = request.data.get("file_name")
         file_type = request.data.get("file_type")
+        document_type = request.data.get("document_type") or None
+
+        if document_type and document_type not in UserUpload.DocumentType.values:
+            return Response({"error": "Invalid document_type."}, status=status.HTTP_400_BAD_REQUEST)
 
         company = TradedCompanies.objects.get(qfs_symbol=qfs_symbol)
 
@@ -53,6 +57,7 @@ class ConfirmUploadView(APIView):
             s3_key=s3_key,
             file_name=file_name,
             file_type=file_type,
+            document_type=document_type,
         )
 
         process_uploaded_file.delay(upload.pk)
@@ -169,3 +174,22 @@ class AnalystReportDetailView(APIView):
         except AnalystReport.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(AnalystReportSerializer(report).data)
+
+
+class UpdateUploadDocumentTypeView(APIView):
+    def patch(self, request, upload_id):
+        try:
+            upload = UserUpload.objects.get(pk=upload_id, user=request.user)
+        except UserUpload.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        document_type = request.data.get("document_type")
+        if not document_type:
+            return Response({"error": "document_type is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if document_type not in UserUpload.DocumentType.values:
+            return Response({"error": "Invalid document_type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        upload.document_type = document_type
+        upload.save(update_fields=["document_type"])
+
+        return Response(UserUploadSerializer(upload).data)

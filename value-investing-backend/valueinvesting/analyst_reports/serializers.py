@@ -6,7 +6,7 @@ from . import s3_service
 class UserUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserUpload
-        fields = ["id", "s3_key", "file_name", "file_type", "uploaded_at", "status", "ocr_s3_key", "retry_count", "error_message"]
+        fields = ["id", "s3_key", "file_name", "file_type", "uploaded_at", "status", "ocr_s3_key", "retry_count", "error_message", "document_type"]
         read_only_fields = ["id", "uploaded_at", "status", "ocr_s3_key", "retry_count", "error_message"]
 
 

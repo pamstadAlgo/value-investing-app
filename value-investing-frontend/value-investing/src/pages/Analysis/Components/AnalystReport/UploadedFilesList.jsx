@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Box, List, ListItem, ListItemText, Typography, Chip, Divider, IconButton, Tooltip, LinearProgress,
   Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, Button,
+  FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material";
 import PictureAsPdfOutlinedIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LoadingDots from "../../../GlobalComponents/LoadingDots";
+import { DOCUMENT_TYPE_OPTIONS } from "./StagedFilesList";
 
 const STATUS_STYLES = {
   done:   { color: "var(--action-color)", label: "Done" },
@@ -50,12 +52,13 @@ function LinearProgressWithLabel({ value }) {
   );
 }
 
-function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
+function UploadedFilesList({ files, onRetry, onDelete, onTypeUpdate, reportInFlight }) {
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   if (files.length === 0) return null;
 
   const fileToDelete = files.find((f) => f.id === pendingDeleteId);
+  const typeOptions = DOCUMENT_TYPE_OPTIONS.filter((o) => o.value !== "auto");
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -69,9 +72,9 @@ function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
           return (
             <React.Fragment key={file.id}>
               <ListItem disablePadding sx={{ py: 1, flexDirection: "column", alignItems: "stretch" }}>
-                <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                <Box sx={{ display: "flex", alignItems: "center", width: "100%", gap: 1 }}>
                   <PictureAsPdfOutlinedIcon
-                    sx={{ color: "var(--text-color-grey-scale)", mr: 1.5, flexShrink: 0 }}
+                    sx={{ color: "var(--text-color-grey-scale)", flexShrink: 0 }}
                   />
                   <ListItemText
                     primary={
@@ -85,7 +88,33 @@ function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
                       </Typography>
                     }
                   />
-                  {file.status in LOADING_LABELS ? (
+
+                  {/* Document type selector — shown for done files */}
+                  {file.status === "done" && (
+                    <FormControl size="small" sx={{ minWidth: 175, flexShrink: 0 }}>
+                      <InputLabel id={`proc-doc-type-label-${file.id}`} className="custom-label-val-model">
+                        Document Type
+                      </InputLabel>
+                      <Select
+                        className="custom-select-val-model"
+                        labelId={`proc-doc-type-label-${file.id}`}
+                        label="Document Type"
+                        value={file.document_type ?? ""}
+                        onChange={(e) => onTypeUpdate(file.id, e.target.value)}>
+                        {!file.document_type && (
+                          <MenuItem value="">—</MenuItem>
+                        )}
+                        {typeOptions.map((opt) => (
+                          <MenuItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+
+                  {/* Processing / status chips */}
+                  {isInFlight ? (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <LoadingDots />
                       <Chip
@@ -151,6 +180,7 @@ function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
                       variant="outlined"
                     />
                   )}
+
                   <Tooltip
                     title={reportInFlight ? "Cannot delete files while an analyst report is being generated." : ""}
                     arrow
@@ -161,7 +191,7 @@ function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
                         size="small"
                         disabled={reportInFlight}
                         onClick={() => setPendingDeleteId(file.id)}
-                        sx={{ color: "var(--error-red)", ml: 1, "&.Mui-disabled": { color: "var(--text-color-grey-scale)" } }}
+                        sx={{ color: "var(--error-red)", "&.Mui-disabled": { color: "var(--text-color-grey-scale)" } }}
                       >
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
@@ -172,6 +202,7 @@ function UploadedFilesList({ files, onRetry, onDelete, reportInFlight }) {
                   <LinearProgressWithLabel value={PROGRESS_VALUES[file.status]} />
                 )}
               </ListItem>
+              {index < files.length - 1 && <Divider sx={{ borderColor: "var(--border-glass-card)" }} />}
             </React.Fragment>
           );
         })}
