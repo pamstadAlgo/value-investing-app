@@ -165,6 +165,14 @@ class BaseReportAgent(ABC):
         # Restore original document order — as_completed() yields in completion order
         map_results.sort(key=lambda t: t[0])
         ordered_outputs = [obj for _, obj in map_results]
+
+        # Expose map outputs so callers (e.g. the Celery task) can persist them.
+        # Each entry carries the source document filename so the array is self-describing.
+        self._map_outputs: list[dict] = [
+            {"document": doc.file_name, "output": obj.model_dump()}
+            for doc, obj in zip(docs, ordered_outputs)
+        ]
+
         return self._reduce(ordered_outputs, bundle, provider)
 
     def _reduce(

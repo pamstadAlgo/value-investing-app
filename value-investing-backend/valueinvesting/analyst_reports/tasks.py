@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -117,19 +118,42 @@ def generate_analyst_report(report_id):
             # TODO: wire in financial_metrics, valuation_data, insider_data, shareholder_data
         )
 
-        # 4. Run all registered analysis agents
+        base_key = f"analyst-reports/{report.qfs_symbol_id}/user_{report.user_id}/report_{report.pk}"
+
+        # 4. Run all registered analysis agents and persist each output
         provider = llm.get_provider(getattr(settings, "LLM_PROVIDER", "gemini"))
         agent_outputs = {}
         for agent_cls in AGENT_REGISTRY:
             agent = agent_cls()
-            agent_outputs[agent.key] = agent.run(bundle, provider)
+            output = agent.run(bundle, provider)
+            agent_outputs[agent.key] = output
+
+            s3_service.upload_text(
+                json.dumps(output, indent=2),
+                f"{base_key}/agents/{agent.key}.json",
+                content_type="application/json",
+            )
+
+            map_outputs = getattr(agent, "_map_outputs", None)
+            if map_outputs is not None:
+                s3_service.upload_text(
+                    json.dumps(map_outputs, indent=2),
+                    f"{base_key}/agents/{agent.key}_map.json",
+                    content_type="application/json",
+                )
 
         # 5. Final report synthesis
         sections = FinalAnalystReportAgent().run(bundle, provider, agent_outputs)
 
+        s3_service.upload_text(
+            json.dumps(sections, indent=2),
+            f"{base_key}/final_sections.json",
+            content_type="application/json",
+        )
+
         # 6. Render to PDF and upload to S3
         pdf_bytes = render_report_to_pdf(sections, company_name=bundle.company_name)
-        pdf_s3_key = f"analyst-reports/{report.qfs_symbol_id}/user_{report.user_id}/report_{report.pk}.pdf"
+        pdf_s3_key = f"{base_key}/report.pdf"
         s3_service.upload_text(pdf_bytes, pdf_s3_key, content_type="application/pdf")
 
         # 7. Record which uploads were used and mark done
