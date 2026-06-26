@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
+
+from ..llm.schemas import DocumentType
 
 
 @dataclass
 class DocumentContext:
     file_name: str
-    document_type: str   # matches UserUpload.DocumentType values
-    raw_markdown: str    # from ocr_s3_key
-    llm_summary: dict    # from llm_s3_key
+    document_type: DocumentType | str   # str fallback for "other" / unknown values
+    raw_markdown: str                   # from ocr_s3_key
 
 
 @dataclass
@@ -22,10 +22,21 @@ class ContextBundle:
     insider_data: str = ""        # TODO: from quickfs_dj
     shareholder_data: str = ""    # TODO: from quickfs_dj
 
-    def raw_docs(self, types: list[str] | None = None) -> str:
+    def get_documents(
+        self,
+        types: list[DocumentType] | None = None,
+        latest_n: int | None = None,
+    ) -> list[DocumentContext]:
+        """Return documents filtered by DocumentType. Pass latest_n to cap the result."""
         docs = self.documents if types is None else [
             d for d in self.documents if d.document_type in types
         ]
+        if latest_n is not None:
+            docs = docs[:latest_n]
+        return docs
+
+    def raw_docs(self, types: list[DocumentType] | None = None) -> str:
+        docs = self.get_documents(types=types)
         if not docs:
             return "No relevant documents available."
         blocks = [
@@ -33,14 +44,3 @@ class ContextBundle:
             for i, d in enumerate(docs)
         ]
         return "\n\n---\n\n".join(blocks)
-
-    def summarized_docs(self, types: list[str] | None = None) -> str:
-        docs = self.documents if types is None else [
-            d for d in self.documents if d.document_type in types
-        ]
-        if not docs:
-            return "No relevant documents available."
-        return "\n\n".join(
-            f"### [{i + 1}] {d.file_name}\n{json.dumps(d.llm_summary, indent=2)}"
-            for i, d in enumerate(docs)
-        )

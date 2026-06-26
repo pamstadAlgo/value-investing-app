@@ -203,6 +203,66 @@ class GuidanceOutput(BaseModel):
     )
 
 
+# ─── MAP_REDUCE per-document (map-phase) schemas ──────────────────────────────
+
+class EarningsQualityPerYearOutput(BaseModel):
+    fiscal_year: str = Field(
+        description="Fiscal year or period this analysis covers, e.g. 'FY2023'."
+    )
+    cash_conversion: str = Field(
+        description="How reliably net income converted to free cash flow this year."
+    )
+    accruals_assessment: str = Field(
+        description="Accruals ratio assessment and what it implies about earnings sustainability this year."
+    )
+    revenue_recognition_concerns: list[CitedFinding] = Field(
+        description="Revenue recognition concerns identified this year. Empty list if none."
+    )
+    key_findings: list[CitedFinding] = Field(
+        description="The 2-3 most material earnings quality observations for this year."
+    )
+
+
+class FinancialRiskPerYearOutput(BaseModel):
+    fiscal_year: str = Field(
+        description="Fiscal year or period this analysis covers, e.g. 'FY2023'."
+    )
+    red_flags: list[CitedFinding] = Field(
+        description="Schilit red flags identified this year. Empty list if none."
+    )
+    accounting_concerns: list[CitedFinding] = Field(
+        description="Accounting policy concerns identified this year. Empty list if none."
+    )
+    debt_risk_assessment: str = Field(
+        description="Leverage and debt structure risk assessment for this year."
+    )
+    key_findings: list[CitedFinding] = Field(
+        description="The 2-3 most material financial risk observations for this year."
+    )
+
+
+class CapitalAllocationPerYearOutput(BaseModel):
+    fiscal_year: str = Field(
+        description="Fiscal year or period this analysis covers, e.g. 'FY2023'."
+    )
+    roic_assessment: str = Field(
+        description="ROIC trend and level relative to cost of capital this year."
+    )
+    buyback_quality: str = Field(
+        description="Assessment of buyback discipline and timing this year."
+    )
+    dividend_sustainability: str = Field(
+        description="Dividend coverage and sustainability assessment this year."
+    )
+    ma_track_record: Optional[str] = Field(
+        default=None,
+        description="M&A activity and value creation this year. Null if none."
+    )
+    key_findings: list[CitedFinding] = Field(
+        description="The 2-3 most material capital allocation observations for this year."
+    )
+
+
 # ─── Final assembly output ─────────────────────────────────────────────────────
 
 class AnalystReportSections(BaseModel):

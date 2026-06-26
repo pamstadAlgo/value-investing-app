@@ -11,10 +11,10 @@ from .guidance import GuidanceAgent
 # 2. Import it here and append to AGENT_REGISTRY
 AGENT_REGISTRY = [
     EarningsQualityAgent,
-    # FinancialRiskAgent,
+    FinancialRiskAgent,
     ValuationAgent,
-    # CompetitivePositionAgent,
-    # CapitalAllocationAgent,
-    # OwnershipAgent,
-    # GuidanceAgent,
+    CompetitivePositionAgent,
+    CapitalAllocationAgent,
+    OwnershipAgent,
+    GuidanceAgent,
 ]

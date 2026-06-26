@@ -1,4 +1,3 @@
-import json
 import os
 import tempfile
 from pathlib import Path
@@ -44,27 +43,17 @@ def process_uploaded_file(upload_id):
             ocr_result = mineru_service.extract(tmp_path)
             md_content = ocr_result["md_content"]
 
-            # 3. Upload extracted markdown to S3 and persist before LLM step,
-            #    so a LLM failure on retry can skip straight to step 4.
+            # 3. Upload extracted markdown to S3
             ocr_s3_key = f"{folder}/mineru/{base_name}.md"
             s3_service.upload_text(md_content, ocr_s3_key)
             upload.ocr_s3_key = ocr_s3_key
             upload.save()
 
-        # 4. Run LLM structured extraction
-        upload.status = UserUpload.Status.EXTRACTING
-        upload.save()
-        structured_data = llm.structure(md_content, document_type=upload.document_type)
-        llm_s3_key = f"{folder}/llm/{base_name}.json"
-        s3_service.upload_text(
-            content=json.dumps(structured_data, indent=2),
-            s3_key=llm_s3_key,
-            content_type="application/json",
-        )
-
-        upload.llm_s3_key = llm_s3_key
+        # 4. Classify document type if not already set by the user
         if not upload.document_type:
-            upload.document_type = structured_data.get("document_type")
+            classification = llm.classify(md_content)
+            upload.document_type = classification.get("document_type")
+
         upload.status = UserUpload.Status.DONE
         upload.save()
 
@@ -101,7 +90,7 @@ def generate_analyst_report(report_id):
             status=UserUpload.Status.DONE,
         ).exclude(ocr_s3_key__isnull=True).exclude(ocr_s3_key="")
 
-        # 2. Build DocumentContext for each upload (raw markdown + LLM summary)
+        # 2. Build DocumentContext for each upload (raw markdown only)
         documents = []
         for upload in uploads:
             suffix = Path(upload.file_name).suffix
@@ -114,22 +103,10 @@ def generate_analyst_report(report_id):
             finally:
                 os.unlink(tmp_path)
 
-            llm_summary = {}
-            if upload.llm_s3_key:
-                tmp_fd, tmp_path = tempfile.mkstemp(suffix=".json")
-                os.close(tmp_fd)
-                try:
-                    s3_service.download_file(upload.llm_s3_key, tmp_path)
-                    with open(tmp_path, encoding="utf-8") as f:
-                        llm_summary = json.load(f)
-                finally:
-                    os.unlink(tmp_path)
-
             documents.append(DocumentContext(
                 file_name=upload.file_name,
                 document_type=upload.document_type or "other",
                 raw_markdown=raw_markdown,
-                llm_summary=llm_summary,
             ))
 
         # 3. Build context bundle

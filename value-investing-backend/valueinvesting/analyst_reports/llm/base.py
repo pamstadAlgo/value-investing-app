@@ -2,16 +2,14 @@ from abc import ABC, abstractmethod
 
 
 class LLMProvider(ABC):
-    """Blueprint for LLM providers that produce structured output from document text."""
+    """Blueprint for LLM providers used in the analyst report pipeline."""
 
     @abstractmethod
-    def extract(self, md_content: str, document_type: str | None = None) -> dict:
+    def classify(self, md_content: str) -> dict:
         """
-        Extract structured fields from a single document's markdown.
-
-        If document_type is provided, skip the classification call and use the
-        per-type schema directly (1 LLM call). Otherwise, classify first then
-        extract with the per-type schema (2 LLM calls).
+        Detect document_type and company_name from raw markdown.
+        Returns a dict with at least a 'document_type' key.
+        Only called when the user has not explicitly set the document type.
         """
 
     @abstractmethod

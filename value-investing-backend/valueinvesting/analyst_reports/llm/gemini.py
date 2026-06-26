@@ -7,47 +7,13 @@ from google import genai
 from google.genai import types
 
 from .base import LLMProvider
-from .schemas import (
-    DocumentClassification,
-    DocumentType,
-    AnnualReportExtraction,
-    EarningsCallExtraction,
-    AnalystReportExtraction,
-    GenericExtraction,
-)
+from .schemas import DocumentClassification
 
 logger = logging.getLogger(__name__)
 
-EXTRACTION_SYSTEM_PROMPT = """
-You are a seasoned value investor with deep expertise in fundamental analysis, modeled on the principles
-of Benjamin Graham and Warren Buffett. Your task is to read financial documents and extract structured
-information that will feed into a comprehensive analyst report.
-
-When analysing documents, prioritise:
-- Long-term business quality over short-term price movements
-- Earnings power, return on capital, and balance sheet strength
-- Management integrity and capital allocation track record
-- Margin of safety relative to intrinsic value
-- Durable competitive advantages (moats)
-
-Be precise and factual. Do not fabricate figures. If a field cannot be determined from the document,
-leave it null rather than guessing.
-""".strip()
-
-_SCHEMA_MAP = {
-    DocumentType.ANNUAL_REPORT:    AnnualReportExtraction,
-    DocumentType.QUARTERLY_REPORT: AnnualReportExtraction,
-    DocumentType.EARNINGS_CALL:    EarningsCallExtraction,
-    DocumentType.ANALYST_REPORT:   AnalystReportExtraction,
-}
-
-
-def _schema_for(document_type: str) -> type:
-    try:
-        dt = DocumentType(document_type)
-    except ValueError:
-        return GenericExtraction
-    return _SCHEMA_MAP.get(dt, GenericExtraction)
+_CLASSIFICATION_PROMPT = (
+    "Read the following document and identify its type and the company it covers.\n\n"
+)
 
 
 class GeminiStructuredOutput(LLMProvider):
@@ -105,7 +71,10 @@ class GeminiStructuredOutput(LLMProvider):
             except Exception as e:
                 if self._is_transient(e) and attempt < self._MAX_RETRIES:
                     delay = 10 * (2 ** attempt)
-                    logger.warning("Gemini 503 — retrying in %ss (attempt %s/%s)", delay, attempt + 1, self._MAX_RETRIES)
+                    logger.warning(
+                        "Gemini 503 — retrying in %ss (attempt %s/%s)",
+                        delay, attempt + 1, self._MAX_RETRIES,
+                    )
                     time.sleep(delay)
                 else:
                     raise
@@ -115,37 +84,7 @@ class GeminiStructuredOutput(LLMProvider):
 
         return schema.model_validate_json(response.text).model_dump()
 
-    def _classify(self, md_content: str) -> DocumentClassification:
-        """Cheap first call: detect document_type and company_name."""
-        prompt = (
-            "Read the following document and identify its type and the company it covers.\n\n"
-            f"{md_content[:8000]}"  # first 8K chars is enough for classification
-        )
-        result = self.run_agent(prompt, EXTRACTION_SYSTEM_PROMPT, DocumentClassification)
-        return DocumentClassification(**result)
-
-    def extract(self, md_content: str, document_type: str | None = None) -> dict:
-        """
-        Extract structured information from a document.
-
-        If document_type is provided (user-set pre-upload), skip classification
-        and use the per-type schema directly (1 LLM call). Otherwise classify
-        first, then extract with the per-type schema (2 LLM calls).
-        """
-        if document_type:
-            detected_type = document_type
-            company_name = None
-        else:
-            classification = self._classify(md_content)
-            detected_type = classification.document_type.value
-            company_name = classification.company_name
-
-        schema = _schema_for(detected_type)
-        prompt = f"Extract structured information from the following document:\n\n{md_content}"
-        result = self.run_agent(prompt, EXTRACTION_SYSTEM_PROMPT, schema)
-
-        result["document_type"] = detected_type
-        if company_name and "company_name" not in result:
-            result["company_name"] = company_name
-
-        return result
+    def classify(self, md_content: str) -> dict:
+        """Detect document_type and company_name from the first 8K chars of the document."""
+        prompt = _CLASSIFICATION_PROMPT + md_content[:8000]
+        return self.run_agent(prompt, "", DocumentClassification)

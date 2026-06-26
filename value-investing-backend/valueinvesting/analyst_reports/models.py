@@ -17,7 +17,6 @@ class UserUpload(models.Model):
     class Status(models.TextChoices):
         UPLOADED = "uploaded", "Uploaded"
         SCANNING = "scanning", "Scanning Document"
-        EXTRACTING = "extracting", "Extracting Key Data"
         DONE = "done", "Done"
         FAILED = "failed", "Failed"
 
@@ -29,7 +28,6 @@ class UserUpload(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.UPLOADED)
     ocr_s3_key = models.CharField(max_length=500, null=True, blank=True)
-    llm_s3_key = models.CharField(max_length=500, null=True, blank=True)
     retry_count   = models.PositiveSmallIntegerField(default=0)
     error_message = models.TextField(null=True, blank=True)
     document_type = models.CharField(

@@ -3,6 +3,7 @@ from django.conf import settings
 from .factory import get_provider
 
 
-def structure(md_content: str, document_type: str | None = None) -> dict:
+def classify(md_content: str) -> dict:
+    """Detect document_type and company_name from raw markdown. Returns a dict."""
     provider_name = getattr(settings, "LLM_PROVIDER", "gemini")
-    return get_provider(provider_name).extract(md_content, document_type=document_type)
+    return get_provider(provider_name).classify(md_content)
