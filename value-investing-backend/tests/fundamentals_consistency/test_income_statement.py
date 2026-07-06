@@ -43,12 +43,15 @@ def test_operating_income():
 
 
 def test_pretax_income():
-    """operating_income + other_nonoperating_income = pretax_income (guaranteed by construction)"""
+    """operating_income + interest_income - interest_expense + other_nonoperating_income = pretax_income (guaranteed by construction)"""
     income_statements = IncomeStatementAnnual.objects.all()
     total, passed, failures = check_identity(
         income_statements,
         compute_expected=lambda r: (
-            r.operating_income + (r.other_nonoperating_income or 0)
+            r.operating_income
+            + (r.interest_income or 0)
+            - (r.interest_expense or 0)
+            + (r.other_nonoperating_income or 0)
             if r.operating_income is not None and r.pretax_income is not None else None
         ),
         get_actual=lambda r: r.pretax_income if r.operating_income is not None else None,

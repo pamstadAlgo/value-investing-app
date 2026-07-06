@@ -28,7 +28,7 @@ standards, missing line items). We handle this with three field roles:
   Derived connectors — computed from the two adjacent anchors so the P&L
     waterfall is always internally consistent:
     total_opex             = gross_profit − operating_income
-    other_nonoperating_income = pretax_income − operating_income
+    other_nonoperating_income = pretax_income − operating_income − interest_income + interest_expense
 
   Residuals — absorb whatever EODHD does not explicitly break out (D&A,
     restructuring, lease costs, sign-convention differences, etc.):
@@ -43,7 +43,7 @@ standards, missing line items). We handle this with three field roles:
 Waterfall identities guaranteed by construction:
   gross_profit − total_opex                              = operating_income
   sga + rnd + special_charges + other_opex               = total_opex
-  operating_income + other_nonoperating_income           = pretax_income
+  operating_income + interest_income − interest_expense + other_nonoperating_income = pretax_income
   pretax_income − income_tax + minority_interest
     + net_income_discontinued + other_income_statement_items = net_income
   net_income − preferred_dividends = net_income_available_to_shareholders
@@ -189,6 +189,9 @@ def transform_income_statement(raw: dict, qfs_symbol: str) -> dict:
     discontinued    = _float(raw.get("discontinuedOperations"))
     pref_dividends  = _float(raw.get("preferredStockAndOtherAdjustments"))
 
+    interest_income  = _float(raw.get("interestIncome"))
+    interest_expense = _float(raw.get("interestExpense"))
+
     # ── Derived connectors (bridge adjacent anchors; identities guaranteed) ───
     # total_opex bridges gross_profit → operating_income
     total_opex = (
@@ -196,9 +199,10 @@ def transform_income_statement(raw: dict, qfs_symbol: str) -> dict:
         if gross_profit is not None and operating_income is not None
         else None
     )
-    # other_nonoperating_income bridges operating_income → pretax_income
+    # other_nonoperating_income bridges operating_income → pretax_income,
+    # explicitly excluding interest items that have their own line items.
     other_nonop = (
-        pretax_income - operating_income
+        pretax_income - operating_income - (interest_income or 0) + (interest_expense or 0)
         if pretax_income is not None and operating_income is not None
         else None
     )
@@ -256,10 +260,10 @@ def transform_income_statement(raw: dict, qfs_symbol: str) -> dict:
         "operating_income": operating_income,
 
         # ── Non-operating section ──────────────────────────────────────────────
-        # other_nonoperating_income is derived so operating_income + other_nonoperating_income
-        # = pretax_income always holds. Interest lines are stored raw for analysis.
-        "interest_income":            _float(raw.get("interestIncome")),
-        "interest_expense":           _float(raw.get("interestExpense")),
+        # other_nonoperating_income is derived so the 4-item identity holds:
+        # operating_income + interest_income − interest_expense + other_nonoperating_income = pretax_income
+        "interest_income":            interest_income,
+        "interest_expense":           interest_expense,
         "net_interest_income_normal": _float(raw.get("netInterestIncome")),
         "other_nonoperating_income":  other_nonop,
 
