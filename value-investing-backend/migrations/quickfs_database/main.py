@@ -2,6 +2,7 @@
 """YOU NEED TO RUN THIS FILE FROM THE FOLDER IT IS IN; OTHERWISE IMPORTS WILL FAIL"""
 ##################################################################################################
 
+import argparse
 import os
 import json
 import logging
@@ -17,6 +18,8 @@ from migration_utils import (
     create_temp_staging_table,
     bulk_insert_staging,
     insert_from_staging,
+    CONFLICT_COLUMNS,
+    get_db_connection,
 )
 from eodhd_field_mappings import (
     transform_traded_company,
@@ -37,7 +40,8 @@ MIGRATE_CF_STATEMENT_DATA     = True
 BATCH_SIZE   = 500   # flush to DB after accumulating this many companies
 S3_WORKERS   = 20   # parallel threads for S3 downloads + JSON parsing
 S3_BUCKET    = os.environ["S3_BUCKET_NAME"]
-S3_PREFIX    = "eodhd-fundamentals"
+S3_PREFIX_HISTORICAL = "eodhd-fundamentals"
+S3_PREFIX_BULK       = "eodhd-fundamentals-bulk"
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 log_dir = Path(__file__).parent / "logs"
@@ -71,36 +75,11 @@ def _build_registry() -> dict:
         "cf_quarter":     ("stag_cf_quarter",         "quickfs_dj_cashflowstatementquarter", MIGRATE_CF_STATEMENT_DATA),
     }
 
-CONFLICT_COLUMNS = {
-    "companies":      ["qfs_symbol"],
-    "income_annual":  ["qfs_symbol_id", "period_end_date"],
-    "income_quarter": ["qfs_symbol_id", "period_end_date"],
-    "balance_annual": ["qfs_symbol_id", "period_end_date"],
-    "balance_quarter":["qfs_symbol_id", "period_end_date"],
-    "cf_annual":      ["qfs_symbol_id", "period_end_date"],
-    "cf_quarter":     ["qfs_symbol_id", "period_end_date"],
-}
-
-
-# ── DB ─────────────────────────────────────────────────────────────────────────
-def get_db_connection():
-    print('db_host: ', os.environ["DB_HOST"])
-    print('postgres_db: ', os.environ["POSTGRES_DB"])
-
-    return psycopg2.connect(
-        host=os.environ["DB_HOST"],
-        database=os.environ["POSTGRES_DB"],
-        user=os.environ["POSTGRES_USER"],
-        password=os.environ["POSTGRES_PASSWORD"],
-        port=os.environ["DB_PORT"],
-    )
-
-
 # ── S3 ─────────────────────────────────────────────────────────────────────────
-def list_s3_keys() -> list[str]:
+def list_s3_keys(prefix: str) -> list[str]:
     keys = []
     paginator = s3.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=S3_PREFIX + "/"):
+    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=prefix + "/"):
         for obj in page.get("Contents", []):
             if obj["Key"].endswith(".json"):
                 keys.append(obj["Key"])
@@ -108,7 +87,7 @@ def list_s3_keys() -> list[str]:
 
 
 def _exchange_code_from_key(key: str) -> str:
-    # key format: eodhd-fundamentals/{EXCHANGE}/{TICKER.EXCHANGE}.json
+    # key format: {prefix}/{EXCHANGE}/{TICKER.EXCHANGE}.json
     parts = key.split("/")
     return parts[1] if len(parts) >= 3 else "UNKNOWN"
 
@@ -228,25 +207,57 @@ def _process_company(data: dict, exchange_code: str) -> dict:
         if v and v.get("dateFormatted") and v.get("shares") is not None
     }
 
+    # Diluted shares: commonStockSharesOutstanding from balance sheet is the
+    # weighted-average diluted count used for EPS — more accurate for shares_diluted
+    # than the basic end-of-period count in outstandingShares. Falls back to basic
+    # when absent (zero-filled historical periods).
+    _bs_shares = financials.get("Balance_Sheet", {})
+    shares_diluted_annual_lkp: dict = {}
+    for _p in _bs_shares.get("yearly", {}).values():
+        if _p and _p.get("date") and _p.get("commonStockSharesOutstanding"):
+            try:
+                _v = float(_p["commonStockSharesOutstanding"])
+                if _v > 0:
+                    shares_diluted_annual_lkp[_p["date"][:4]] = _v
+            except (TypeError, ValueError):
+                pass
+
+    shares_diluted_quarter_lkp: dict = {}
+    for _p in _bs_shares.get("quarterly", {}).values():
+        if _p and _p.get("date") and _p.get("commonStockSharesOutstanding"):
+            try:
+                _v = float(_p["commonStockSharesOutstanding"])
+                if _v > 0:
+                    shares_diluted_quarter_lkp[_p["date"]] = _v
+            except (TypeError, ValueError):
+                pass
+
     if MIGRATE_INCOME_STATEMENT_DATA:
         is_sec = financials.get("Income_Statement", {})
         for period in is_sec.get("yearly", {}).values():
             if period and period.get("date"):
                 row = transform_income_statement(period, qfs_symbol)
                 # Match annual shares by calendar year (first 4 chars of date)
-                shares = shares_annual_lkp.get(period["date"][:4])
-                row["shares_basic"] = shares
-                row["shares_diluted"] = shares
-                row["shares_eop"] = shares
+                shares_eop = shares_annual_lkp.get(period["date"][:4])
+                shares_dil = shares_diluted_annual_lkp.get(period["date"][:4]) or shares_eop
+                # commonStockSharesOutstanding can be unreliable — diluted must never be < basic
+                if shares_dil and shares_eop and shares_dil < shares_eop:
+                    shares_dil = shares_eop
+                row["shares_basic"]   = shares_eop
+                row["shares_diluted"] = shares_dil
+                row["shares_eop"]     = shares_eop
                 rows["income_annual"].append(row)
         for period in is_sec.get("quarterly", {}).values():
             if period and period.get("date"):
                 row = transform_income_statement(period, qfs_symbol)
                 # Match quarterly shares to nearest calendar quarter-end
-                shares = _nearest_shares(shares_quarter_lkp, period["date"])
-                row["shares_basic"] = shares
-                row["shares_diluted"] = shares
-                row["shares_eop"] = shares
+                shares_eop = _nearest_shares(shares_quarter_lkp, period["date"])
+                shares_dil = _nearest_shares(shares_diluted_quarter_lkp, period["date"]) or shares_eop
+                if shares_dil and shares_eop and shares_dil < shares_eop:
+                    shares_dil = shares_eop
+                row["shares_basic"]   = shares_eop
+                row["shares_diluted"] = shares_dil
+                row["shares_eop"]     = shares_eop
                 rows["income_quarter"].append(row)
 
     if MIGRATE_BALANCE_SHEET_DATA:
@@ -313,7 +324,19 @@ def flush_batch(conn, batch: dict, registry: dict) -> None:
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
+    parser = argparse.ArgumentParser(description="Migrate EODHD fundamentals from S3 to DB.")
+    parser.add_argument(
+        "--type",
+        choices=["historical", "bulk"],
+        default="historical",
+        dest="data_type",
+        help="historical = eodhd-fundamentals/ (default); bulk = eodhd-fundamentals-bulk/",
+    )
+    args = parser.parse_args()
+    prefix = S3_PREFIX_BULK if args.data_type == "bulk" else S3_PREFIX_HISTORICAL
+
     logging.info("=== main.py start ===")
+    logging.info(f"Data type: {args.data_type} (S3 prefix: {prefix})")
     logging.info(
         f"Flags — income={MIGRATE_INCOME_STATEMENT_DATA}, "
         f"balance={MIGRATE_BALANCE_SHEET_DATA}, "
@@ -327,10 +350,10 @@ def main():
         if enabled:
             create_temp_staging_table(conn, target_table=target, staging_table=staging)
 
-    keys = list_s3_keys()
+    keys = list_s3_keys(prefix)
 
     # for debugging: just process the first 10 keys
-    keys = keys[:10]
+    keys = keys[:1000]
 
     logging.info(f"Found {len(keys)} JSON files in S3")
 

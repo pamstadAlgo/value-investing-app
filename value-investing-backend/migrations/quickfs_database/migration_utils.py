@@ -3,7 +3,43 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import os
 import pandas as pd
 import numpy as np
+import psycopg2
+import requests
 from io import StringIO
+
+EODHD_BASE_URL = "https://eodhd.com/api"
+
+# Uniqueness constraints used for ON CONFLICT DO NOTHING across all pipeline scripts.
+CONFLICT_COLUMNS = {
+    "companies":      ["qfs_symbol"],
+    "income_annual":  ["qfs_symbol_id", "period_end_date"],
+    "income_quarter": ["qfs_symbol_id", "period_end_date"],
+    "balance_annual": ["qfs_symbol_id", "period_end_date"],
+    "balance_quarter":["qfs_symbol_id", "period_end_date"],
+    "cf_annual":      ["qfs_symbol_id", "period_end_date"],
+    "cf_quarter":     ["qfs_symbol_id", "period_end_date"],
+}
+
+
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.environ["DB_HOST"],
+        database=os.environ["POSTGRES_DB"],
+        user=os.environ["POSTGRES_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],
+        port=os.environ["DB_PORT"],
+    )
+
+
+def get_exchanges(api_token: str) -> list[dict]:
+    """Fetch all exchanges EODHD supports."""
+    resp = requests.get(
+        f"{EODHD_BASE_URL}/exchanges-list/",
+        params={"api_token": api_token, "fmt": "json"},
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 #define fields for different financial statements
 traded_companies_fields = ["symbol", "qfs_symbol", "exchange", "name", "company_type", "currency", "industry"] #these correspond to column names in .csv files from quick fs

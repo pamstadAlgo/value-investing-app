@@ -10,6 +10,8 @@ import boto3
 import requests
 from dotenv import load_dotenv
 
+from migration_utils import get_exchanges
+
 load_dotenv()
 
 API_TOKEN = os.environ["EODHD_API_TOKEN"]
@@ -80,17 +82,6 @@ def _load_progress() -> set[str]:
     if not PROGRESS_FILE.exists():
         return set()
     return set(PROGRESS_FILE.read_text().splitlines())
-
-
-def get_exchanges() -> list[dict]:
-    """Fetch all exchanges EODHD supports."""
-    resp = requests.get(
-        f"{BASE_URL}/exchanges-list/",
-        params={"api_token": API_TOKEN, "fmt": "json"},
-        timeout=30,
-    )
-    resp.raise_for_status()
-    return resp.json()
 
 
 def get_exchange_symbols(exchange_code: str) -> list[str]:
@@ -223,7 +214,7 @@ if __name__ == "__main__":
         if already_done:
             logging.info(f"Resuming — {len(already_done)} symbols already downloaded, skipping these")
 
-        exchanges = get_exchanges()
+        exchanges = get_exchanges(API_TOKEN)
         logging.info(f"Found {len(exchanges)} exchanges from EODHD")
 
         symbols_by_exchange = {}
